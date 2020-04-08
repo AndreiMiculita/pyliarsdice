@@ -40,6 +40,13 @@ class MainWidget(QWidget):
 
         enemy_bet_group.setLayout(enemy_bet_layout)
 
+        # Here we'll show if the enemy is thinking, or if they call your bluff
+        enemy_action_group = QGroupBox("Enemy Action")
+        enemy_action_layout = QVBoxLayout()
+        enemy_action_label = QLabel("Thinking...")
+        enemy_action_layout.addWidget(enemy_action_label)
+        enemy_action_group.setLayout(enemy_action_layout)
+
         player_cup_group = QGroupBox("Your Cup")
 
         player_bet_group = QGroupBox("Your Bet")
@@ -83,6 +90,7 @@ class MainWidget(QWidget):
 
         grid.addWidget(enemy_cup_group, 0, 0, 1, 2)
         grid.addWidget(enemy_bet_group, 1, 0, 1, 1)
+        grid.addWidget(enemy_action_group, 1, 1, 1, 1)
         grid.addWidget(player_cup_group, 2, 0, 1, 2)
         grid.addWidget(player_bet_group, 3, 0, 1, 1)
         grid.addLayout(actions_layout, 3, 1, 1, 1)
