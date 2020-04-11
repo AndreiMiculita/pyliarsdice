@@ -109,10 +109,13 @@ class MainWidget(QWidget):
         actions_group = QGroupBox('Your Action')
         actions_layout = QVBoxLayout()
 
-        bet_btn = QPushButton('BET')
+        bet_btn = QPushButton('BET (B)')
+        bet_btn.setShortcut("B")
         bet_btn.setStatusTip('Bet the selected amount and dice.')
+        bet_btn.clicked.connect(self.bet)
 
-        call_bluff_btn = QPushButton('CALL BLUFF')
+        call_bluff_btn = QPushButton('CALL BLUFF (C)')
+        call_bluff_btn.setShortcut("C")
         call_bluff_btn.setStatusTip("Call the opponent's bluff.")
 
         actions_layout.addWidget(bet_btn)
@@ -127,6 +130,14 @@ class MainWidget(QWidget):
         grid.addWidget(player_bet_group, 3, 0, 1, 1)
         grid.addWidget(actions_group, 3, 1, 1, 1)
         self.setLayout(grid)
+
+    def bet(self):
+        print("Bet")
+        return NotImplemented
+
+    def call_bluff(self):
+        print("Call bluff")
+        return NotImplemented
 
 
 class MainWindow(QMainWindow):
@@ -186,11 +197,6 @@ class MainWindow(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def bet(self):
-        return NotImplemented
-
-    def call_bluff(self):
-        return NotImplemented
 
     def restart(self):
         return NotImplemented
