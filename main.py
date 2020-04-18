@@ -41,26 +41,37 @@ how_to_string = "The game consists of multiple rounds. In every round, all playe
 
 
 class MainWidget(QWidget):
+
     def __init__(self):
+        """
+        This widget is everything in the window, except for the menu bar and status bar
+        """
         super(MainWidget, self).__init__()
         self.init_ui()
 
     def init_ui(self):
-        grid = QGridLayout()
-        grid.setSpacing(10)
+        vertical_main_layout = QGridLayout()
+        vertical_main_layout.setSpacing(10)
 
+        # Enemy half of the screen -------------------------
+
+        # Enemy cup
+        # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
+        # but not the types
         enemy_cup_group = QGroupBox("Enemy Cup")
         enemy_cup_group.setProperty("cssClass", "cup")
 
         enemy_bet_group = QGroupBox("Enemy Bet")
         enemy_bet_layout = QHBoxLayout()
 
+        # Here we display the amount of dice the enemy has bet
         enemy_number_label = QLabel("1")
         enemy_number_label.resize(enemy_number_label.sizeHint())
 
         enemy_times_label = QLabel("×")
         enemy_times_label.resize(enemy_times_label.sizeHint())
 
+        # Here we dispaly the type of dice the enemy has bet
         enemy_dice_label = QLabel("1")
         enemy_dice_label.resize(enemy_dice_label.sizeHint())
 
@@ -77,12 +88,14 @@ class MainWidget(QWidget):
         enemy_action_layout.addWidget(enemy_action_label)
         enemy_action_group.setLayout(enemy_action_layout)
 
+        # Player half of the screen -------------------------
         player_cup_group = QGroupBox("Your Cup")
         player_cup_group.setProperty("cssClass", "cup")
 
         player_bet_group = QGroupBox("Your Bet")
         player_bet_layout = QHBoxLayout()
 
+        # Here the player can select the number of dice to bet
         select_number_layout = QVBoxLayout()
         select_number_label = QLabel("Number")
         select_number_spin_box = QSpinBox()
@@ -93,6 +106,7 @@ class MainWidget(QWidget):
         player_times_label = QLabel("×")
         player_times_label.resize(player_times_label.sizeHint())
 
+        # Here the player can select the type of dice to bet
         select_dice_layout = QVBoxLayout()
         select_dice_label = QLabel("Dice")
         select_dice_spin_box = QSpinBox()
@@ -106,6 +120,8 @@ class MainWidget(QWidget):
 
         player_bet_group.setLayout(player_bet_layout)
 
+        # This is a group that contains the buttons for betting and calling a bluff
+        # The buttons are linked to the functions below this function
         actions_group = QGroupBox('Your Action')
         actions_layout = QVBoxLayout()
 
@@ -117,25 +133,35 @@ class MainWidget(QWidget):
         call_bluff_btn = QPushButton('CALL BLUFF (C)')
         call_bluff_btn.setShortcut("C")
         call_bluff_btn.setStatusTip("Call the opponent's bluff.")
+        bet_btn.clicked.connect(self.call_bluff)
 
         actions_layout.addWidget(bet_btn)
         actions_layout.addWidget(call_bluff_btn)
 
         actions_group.setLayout(actions_layout)
 
-        grid.addWidget(enemy_cup_group, 0, 0, 1, 2)
-        grid.addWidget(enemy_bet_group, 1, 0, 1, 1)
-        grid.addWidget(enemy_action_group, 1, 1, 1, 1)
-        grid.addWidget(player_cup_group, 2, 0, 1, 2)
-        grid.addWidget(player_bet_group, 3, 0, 1, 1)
-        grid.addWidget(actions_group, 3, 1, 1, 1)
-        self.setLayout(grid)
+        # Put all the groups into a vertical layout
+        vertical_main_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
+        vertical_main_layout.addWidget(enemy_bet_group, 1, 0, 1, 1)
+        vertical_main_layout.addWidget(enemy_action_group, 1, 1, 1, 1)
+        vertical_main_layout.addWidget(player_cup_group, 2, 0, 1, 2)
+        vertical_main_layout.addWidget(player_bet_group, 3, 0, 1, 1)
+        vertical_main_layout.addWidget(actions_group, 3, 1, 1, 1)
+        self.setLayout(vertical_main_layout)
 
     def bet(self):
+        """
+        Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
+        :return:
+        """
         print("Bet")
         return NotImplemented
 
     def call_bluff(self):
+        """
+        ACtion to be done when the "call bluff" button is pressed (send signal to the game)
+        :return:
+        """
         print("Call bluff")
         return NotImplemented
 
@@ -143,10 +169,17 @@ class MainWidget(QWidget):
 class MainWindow(QMainWindow):
 
     def __init__(self):
+        """
+        The main window. Everything takes place inside it.
+        """
         super(MainWindow, self).__init__()
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initialize the central widget, along with the menubar and status bar.
+        :return:
+        """
         main_widget = MainWidget()
         self.setCentralWidget(main_widget)
 
@@ -192,13 +225,20 @@ class MainWindow(QMainWindow):
         self.show()
 
     def center(self):
+        """
+        Used to initialize the main window in the center of the screen
+        :return:
+        """
         qr = self.frameGeometry()
         cp = QGuiApplication.primaryScreen().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-
     def restart(self):
+        """
+        Start a new game
+        :return:
+        """
         return NotImplemented
 
     # def closeEvent(self, event):
@@ -212,12 +252,20 @@ class MainWindow(QMainWindow):
     #         event.ignore()
 
     def show_how_to_play(self):
+        """
+        Show a window explaining how to play the game
+        :return:
+        """
         how_to_play_box = QMessageBox()
         how_to_play_box.setWindowTitle("Playing Liar's Dice")
         how_to_play_box.setText(how_to_string)
         how_to_play_box.exec_()
 
     def show_about(self):
+        """
+        Show some info about the game
+        :return:
+        """
         about_box = QMessageBox()
         about_box.setWindowTitle("About")
         about_box.setText("Liar's Dice implemented in python. Add licenses and other info here.")
