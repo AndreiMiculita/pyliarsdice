@@ -1,0 +1,27 @@
+#mainWindow {
+    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #004400, stop:1 #008800);
+    color:white;
+}
+QStatusBar {
+    color:white;
+}
+QGroupBox {
+    color:white;
+}
+QScrollArea {
+    background-color: transparent;
+}
+*[cssClass="cup"] {
+    background-color: transparent;
+}
+*[cssClass="gameTitle"] {
+    font: italic 18pt;
+}
+QLabel {
+    color: white;
+    background-color: transparent;
+    qproperty-alignment: AlignCenter;
+}
+QScrollArea * {
+    background-color: transparent;
+}

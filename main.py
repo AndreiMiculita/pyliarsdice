@@ -2,168 +2,113 @@
 import sys
 
 # Import the core and GUI elements of Qt
+from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-# color scheme
-background_color = "#004400"
-background_color_2 = "#008800"
-light_brown = "#99621E"
-dark_brown = "#2F1000"
+from main_widget import MainWidget
 
-# TODO: add formatting (bold, italic, bullets)
-how_to_string = "The game consists of multiple rounds. In every round, all players throw their dices under the cup, " \
-                "such that the dices are only visible to themselves. Following, one of the players (in particular, " \
-                "the player who has lost the previous round) starts with a bid. In a clock-wise fashion, we go to the " \
-                "next players turn.\nExcept for the first turn in the round, every player has a choice between two " \
-                "types of actions:\n* Overbid the previous player - overbidding means that either the number of dices " \
-                "is higher than the bid of the previous player, or the value of the dice is higher with the same " \
-                "number of dices as the previous player.\n* Overbidding with Joker dices - a joker dice counts as " \
-                "double the number of dices when it's used as a bid. This is because every other value has a double " \
-                "chance of appearing on the table (since a joker also counts towards their number), while the joker " \
-                "itself is only based on the probability of appearing itself.\nA bid can be anything, independently " \
-                "of the roll of dices under the cup. This means bluffing is a substantial part of this game and can " \
-                "be strategically used to cause other players to lie.\n* Calling the previous player a liar - " \
-                "whenever you believe that the bid of the previous player is a lie (i.e. the number of dices of the " \
-                "bid is not on the table), you can call that player a liar. \nAt the point that someone has performed " \
-                "the action of calling the previous player a liar, every player has to specify whether he or she " \
-                "believes that the number of dices of the bid is on the table or not, in a clock-wise fashion. " \
-                "Following, everyone opens their cup and the dices are counted and compared to the bid.\nIf the " \
-                "number of the bid is equal or less than the number of dices on the table, the bid is correct. " \
-                "However, if the number of the bid is greater than the number of the dices on the table, the bid is a " \
-                "lie. All the players who are correct lose one die.\nAfter this the round has ended. A new round " \
-                "starts with the remaining number of dices for each player, restarting the bidding with the player " \
-                "who lost the last round. For multiple players, this will be the person who was either correctly " \
-                "called a liar, or the player who incorrectly called another player a liar.\nAfter every round, " \
-                "all the players who were correct lose a die. The goal is to be the first to lose all of the dices " \
-                "from your cup. However, the game will be played until all players except one have no more dices " \
-                "remaining their cups. "
+howto_text = "assets/howto.txt"
+stylesheet = "assets/style.qss"
 
 
-class MainWidget(QWidget):
+class Communicate(QObject):
+    # This is a class attribute, so it gets reassigned every time it's changed in an instance
+    # Couldn't fix it by making an instance attribute
+    start_new_game = Signal()
 
-    def __init__(self):
+
+class GoBack(QObject):
+    # This is a class attribute, so it gets reassigned every time it's changed in an instance
+    # Couldn't fix it by making an instance attribute
+    back = Signal()
+
+
+class StartScreenWidget(QWidget):
+
+    def __init__(self, show_logo=True):
         """
-        This widget is everything in the window, except for the menu bar and status bar
+        Widget for selecting difficulty
         """
-        super(MainWidget, self).__init__()
+        super(StartScreenWidget, self).__init__()
+        self.difficulties = ["Easy", "Medium", "Hard"]
+        self.start_game_signals = [Communicate(), Communicate(), Communicate()]
+        self.show_logo = show_logo
         self.init_ui()
 
     def init_ui(self):
         vertical_main_layout = QGridLayout()
         vertical_main_layout.setSpacing(10)
 
-        # Enemy half of the screen -------------------------
+        logo_pixmap = QPixmap("assets/images/dice_icon.png")
+        logo = QLabel()
+        logo.setPixmap(logo_pixmap)
 
-        # Enemy cup
-        # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
-        # but not the types
-        enemy_cup_group = QGroupBox("Enemy Cup")
-        enemy_cup_group.setProperty("cssClass", "cup")
+        if self.show_logo:
+            title = QLabel("Liar's Dice")
+        else:
+            make_transparent = QGraphicsOpacityEffect(self)
+            make_transparent.setOpacity(0.0)
 
-        enemy_bet_group = QGroupBox("Enemy Bet")
-        enemy_bet_layout = QHBoxLayout()
+            logo.setGraphicsEffect(make_transparent)
+            logo.setAutoFillBackground(True)
+            title = QLabel("New Game")
 
-        # Here we display the amount of dice the enemy has bet
-        enemy_number_label = QLabel("1")
-        enemy_number_label.resize(enemy_number_label.sizeHint())
+        title.setProperty("cssClass", "gameTitle")
+        vertical_main_layout.addWidget(logo)
+        vertical_main_layout.addWidget(title)
 
-        enemy_times_label = QLabel("×")
-        enemy_times_label.resize(enemy_times_label.sizeHint())
+        for idx, difficulty in enumerate(self.difficulties):
+            difficulty_button = QPushButton(difficulty)
+            difficulty_button.setStatusTip(f"Start {difficulty} difficulty game")
+            difficulty_button.clicked.connect(self.start_game_signals[idx].start_new_game.emit)
+            vertical_main_layout.addWidget(difficulty_button)
 
-        # Here we dispaly the type of dice the enemy has bet
-        enemy_dice_label = QLabel("1")
-        enemy_dice_label.resize(enemy_dice_label.sizeHint())
-
-        enemy_bet_layout.addWidget(enemy_number_label)
-        enemy_bet_layout.addWidget(enemy_times_label)
-        enemy_bet_layout.addWidget(enemy_dice_label)
-
-        enemy_bet_group.setLayout(enemy_bet_layout)
-
-        # Here we'll show if the enemy is thinking, or if they call your bluff
-        enemy_action_group = QGroupBox("Enemy Action")
-        enemy_action_layout = QVBoxLayout()
-        enemy_action_label = QLabel("Thinking...")
-        enemy_action_layout.addWidget(enemy_action_label)
-        enemy_action_group.setLayout(enemy_action_layout)
-
-        # Player half of the screen -------------------------
-        player_cup_group = QGroupBox("Your Cup")
-        player_cup_group.setProperty("cssClass", "cup")
-
-        player_bet_group = QGroupBox("Your Bet")
-        player_bet_layout = QHBoxLayout()
-
-        # Here the player can select the number of dice to bet
-        select_number_layout = QVBoxLayout()
-        select_number_label = QLabel("Number")
-        select_number_spin_box = QSpinBox()
-        select_number_spin_box.setRange(1, 6)
-        select_number_layout.addWidget(select_number_label)
-        select_number_layout.addWidget(select_number_spin_box)
-
-        player_times_label = QLabel("×")
-        player_times_label.resize(player_times_label.sizeHint())
-
-        # Here the player can select the type of dice to bet
-        select_dice_layout = QVBoxLayout()
-        select_dice_label = QLabel("Dice")
-        select_dice_spin_box = QSpinBox()
-        select_dice_spin_box.setRange(1, 6)
-        select_dice_layout.addWidget(select_dice_label)
-        select_dice_layout.addWidget(select_dice_spin_box)
-
-        player_bet_layout.addLayout(select_number_layout)
-        player_bet_layout.addWidget(player_times_label)
-        player_bet_layout.addLayout(select_dice_layout)
-
-        player_bet_group.setLayout(player_bet_layout)
-
-        # This is a group that contains the buttons for betting and calling a bluff
-        # The buttons are linked to the functions below this function
-        actions_group = QGroupBox('Your Action')
-        actions_layout = QVBoxLayout()
-
-        bet_btn = QPushButton('BET (B)')
-        bet_btn.setShortcut("B")
-        bet_btn.setStatusTip('Bet the selected amount and dice.')
-        bet_btn.clicked.connect(self.bet)
-
-        call_bluff_btn = QPushButton('CALL BLUFF (C)')
-        call_bluff_btn.setShortcut("C")
-        call_bluff_btn.setStatusTip("Call the opponent's bluff.")
-        bet_btn.clicked.connect(self.call_bluff)
-
-        actions_layout.addWidget(bet_btn)
-        actions_layout.addWidget(call_bluff_btn)
-
-        actions_group.setLayout(actions_layout)
-
-        # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
-        vertical_main_layout.addWidget(enemy_bet_group, 1, 0, 1, 1)
-        vertical_main_layout.addWidget(enemy_action_group, 1, 1, 1, 1)
-        vertical_main_layout.addWidget(player_cup_group, 2, 0, 1, 2)
-        vertical_main_layout.addWidget(player_bet_group, 3, 0, 1, 1)
-        vertical_main_layout.addWidget(actions_group, 3, 1, 1, 1)
         self.setLayout(vertical_main_layout)
 
-    def bet(self):
-        """
-        Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
-        :return:
-        """
-        print("Bet")
-        return NotImplemented
 
-    def call_bluff(self):
+class HowToPlayWidget(QWidget):
+
+    def __init__(self, show_logo=True):
         """
-        ACtion to be done when the "call bluff" button is pressed (send signal to the game)
-        :return:
+        Widget for selecting difficulty
         """
-        print("Call bluff")
-        return NotImplemented
+        super(HowToPlayWidget, self).__init__()
+        self.back_signal = GoBack()
+        self.init_ui()
+
+    def init_ui(self):
+        vertical_main_layout = QVBoxLayout()
+        vertical_main_layout.setSpacing(10)
+
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back_signal.back.emit)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(False)
+
+        vertical_instructions_group = QGroupBox()
+        vertical_instructions_layout = QVBoxLayout()
+        how_to_play_label = QLabel()
+        # TODO: add formatting (bold, italic, bullets), fix scrolling
+        with open(howto_text, "r") as how_to_file_handle:
+            how_to_play_label.setText(how_to_file_handle.read())
+
+        how_to_play_label.setWordWrap(True)
+        # size_policy = QSizePolicy()
+        # size_policy.setHorizontalPolicy(QSizePolicy.MinimumExpanding)
+        # how_to_play_label.setSizePolicy(size_policy)
+
+        how_to_play_label.resize(100, 500)
+
+        vertical_instructions_layout.addWidget(how_to_play_label)
+
+        vertical_instructions_group.setLayout(vertical_instructions_layout)
+        scroll_area.setWidget(vertical_instructions_group)
+
+        vertical_main_layout.addWidget(back_button)
+        vertical_main_layout.addWidget(scroll_area)
+        self.setLayout(vertical_main_layout)
 
 
 class MainWindow(QMainWindow):
@@ -173,6 +118,7 @@ class MainWindow(QMainWindow):
         The main window. Everything takes place inside it.
         """
         super(MainWindow, self).__init__()
+        self.central_widget = QStackedWidget()
         self.init_ui()
 
     def init_ui(self):
@@ -180,13 +126,18 @@ class MainWindow(QMainWindow):
         Initialize the central widget, along with the menubar and status bar.
         :return:
         """
-        main_widget = MainWidget()
-        self.setCentralWidget(main_widget)
+        self.central_widget.addWidget(self.restart(show_logo=True))
+        how_to_play_widget = HowToPlayWidget()
+        how_to_play_widget.back_signal.back.connect(
+            lambda: self.central_widget.setCurrentIndex(self.central_widget.currentIndex() - 1))
+        self.central_widget.addWidget(how_to_play_widget)
+
+        self.setCentralWidget(self.central_widget)
 
         new_game_action = QAction('New Game', self)
         new_game_action.setShortcut(QKeySequence.New)
         new_game_action.setStatusTip('Start a new game.')
-        new_game_action.triggered.connect(self.restart)
+        new_game_action.triggered.connect(lambda: self.restart(show_logo=False))
 
         exit_action = QAction('Exit', self)
         exit_action.setShortcut(QKeySequence.Close)
@@ -215,13 +166,10 @@ class MainWindow(QMainWindow):
         self.resize(350, 550)
         self.center()
         self.setWindowTitle("Liar's Dice")
-        self.setWindowIcon(QIcon('dice_icon.png'))
+        self.setWindowIcon(QIcon("assets/images/dice_icon.png"))
         self.setObjectName("mainWindow")
-        self.setStyleSheet(
-            f"#mainWindow {{background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 {background_color}, stop:1 {background_color_2}); color:white}} QStatusBar {{ "
-            f"color:white;}} QLabel {{color:white; qproperty-alignment: AlignCenter;}} QGroupBox{{"
-            f"color:white;}} *[cssClass='cup'] {{ background-color: transparent;}}")
-
+        with open(stylesheet, "r") as fh:
+            self.setStyleSheet(fh.read())
         self.show()
 
     def center(self):
@@ -234,12 +182,22 @@ class MainWindow(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def restart(self):
+    def restart(self, show_logo):
         """
         Start a new game
         :return:
         """
-        return NotImplemented
+        start_screen_widget = StartScreenWidget(show_logo=show_logo)
+
+        for idx, signal in enumerate(start_screen_widget.start_game_signals):
+            signal.start_new_game.connect(lambda: self.restart_aux(idx=idx))
+
+        return start_screen_widget
+
+    def restart_aux(self, idx: int):
+        new_game_widget = MainWidget(difficulty=idx)
+        self.central_widget.addWidget(new_game_widget)
+        self.central_widget.setCurrentWidget(new_game_widget)
 
     # def closeEvent(self, event):
     #     reply = QMessageBox.question(self, 'Confirmation',
@@ -256,12 +214,11 @@ class MainWindow(QMainWindow):
         Show a window explaining how to play the game
         :return:
         """
-        how_to_play_box = QMessageBox()
-        how_to_play_box.setWindowTitle("Playing Liar's Dice")
-        how_to_play_box.setText(how_to_string)
-        how_to_play_box.exec_()
+        # Get a reference to the old central widget so that we can return to it
+        self.central_widget.setCurrentIndex(1)
 
-    def show_about(self):
+    @staticmethod
+    def show_about():
         """
         Show some info about the game
         :return:
