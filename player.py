@@ -1,44 +1,52 @@
 import random
-from dice import Dice
+from die import Die
 
 
 class Player:
-
-    def __init__(self):
+    def __init__(self, n_dice):
+        """
+        Defines an object Player in a game of Liar's Dice.\n
+        :param n_dice: Number of dice the player is initialized with.
+        """
         self.hand = []
-        self.numberOfDiceInHand = 6
-        for i in range(self.numberOfDiceInHand):
-            self.hand.append(Dice())
+        for _ in range(n_dice):
+            self.hand.append(Die())
 
-    def loseDice(self):
-        if self.numberOfDiceInHand < 1:
-            print("Error: attempting to remove dice with 0 dice in hand.")
-        else:
-            self.hand = self.hand[:-1]
-            self.numberOfDiceInHand -= 1
+    def get_hand_size(self):
+        return len(self.hand)
 
-    def addDice(self):
-        self.hand.append(Dice())
-        self.numberOfDiceInHand += 1
+    def remove_die(self):
+        """
+        Removes a single die from the hand of the player.\n
+        :return: The removed die.
+        """
+        return self.hand.pop()
 
-    def rollHand(self):
-        for index in range(self.numberOfDiceInHand):
-            self.hand[index].roll()
+    def add_die(self):
+        """
+        Adds a single die to the hand of the player.\n
+        :return:
+        """
+        self.hand.append(Die())
 
-    def getRollNumber(self, number):
-        rollnumber = 0
-
+    def roll_hand(self):
+        """
+        Randomly changes the values of the dice in the player's hand.\n
+        :return: The new hand.
+        """
         for die in self.hand:
-            if die.faceValue == number:
-                rollnumber += 1
+            die.roll()
+        return self.hand
 
-        return rollnumber
-
-    def getHand(self):
-        playerhand = []
+    def get_roll_count(self, roll):
+        """
+        Counts the number of dice in the hand with the determined value.\n
+        :param roll: The value of the dice to be counted.\n
+        :return: The number of dice with the determined value.
+        """
+        count = 0
         for die in self.hand:
-            playerhand.append(die.faceValue)
-        return playerhand
-    
+            if die.value == roll:
+                count += 1
 
-
+        return count
