@@ -86,3 +86,6 @@ class Player:
         #         count += 1
         #
         # return count
+
+    def renew_model(self):
+        self.model = Model()
