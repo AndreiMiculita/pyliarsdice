@@ -1,13 +1,13 @@
 from game import Game
-
+from model import Model
+from dmchunk import Chunk
 
 def test():
-    game = Game(n_players=3, n_starting_dice=3)
-    game.play()
+
 
     # m = Model()
     # print(m)
-
+    #
     # g = Chunk(name="goal-chunk", slots={"goal": "count", "current": "two"})
     # m.goal = g
     #
@@ -29,6 +29,13 @@ def test():
     # m.add_encounter(c2)
     #
     # print(m)
+    #
+    # list = [5,4,3,5]
+    # print(list.count(5))
+
+    game = Game(n_players=3, n_starting_dice=3)
+    game.play()
+
     #
     # d = Dice()
     # print(d.faceValue)
