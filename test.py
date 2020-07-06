@@ -1,15 +1,13 @@
-import numpy as np
+from game import Game
 from model import Model
 from dmchunk import Chunk
-from dice import Dice
-from player import Player
-
-import matplotlib.pyplot as plt
 
 def test():
-    m = Model()
-    print(m)
 
+
+    # m = Model()
+    # print(m)
+    #
     # g = Chunk(name="goal-chunk", slots={"goal": "count", "current": "two"})
     # m.goal = g
     #
@@ -32,23 +30,26 @@ def test():
     #
     # print(m)
     #
+    # list = [5,4,3,5]
+    # print(list.count(5))
+
+    game = Game(n_players=3, n_starting_dice=3)
+    game.play()
+
+    #
     # d = Dice()
     # print(d.faceValue)
 
-    p = Player()
-    print(p.getHand())
-    print(p.getRollNumber(2))
-    p.addDice()
-    print(p.getHand())
-    p.rollHand()
-    print(p.getHand())
-    p.loseDice()
-    print(p.getHand())
+    # p = Player()
+    # print(p.getHand())
+    # print(p.getRollNumber(2))
+    # p.addDice()
+    # print(p.getHand())
+    # p.rollHand()
+    # print(p.getHand())
+    # p.loseDice()
+    # print(p.getHand())
 
 
 if __name__ == '__main__':
     test()
-
-
-
-
