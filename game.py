@@ -40,7 +40,7 @@ class Game:
         self.n_total_dice = n_players * n_starting_dice
         self.current_bid = Bid(1, 0)
         self.turn = random.randint(0, n_players - 1)
-        self.current_player = 0
+        self.current_player = self.turn
         self.previous_player = 0
         self.state = states['start']
         # First player is chosen at random
@@ -136,16 +136,15 @@ class Game:
         bid_count = self.current_bid.count
         count = 0
 
-        print('[RESOLVING DOUBT] Every player has to state whether they believe the bid or not')
-
+        print('[RESOLVING DOUBT] Every remaining player has to state whether they believe the bid or not')
+        handstring = ''
         for idx in range(self.n_players):
-
             count += self.players[idx].get_roll_count(bid_roll)
 
             if bid_roll != 1:   # joker dice addition, given that this wasn't the value bid on.
                 count += self.players[idx].get_roll_count(1)
 
-        # TODO: ask other players whether they believe and losing dice accordingly
+            handstring += f'Player {idx}: {self.players[idx].hand} '
 
         # Ask all players whether they believe the bid, remove their dice accordingly
         for idx in range(self.n_players):
@@ -184,9 +183,8 @@ class Game:
 
 
         print('Players hands are opened: ', end='')
-        for idx in range(self.n_players):
-            print(f'Player {idx}: {self.players[idx].hand} ', end='')
-        print(f'\nThe bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
+        print(handstring)
+        print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
@@ -232,8 +230,6 @@ class Game:
                         added = True
                     except ValueError:
                         number += 1
-
-
 
 
 
@@ -309,10 +305,11 @@ class Game:
         while not over:
 
             self.n_total_dice = 0
+            winner = []
             for p_idx in range(self.n_players):  # Counts dice, which also determines winner
                 n_dice_pl = self.players[p_idx].get_hand_size()
                 if n_dice_pl == 0:  # A player with 0 dice is the winner
-                    winner = p_idx  # TODO: Multiple players can win, what to do with this?
+                    winner += [p_idx]
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
@@ -327,7 +324,7 @@ class Game:
                 self.update_turn(reset=True)
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 self.all_roll()
-                if self.current_player == 0: print(f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
+                print(f'Rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
                 self.state = states['bidding_phase']
                 continue
 
@@ -363,7 +360,11 @@ class Game:
 
             if self.state == states['end']:
                 over = True
-                print(f"Player: {winner} won the game!.")
+                if len(winner) <= 1:
+                    print(f"Player {winner[0]} has played away all its dice and won the game!.")
+                else:
+                    winners = str(winner)[1:-1]
+                    print(f"Players {winners} have played away all their dice and won the game!.")
                 continue
 
         print('Game Finished!')
