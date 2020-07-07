@@ -17,7 +17,7 @@ class Player:
         #     self.hand.append(Die())
         for _ in range(n_starting_dice): # die object redundant, using ints is probably easier
             self.hand.append(random.randint(1, 6))
-        self.hand.sort(reverse=True)
+        self.hand.sort()
 
         if difficulty == 1:
             self.strategy = 'random'
@@ -49,7 +49,7 @@ class Player:
         self.n_dice += 1
         random.randint(1, 6)
 
-        self.hand.sort(reverse=True)
+        self.hand.sort()
 
     def roll_hand(self):
         """
@@ -68,7 +68,7 @@ class Player:
         self.hand = []
         for _ in range(self.n_dice):  # die object redundant, using ints is probably easier
             self.hand.append(random.randint(1, 6))
-        self.hand.sort(reverse=True)
+        self.hand.sort()
 
     def get_roll_count(self, roll):
         """

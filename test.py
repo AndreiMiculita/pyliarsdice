@@ -2,6 +2,10 @@ from game import Game
 from model import Model
 from dmchunk import Chunk
 
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
 def test():
 
 
@@ -32,6 +36,8 @@ def test():
     #
     # list = [5,4,3,5]
     # print(list.count(5))
+
+
 
     game = Game(n_players=3, n_starting_dice=5)
     game.play()

@@ -10,12 +10,6 @@ N_STARTING_DICE = 5
 DIFFICULTY = 1
 
 
-def store_settings(n_players, n_starting_dice, difficulty):
-    N_PLAYERS = n_players
-    N_STARTING_DICE = n_starting_dice
-    DIFFICULTY = difficulty
-
-
 states = {
     'end': 0,
     'start': 1,
@@ -30,6 +24,20 @@ rev_states = {
     3: 'bidding_phase',
     4: 'doubting_phase'
 }
+
+
+####################################################################################################################################################
+################################################                HELPER FUNCTIONS                  ##################################################
+####################################################################################################################################################
+
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
+def store_settings(n_players, n_starting_dice, difficulty):
+    N_PLAYERS = n_players
+    N_STARTING_DICE = n_starting_dice
+    DIFFICULTY = difficulty
 
 
 class Game:
@@ -109,6 +117,23 @@ class Game:
                 doubt = True
 
         elif self.players[self.current_player].strategy == 'model': # TODO implement ACT-R reasoning
+            n_unknown_dice = self.n_total_dice - len(self.players[self.current_player].hand) # determine number of unknown dice
+
+            if self.current_bid.roll != 1:
+                dice_count = self.players[self.current_player].hand.count(self.current_bid.roll)  # counts instances of the value of the dice in the bid
+                dice_count += self.players[self.current_player].hand.count(1)  # add joker dice to count
+
+                if dice_count >= self.current_bid.count:
+                    doubt = True
+                else:
+                    difference = self.current_bid.count - dice_count
+                    # TODO: determine the probability of having the difference in the dice of current bid among n unknown dice
+
+            else:
+                pass
+            # TODO: implement for joker dice
+
+
             believe_percentage = 0.8
             model_id = self.current_player
             if random.randint(1, 1000) <= 1000 * believe_percentage:
@@ -278,6 +303,9 @@ class Game:
                     higher = True
 
         elif self.players[self.current_player].strategy == 'model':  # TODO implement ACT-R reasoning
+
+            count = self.players[self.current_player].hand.count(most_common(self.players[self.current_player].hand))
+
             higher = False
             while not higher:  # Random bid, on a higher count with random dice value
                 count = self.current_bid.count
