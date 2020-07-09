@@ -4,6 +4,8 @@ import random
 from model import Model
 from dmchunk import Chunk
 import time as time
+from scipy.stats import binom
+import numpy as np
 
 N_PLAYERS = 4
 N_STARTING_DICE = 5
@@ -31,13 +33,26 @@ rev_states = {
 ####################################################################################################################################################
 
 
+
+
 def most_common(lst):
     return max(set(lst), key=lst.count)
+
 
 def store_settings(n_players, n_starting_dice, difficulty):
     N_PLAYERS = n_players
     N_STARTING_DICE = n_starting_dice
     DIFFICULTY = difficulty
+
+
+def determine_probability(difference, n_unknown_dice, roll_prob):
+    # determines the probability of at least n times a diceValue in m unknown dice
+
+    p = 0
+    for k in range(difference, n_unknown_dice + 1):
+        p += binom.pmf(k, n_unknown_dice, roll_prob)
+
+    return p
 
 
 class Game:
@@ -60,6 +75,11 @@ class Game:
         self.t0 = time.time()
 
         store_settings(n_players, n_starting_dice, difficulty)
+
+    def reset_models(self):
+        for idx in range(self.n_players):
+            if self.players[idx].strategy == 'model':
+                self.players[idx].model = Model()
 
     def reset(self):
         self.__init__(N_PLAYERS, N_STARTING_DICE, DIFFICULTY)
@@ -116,30 +136,41 @@ class Game:
             else:
                 doubt = True
 
-        elif self.players[self.current_player].strategy == 'model': # TODO implement ACT-R reasoning
+
+        elif self.players[self.current_player].strategy == 'model':
             n_unknown_dice = self.n_total_dice - len(self.players[self.current_player].hand) # determine number of unknown dice
 
-            if self.current_bid.roll != 1:
+            if self.current_bid.roll != 1:  # bid is on a non-joker dice
+
                 dice_count = self.players[self.current_player].hand.count(self.current_bid.roll)  # counts instances of the value of the dice in the bid
                 dice_count += self.players[self.current_player].hand.count(1)  # add joker dice to count
 
-                if dice_count >= self.current_bid.count:
+                if dice_count >= self.current_bid.count: # the number of dice is already in the models cup
+                    doubt = False
+                else:
+                    difference = self.current_bid.count - dice_count
+                    probability_of_bid = determine_probability(difference, n_unknown_dice, 1/3)  # probability that at least the difference of a given value is in the unknown dice, 1/3 prob since joker dice also add to total
+                    believe_threshold = np.random.normal(1/4, 1 / 12, 1) # compare probability to non-static threshold, TODO: think about how to set the threshold
+                    print(f'[MODEL] Probability of bid is {round(probability_of_bid,3)}, believe threshold is {round(believe_threshold[0],3)}')
+                    if probability_of_bid >= believe_threshold[0]:
+                        doubt = False
+                    else:
+                        doubt = True
+
+            else:  # bid is on joker dice
+                dice_count = self.players[self.current_player].hand.count(self.current_bid.roll)  # counts instances of the value of the dice in the bid (only joker dice)
+
+                if dice_count >= self.current_bid.count: # the number of dice is already in the models cup
                     doubt = True
                 else:
                     difference = self.current_bid.count - dice_count
-                    # TODO: determine the probability of having the difference in the dice of current bid among n unknown dice
-
-            else:
-                pass
-            # TODO: implement for joker dice
-
-
-            believe_percentage = 0.8
-            model_id = self.current_player
-            if random.randint(1, 1000) <= 1000 * believe_percentage:
-                doubt = False  # Placeholder
-            else:
-                doubt = True
+                    probability_of_bid = determine_probability(difference, n_unknown_dice, 1 / 6)  # probability that at least the difference of joker dice is in the unknown dice, prob = 1/6
+                    believe_threshold = np.random.normal(1/4, 1 / 12, 1) # compare probability to non-static threshold, TODO: think about how to set the threshold
+                    print(f'[MODEL] Probability of bid is {round(probability_of_bid,3)}, believe threshold is {round(believe_threshold[0],3)}')
+                    if probability_of_bid >= believe_threshold[0]:
+                        doubt = False
+                    else:
+                        doubt = True
 
         return doubt
 
@@ -233,12 +264,12 @@ class Game:
     ################################################                    BIDDING PHASE                  #################################################
     ####################################################################################################################################################
 
-    def models_remember_bid(self):
 
+    def models_remember_bid(self):
         for i in range(self.n_players):
             if self.players[i].strategy == 'model':
                 time_to_add = + round(random.uniform(5, 15), 2)   # add time according to length of a turn, might need adjustment
-                self.players[i].model.time += time_to_add
+                self.players[i].model.time += round(time_to_add, 2)
 
                 added = False
                 number = 0
@@ -251,11 +282,9 @@ class Game:
                                           "dice_value": self.current_bid.roll})  # remember the value a player has bid on
                         self.players[i].model.add_encounter(ch)  # remember the bid of a player
 
-
                         added = True
                     except ValueError:
                         number += 1
-
 
 
     def bidding(self):
@@ -269,7 +298,7 @@ class Game:
             count, roll = self.model_bid()
         self.current_bid = Bid(count, roll)
 
-        self.models_remember_bid()
+
 
     def ui_bid(self):
         """
@@ -291,7 +320,7 @@ class Game:
         """
         if self.players[self.current_player].strategy == 'random':
             higher = False
-            while not higher: # Random bid, on a higher count with random dice value
+            while not higher:  # Random bid, on a higher count with random dice value
                 count = self.current_bid.count
                 roll = random.randint(1, 6)
 
@@ -348,6 +377,7 @@ class Game:
             # Nobody should doubt on the first turn.
 
             if self.state == states['start']:
+                self.reset_models()
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print(f'[FIRST TURN]: Player {self.current_player}')
@@ -362,8 +392,8 @@ class Game:
                 # input("Press [Enter] to continue...\n")
                 print(f'[TURN]: Player {self.current_player}')
 
-                # if self.players[self.current_player].strategy == 'model':
-                #     print(self.players[self.current_player].model)
+                if self.players[self.current_player].strategy == 'model':
+                    print(self.players[self.current_player].model)
 
                 doubt = self.doubting()
 
@@ -382,6 +412,7 @@ class Game:
             if self.state == states['bidding_phase']:
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
+                self.models_remember_bid()
                 self.update_turn()
                 self.state = states['doubting_phase']
                 continue
