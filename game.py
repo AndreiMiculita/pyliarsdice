@@ -11,7 +11,6 @@ N_PLAYERS = 4
 N_STARTING_DICE = 5
 DIFFICULTY = 1
 
-
 states = {
     'end': 0,
     'start': 1,
@@ -31,8 +30,6 @@ rev_states = {
 ####################################################################################################################################################
 ################################################                HELPER FUNCTIONS                  ##################################################
 ####################################################################################################################################################
-
-
 
 
 def most_common(lst):
@@ -57,7 +54,7 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 class Game:
     def __init__(self, n_players=4, n_starting_dice=5, difficulty=2):
-        self.difficulty = difficulty   # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
+        self.difficulty = difficulty  # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
         self.players = [Player(n_starting_dice, self.difficulty) for i in range(n_players)]
         self.n_players = n_players
         self.n_total_dice = n_players * n_starting_dice
@@ -70,7 +67,6 @@ class Game:
         # Turns happen by iterating circularly the players list
         self.player_ID = 0
         self.players[0].strategy = 'human'
-
 
         self.t0 = time.time()
 
@@ -101,11 +97,9 @@ class Game:
             if self.current_player > self.n_players - 1:
                 self.current_player = 0
 
-
     ####################################################################################################################################################
     ################################################                DOUBTING PHASE                    ##################################################
     ####################################################################################################################################################
-
 
     def doubting(self):
         """
@@ -118,6 +112,52 @@ class Game:
         else:
             doubt = self.model_doubt()
 
+        return doubt
+
+    def determine_model_doubt(self, player_index):
+        n_unknown_dice = self.n_total_dice - len(
+            self.players[player_index].hand)  # determine number of unknown dice
+        if self.current_bid.roll != 1:  # bid is on a non-joker dice
+
+            dice_count = self.players[player_index].hand.count(
+                self.current_bid.roll)  # counts instances of the value of the dice in the bid
+            dice_count += self.players[player_index].hand.count(1)  # add joker dice to count
+
+            if dice_count >= self.current_bid.count:  # the number of dice is already in the models cup
+                print('[DEBUG] Bid count present in Models cup')
+                doubt = False
+            else:
+                difference = self.current_bid.count - dice_count
+                probability_of_bid = determine_probability(difference, n_unknown_dice,
+                                                           1 / 3)  # probability that at least the difference of a given value is in the unknown dice, 1/3 prob since joker dice also add to total
+                believe_threshold = np.random.normal(1 / 4, 1 / 12,
+                                                     1)  # compare probability to non-static threshold, TODO: think about how to set the threshold
+                print(
+                    f'[MODEL] Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}')
+                if probability_of_bid >= believe_threshold[0]:
+                    doubt = False
+                else:
+                    doubt = True
+
+        else:  # bid is on joker dice
+            dice_count = self.players[player_index].hand.count(
+                self.current_bid.roll)  # counts instances of the value of the dice in the bid (only joker dice)
+
+            if dice_count >= self.current_bid.count:  # the number of dice is already in the model's cup
+                print('[DEBUG] Bid count present in Models cup')
+                doubt = False
+            else:
+                difference = self.current_bid.count - dice_count
+                probability_of_bid = determine_probability(difference, n_unknown_dice,
+                                                           1 / 6)  # probability that at least the difference of joker dice is in the unknown dice, prob = 1/6
+                believe_threshold = np.random.normal(1 / 4, 1 / 12,
+                                                     1)  # compare probability to non-static threshold, TODO: think about how to set the threshold
+                print(
+                    f'[MODEL] Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}')
+                if probability_of_bid >= believe_threshold[0]:
+                    doubt = False
+                else:
+                    doubt = True
 
         return doubt
 
@@ -131,46 +171,14 @@ class Game:
         if self.players[self.current_player].strategy == 'random':
             believe_percentage = 0.8
             model_id = self.current_player
-            if random.randint(1,1000) <= 1000*believe_percentage:
+            if random.randint(1, 1000) <= 1000 * believe_percentage:
                 doubt = False  # Placeholder
             else:
                 doubt = True
 
 
         elif self.players[self.current_player].strategy == 'model':
-            n_unknown_dice = self.n_total_dice - len(self.players[self.current_player].hand) # determine number of unknown dice
-
-            if self.current_bid.roll != 1:  # bid is on a non-joker dice
-
-                dice_count = self.players[self.current_player].hand.count(self.current_bid.roll)  # counts instances of the value of the dice in the bid
-                dice_count += self.players[self.current_player].hand.count(1)  # add joker dice to count
-
-                if dice_count >= self.current_bid.count: # the number of dice is already in the models cup
-                    doubt = False
-                else:
-                    difference = self.current_bid.count - dice_count
-                    probability_of_bid = determine_probability(difference, n_unknown_dice, 1/3)  # probability that at least the difference of a given value is in the unknown dice, 1/3 prob since joker dice also add to total
-                    believe_threshold = np.random.normal(1/4, 1 / 12, 1) # compare probability to non-static threshold, TODO: think about how to set the threshold
-                    print(f'[MODEL] Probability of bid is {round(probability_of_bid,3)}, believe threshold is {round(believe_threshold[0],3)}')
-                    if probability_of_bid >= believe_threshold[0]:
-                        doubt = False
-                    else:
-                        doubt = True
-
-            else:  # bid is on joker dice
-                dice_count = self.players[self.current_player].hand.count(self.current_bid.roll)  # counts instances of the value of the dice in the bid (only joker dice)
-
-                if dice_count >= self.current_bid.count: # the number of dice is already in the models cup
-                    doubt = True
-                else:
-                    difference = self.current_bid.count - dice_count
-                    probability_of_bid = determine_probability(difference, n_unknown_dice, 1 / 6)  # probability that at least the difference of joker dice is in the unknown dice, prob = 1/6
-                    believe_threshold = np.random.normal(1/4, 1 / 12, 1) # compare probability to non-static threshold, TODO: think about how to set the threshold
-                    print(f'[MODEL] Probability of bid is {round(probability_of_bid,3)}, believe threshold is {round(believe_threshold[0],3)}')
-                    if probability_of_bid >= believe_threshold[0]:
-                        doubt = False
-                    else:
-                        doubt = True
+            doubt = self.determine_model_doubt(self.current_player)
 
         return doubt
 
@@ -180,9 +188,11 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
-        doubt = int(input(f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
+        doubt = int(input(
+            f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
         while doubt != 0 and doubt != 1:
-            doubt = int(input(f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
+            doubt = int(input(
+                f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
         return doubt
 
     def resolve_doubt(self):
@@ -197,7 +207,7 @@ class Game:
         for idx in range(self.n_players):
             count += self.players[idx].get_roll_count(bid_roll)
 
-            if bid_roll != 1:   # joker dice addition, given that this wasn't the value bid on.
+            if bid_roll != 1:  # joker dice addition, given that this wasn't the value bid on.
                 count += self.players[idx].get_roll_count(1)
 
             handstring += f'Player {idx}: {self.players[idx].hand} '
@@ -209,23 +219,24 @@ class Game:
 
                 if self.players[idx].strategy == 'human':
                     believe = int(input(
-                        f"Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: "))  # Placeholder
+                        f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: "))  # Placeholder
                     while believe != 0 and believe != 1:
-                        believe = int(input(f'(Try again) Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
+                        believe = int(input(
+                            f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
 
 
                 elif self.players[idx].strategy == 'random':
-                    if random.randint(1,100) >= 50:
-                        believe = True
-                    else:
-                        believe = False
-
-
-                elif self.players[idx].strategy == 'model':  # TODO, implement more strategic play
                     if random.randint(1, 100) >= 50:
                         believe = True
                     else:
                         believe = False
+
+
+                elif self.players[idx].strategy == 'model':
+                    if self.determine_model_doubt(idx):
+                        believe = False  # if doubt is true -> believe = False (and vice versa)
+                    else:
+                        believe = True
 
                 if believe:
                     print(f'Player {idx} believes the bid is on the table')
@@ -235,8 +246,6 @@ class Game:
                     print(f'Player {idx} does not believe the bid is on the table')
                     if count < bid_count:
                         self.players[idx].remove_die()
-
-
 
         print('Players hands are opened: ', end='')
         print(handstring)
@@ -248,27 +257,23 @@ class Game:
         else:
             # Player doubts and it's right - player loses a die
             self.players[self.current_player].remove_die()
-            self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous player can start again
-
-
-
-
+            self.current_player = (
+                                              self.current_player + self.n_players - 1) % self.n_players  # previous player can start again
 
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
             print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
         print()
 
-
     ####################################################################################################################################################
     ################################################                    BIDDING PHASE                  #################################################
     ####################################################################################################################################################
 
-
     def models_remember_bid(self):
         for i in range(self.n_players):
             if self.players[i].strategy == 'model':
-                time_to_add = + round(random.uniform(5, 15), 2)   # add time according to length of a turn, might need adjustment
+                time_to_add = + round(random.uniform(5, 15),
+                                      2)  # add time according to length of a turn, might need adjustment
                 self.players[i].model.time += round(time_to_add, 2)
 
                 added = False
@@ -286,7 +291,6 @@ class Game:
                     except ValueError:
                         number += 1
 
-
     def bidding(self):
         """
         Asks the current player for a new bid.
@@ -297,8 +301,6 @@ class Game:
         else:
             count, roll = self.model_bid()
         self.current_bid = Bid(count, roll)
-
-
 
     def ui_bid(self):
         """
@@ -319,34 +321,74 @@ class Game:
         roll: The dice value to bid.
         """
         if self.players[self.current_player].strategy == 'random':
-            higher = False
-            while not higher:  # Random bid, on a higher count with random dice value
-                count = self.current_bid.count
-                roll = random.randint(1, 6)
 
-                if count > self.current_bid.count or (count == self.current_bid.count and roll > self.current_bid.roll):
-                    higher = True
-                else:
+            if self.current_bid.roll == 1:
+                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                    roll = 1
                     count = self.current_bid.count + 1
+                else:
+                    count = self.current_bid.count * 2  # first non-joker bid over a joker bid must be double the count
                     roll = random.randint(1, 6)
-                    higher = True
+
+            else:  # current bid is not on joker dice
+
+                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                    if self.current_bid.count % 2 == 1:
+                        count = int((self.current_bid.count + 1) / 2)  # joker bid must be double the count
+                    else:
+                        count = int((self.current_bid.count / 2) + 1)
+                    roll = 1
+                else:
+
+                    higher = False
+                    while not higher:  # Random bid, on a higher count with random dice value
+                        count = self.current_bid.count
+                        roll = random.randint(1, 6)
+
+                        if count > self.current_bid.count or (
+                                count == self.current_bid.count and roll > self.current_bid.roll):
+                            higher = True
+                        else:
+                            count = self.current_bid.count + 1
+                            roll = random.randint(1, 6)
+                            higher = True
+
 
         elif self.players[self.current_player].strategy == 'model':  # TODO implement ACT-R reasoning
+            most_com_value = most_common(self.players[self.current_player].hand)
+            n_of_most = self.players[self.current_player].hand.count(most_com_value)
+            #  TODO, bid according to the dice in hand
 
-            count = self.players[self.current_player].hand.count(most_common(self.players[self.current_player].hand))
-
-            higher = False
-            while not higher:  # Random bid, on a higher count with random dice value
-                count = self.current_bid.count
-                roll = random.randint(1, 6)
-
-                if count > self.current_bid.count or (count == self.current_bid.count and roll > self.current_bid.roll):
-                    higher = True
-                else:
+            if self.current_bid.roll == 1:
+                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                    roll = 1
                     count = self.current_bid.count + 1
+                else:
+                    count = self.current_bid.count * 2  # first non-joker bid over a joker bid must be double the count
                     roll = random.randint(1, 6)
-                    higher = True
 
+            else:  # current bid is not on joker dice
+
+                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                    if self.current_bid.count % 2 == 1:
+                        count = int((self.current_bid.count + 1) / 2)  # joker bid must be double the count
+                    else:
+                        count = int((self.current_bid.count / 2) + 1)
+                    roll = 1
+                else:
+
+                    higher = False
+                    while not higher:  # Random bid, on a higher count with random dice value
+                        count = self.current_bid.count
+                        roll = random.randint(1, 6)
+
+                        if count > self.current_bid.count or (
+                                count == self.current_bid.count and roll > self.current_bid.roll):
+                            higher = True
+                        else:
+                            count = self.current_bid.count + 1
+                            roll = random.randint(1, 6)
+                            higher = True
 
         return count, roll
 
@@ -370,7 +412,6 @@ class Game:
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
-
             # print(f"[DEBUG] Current Player: {self.current_player} - Current Bid: {self.current_bid} - Current State: {rev_states[self.state]} - Dice in game: {self.n_total_dice}")
 
             # Games starts and everybody rolls.
@@ -382,18 +423,20 @@ class Game:
                 self.update_turn(reset=True)
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 self.all_roll()
-                print(f'Rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
+                print(
+                    f'Rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
                 self.state = states['bidding_phase']
                 continue
 
             # Check whether the current player wants to doubt before asking the bid.
             if self.state == states['doubting_phase']:
-                if self.current_player == 0: print(f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice}')
+                if self.current_player == 0: print(
+                    f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice}')
                 # input("Press [Enter] to continue...\n")
                 print(f'[TURN]: Player {self.current_player}')
 
-                if self.players[self.current_player].strategy == 'model':
-                    print(self.players[self.current_player].model)
+                # if self.players[self.current_player].strategy == 'model':
+                #     print(self.players[self.current_player].model)
 
                 doubt = self.doubting()
 
@@ -406,7 +449,6 @@ class Game:
                     self.state = states['bidding_phase']
                     print(f'Player {self.current_player} believes the bid -> ', end='')
                 continue
-
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:

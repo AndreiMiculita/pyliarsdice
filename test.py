@@ -17,7 +17,7 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 def test():
 
-    # p = determine_probability(8,15,1/3)
+    # p = determine_probability(5,10,1/3)
     # print(p)
     # m = Model()
     # print(m)
