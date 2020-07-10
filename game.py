@@ -309,6 +309,35 @@ class Game:
             count, roll = self.model_bid()
         self.current_bid = Bid(count, roll)
 
+
+    def is_higher_bid(self, count, roll):
+
+        if self.current_bid.roll == 1: # overbidding a bid on joker dice
+            if roll == 1: # case of bidding joker dice yourself
+                if count > self.current_bid.count: # simply higher bid on joker dice if possible
+                    return True
+                else:
+                    return False
+            else:
+                if count >= self.current_bid.count*2: # must bid double over joker dice, with non-joker dice
+                    return True
+                else:
+                    return False
+
+        else: # overbidding a bid on non-joker dice
+            if roll == 1:   # case of bidding joker dice yourself
+                if count >= (self.current_bid.count + self.current_bid.count % 2) / 2:
+                    return True
+                else:
+                    return False
+            else:
+                if count > self.current_bid.count:  #higher count than previous bid
+                    return True
+                elif count == self.current_bid.count and roll > self.current_bid.roll: # same count with higher value than previous bid
+                    return True
+                else:
+                    return False  # bid not high enough
+
     def ui_bid(self):
         """
         TODO: Needs to be connected to the GUI
@@ -316,8 +345,16 @@ class Game:
         :return: count: The number of dice with the same value in the bid.\n
         roll: The dice value to bid.
         """
-        count = int(input("[BID] Number of dice: "))  # Placeholder
-        roll = int(input("[BID] Value of those dice: "))  # Placeholder
+
+        higher = False
+        while not higher:  # Random bid, on a higher count with random dice value
+            count = int(input("[BID] Number of dice: "))  # Placeholder
+            roll = int(input("[BID] Value of those dice: "))  # Placeholder
+            if count > 0 and 1 <= roll <= 6 and self.is_higher_bid(count, roll):
+                higher = True
+            else:
+                print('Bid impossible or not high enough, try again!')
+
         return count, roll
 
     def model_bid(self):
