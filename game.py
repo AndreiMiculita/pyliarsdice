@@ -275,7 +275,7 @@ class Game:
 
     def models_remember_bid(self):
         for i in range(self.n_players):
-            if self.players[i].strategy == 'model':
+            if i != self.current_player and self.players[i].strategy == 'model':
 
 
                 added = False
@@ -289,14 +289,13 @@ class Game:
                                           "dice_value": self.current_bid.roll})  # remember the value a player has bid on
                         self.players[i].model.add_encounter(ch)  # remember the bid of a player
 
-                        time_to_add = + round(random.uniform(2, 6),
+                        time_to_add = + round(random.uniform(1, 4),
                                               2)  # add time according to length of a turn, might need adjustment
                         self.players[i].model.time += round(time_to_add, 2)
 
                         added = True
                     except ValueError:
                         number += 1
-
 
     def bidding(self):
         """
@@ -359,7 +358,6 @@ class Game:
 
     def model_bid(self):
         """
-        TODO: Needs to be connected to model
         Ask the model for a new bid.
         :return: count: The number of dice with the same value in the bid.\n
         roll: The dice value to bid.
@@ -398,7 +396,7 @@ class Game:
                             higher = True
 
 
-        elif self.players[self.current_player].strategy == 'model':  # TODO implement ACT-R reasoning
+        elif self.players[self.current_player].strategy == 'model':
             if random.randint(1, 100) <= self.model_bluff_chance:  # chance to bluff
 
                 if random.randint(1,
@@ -479,36 +477,6 @@ class Game:
                             count = self.current_bid.count
                         else:
                             count = self.current_bid.count + 1  # else: increment count, and bid on the value
-
-            # if self.current_bid.roll == 1:
-            #     if random.randint(1, 100) <= 25:  # random chance to bid on 1's
-            #         roll = 1
-            #         count = self.current_bid.count + 1
-            #     else:
-            #         count = self.current_bid.count * 2  # first non-joker bid over a joker bid must be double the count
-            #         roll = random.randint(1, 6)
-            #
-            # else:  # current bid is not on joker dice
-            #     if random.randint(1, 100) <= 25:  # random chance to bid on 1's
-            #         if self.current_bid.count % 2 == 1:
-            #             count = int((self.current_bid.count + 1) / 2)  # joker bid must be double the count
-            #         else:
-            #             count = int((self.current_bid.count / 2) + 1)
-            #         roll = 1
-            #     else:
-            #
-            #         higher = False
-            #         while not higher:  # Random bid, on a higher count with random dice value
-            #             count = self.current_bid.count
-            #             roll = random.randint(1, 6)
-            #
-            #             if count > self.current_bid.count or (
-            #                     count == self.current_bid.count and roll > self.current_bid.roll):
-            #                 higher = True
-            #             else:
-            #                 count = self.current_bid.count + 1
-            #                 roll = random.randint(1, 6)
-            #                 higher = True
 
         return count, roll
 

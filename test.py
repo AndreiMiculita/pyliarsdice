@@ -4,6 +4,7 @@ from dmchunk import Chunk
 from scipy.stats import binom
 import random
 
+
 def determine_probability(difference, n_unknown_dice, roll_prob):
     # determines the probability of at least n times a diceValue in m unknown dice
 
@@ -13,8 +14,10 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
     return p
 
+
 def most_common(lst):
     return max(set(lst), key=lst.count)
+
 
 def test():
     # p = determine_probability(5,10,1/3)
@@ -22,40 +25,54 @@ def test():
 
     # print(m)
 
-    # This loops tests the number of chunks used / encountered
-    # rem_chunk = 0
-    # not_rem_chunk = 0
-    # for _ in range(1000):
-    #     m = Model()
-    #     ch = Chunk(name="bid_memory" + str(1),
-    #                slots={"type": "bid_memory",
-    #                       "player": 1,
-    #                       "dice_value": 5})  # remember the value a player has bid on
-    #
-    #     m.add_encounter(ch)  # remember the bid of a player
-    #     m.time += round(random.uniform(2, 6),
-    #                                           2)  # add time according to length of a turn, might need adjustment
-    #     # m.add_encounter(ch)
-    #
-    #     ch = Chunk(name="bid_memory" + str(2),
-    #                slots={"type": "bid_memory",
-    #                       "player": 2,
-    #                       "dice_value": 6})  # remember the value a player has bid on
-    #
-    #     m.add_encounter(ch)  # remember the bid of a player
-    #     m.time += round(random.uniform(2, 6),
-    #                                           2)  # add time according to length of a turn, might need adjustment
-    #
-    #     retrieve_chunk =  Chunk(name = "partial-test", slots = {"type" : "bid_memory", "player" : 1})
-    #     chunk, latency = m.retrieve(retrieve_chunk)
-    #     if chunk is not None:
-    #         rem_chunk += 1
-    #         # print(chunk.slots)
-    #     else:
-    #         not_rem_chunk += 1
-    #         # print('ja')
-    # print(rem_chunk)
-    # print(not_rem_chunk)
+    # This loops tests the number of chunks used / encountered wrt time
+    rem_chunk = 0
+    not_rem_chunk = 0
+    for _ in range(1000):
+        m = Model()
+        ch = Chunk(name="bid_memory" + str(1),
+                   slots={"type": "bid_memory",
+                          "player": 1,
+                          "dice_value": 5})  # remember the value a player has bid on
+
+        m.add_encounter(ch)  # remember the bid of a player
+        m.time += round(random.uniform(1, 4),
+                                              2)  # add time according to length of a turn, might need adjustment
+        # m.add_encounter(ch)
+
+        ch = Chunk(name="bid_memory" + str(2),
+                   slots={"type": "bid_memory",
+                          "player": 2,
+                          "dice_value": 6})  # remember the value a player has bid on
+
+
+
+        m.add_encounter(ch)  # remember the bid of a player
+        m.time += round(random.uniform(1, 4),
+                                              2)  # add time according to length of a turn, might need adjustment
+
+        ch = Chunk(name="bid_memory" + str(3),
+                   slots={"type": "bid_memory",
+                          "player": 3,
+                          "dice_value": 4})  # remember the value a player has bid on
+
+        m.add_encounter(ch)  # remember the bid of a player
+        m.time += round(random.uniform(1, 4),
+                        2)  # add time according to length of a turn, might need adjustment
+
+        retrieve_chunk =  Chunk(name = "partial-test", slots = {"type" : "bid_memory", "player" : 1})
+        chunk, latency = m.retrieve(retrieve_chunk)
+        if chunk is not None:
+
+            rem_chunk += 1
+            if chunk.slots['player'] == 2:
+                print('hoi')
+        else:
+            not_rem_chunk += 1
+            # print('ja')
+    print(f'remembered chunks: {rem_chunk}')
+    print(f'not remembered chunks: {not_rem_chunk}')
+
     #
     # hand = [2,2,4,4,6,6]
     # m = most_common(hand)
@@ -73,7 +90,7 @@ def test():
 
     # print(chunk.player)
 
-    game = Game(n_players=3, n_starting_dice=5)
+    game = Game(n_players=4, n_starting_dice=5)
     game.play()
 
 
