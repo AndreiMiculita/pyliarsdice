@@ -1,6 +1,7 @@
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton
+import game
 
 
 class MainWidget(QWidget):
@@ -13,6 +14,7 @@ class MainWidget(QWidget):
         super(MainWidget, self).__init__()
         self.init_ui()
         print(f"Difficulty: {difficulty}")
+        self.game = game.Game(parent_widget=self)
 
     def init_ui(self):
         vertical_main_layout = QGridLayout()
@@ -72,10 +74,10 @@ class MainWidget(QWidget):
         # Here the player can select the number of dice to bet
         select_number_layout = QVBoxLayout()
         select_number_label = QLabel("Number")
-        select_number_spin_box = QSpinBox()
-        select_number_spin_box.setRange(1, 6)
+        self.select_number_spin_box = QSpinBox()
+        self.select_number_spin_box.setRange(1, 6)
         select_number_layout.addWidget(select_number_label)
-        select_number_layout.addWidget(select_number_spin_box)
+        select_number_layout.addWidget(self.select_number_spin_box)
 
         player_times_label = QLabel("×")
         player_times_label.resize(player_times_label.sizeHint())
@@ -83,10 +85,10 @@ class MainWidget(QWidget):
         # Here the player can select the type of dice to bet
         select_dice_layout = QVBoxLayout()
         select_dice_label = QLabel("Dice")
-        select_dice_spin_box = QSpinBox()
-        select_dice_spin_box.setRange(1, 6)
+        self.select_dice_spin_box = QSpinBox()
+        self.select_dice_spin_box.setRange(1, 6)
         select_dice_layout.addWidget(select_dice_label)
-        select_dice_layout.addWidget(select_dice_spin_box)
+        select_dice_layout.addWidget(self.select_dice_spin_box)
 
         player_bet_layout.addLayout(select_number_layout)
         player_bet_layout.addWidget(player_times_label)
@@ -137,7 +139,13 @@ class MainWidget(QWidget):
         :return:
         """
         print("Call bluff")
+        game.doubting()
         return NotImplemented
+
+    def get_spinbox_values(self):
+        count = self.select_number_spin_box.value()
+        roll = self.select_dice_spin_box.value()
+        return count, roll
 
     def display_dice_player(self, dice: [int]):
         print("Player dice: ", dice)
