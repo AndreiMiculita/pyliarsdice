@@ -109,7 +109,7 @@ class MainWidget(QWidget):
         call_bluff_btn = QPushButton('CALL BLUFF (C)')
         call_bluff_btn.setShortcut("C")
         call_bluff_btn.setStatusTip("Call the opponent's bluff.")
-        bet_btn.clicked.connect(self.call_bluff)
+        call_bluff_btn.clicked.connect(self.call_bluff)
 
         actions_layout.addWidget(bet_btn)
         actions_layout.addWidget(call_bluff_btn)
@@ -131,6 +131,7 @@ class MainWidget(QWidget):
         :return:
         """
         print("Bet")
+        self.game.ui_bid()
         return NotImplemented
 
     def call_bluff(self):
@@ -139,7 +140,7 @@ class MainWidget(QWidget):
         :return:
         """
         print("Call bluff")
-        game.doubting()
+        self.game.doubting()
         return NotImplemented
 
     def get_spinbox_values(self):
