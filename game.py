@@ -27,6 +27,8 @@ rev_states = {
 }
 
 
+
+
 ####################################################################################################################################################
 ################################################                HELPER FUNCTIONS                  ##################################################
 ####################################################################################################################################################
@@ -53,9 +55,7 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    # There should probably be an interface, and parent_widget should be initialized as it
-    def __init__(self, parent_widget, n_players=4, n_starting_dice=5, difficulty=2):
-        self.parent_widget = parent_widget
+    def __init__(self, n_players=4, n_starting_dice=5, difficulty=2):
         self.difficulty = difficulty  # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
         self.players = [Player(n_starting_dice, self.difficulty) for i in range(n_players)]
         self.n_players = n_players
@@ -180,6 +180,7 @@ class Game:
             else:
                 doubt = True
 
+
         elif self.players[self.current_player].strategy == 'model':
             doubt = self.determine_model_doubt(self.current_player)
 
@@ -227,11 +228,13 @@ class Game:
                         believe = int(input(
                             f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
 
+
                 elif self.players[idx].strategy == 'random':
                     if random.randint(1, 100) >= 50:
                         believe = True
                     else:
                         believe = False
+
 
                 elif self.players[idx].strategy == 'model':
                     if self.determine_model_doubt(idx):
@@ -274,6 +277,7 @@ class Game:
         for i in range(self.n_players):
             if i != self.current_player and self.players[i].strategy == 'model':
 
+
                 added = False
                 number = 0
 
@@ -304,30 +308,31 @@ class Game:
             count, roll = self.model_bid()
         self.current_bid = Bid(count, roll)
 
+
     def is_higher_bid(self, count, roll):
 
-        if self.current_bid.roll == 1:  # overbidding a bid on joker dice
-            if roll == 1:  # case of bidding joker dice yourself
-                if count > self.current_bid.count:  # simply higher bid on joker dice if possible
+        if self.current_bid.roll == 1: # overbidding a bid on joker dice
+            if roll == 1: # case of bidding joker dice yourself
+                if count > self.current_bid.count: # simply higher bid on joker dice if possible
                     return True
                 else:
                     return False
             else:
-                if count >= self.current_bid.count * 2:  # must bid double over joker dice, with non-joker dice
+                if count >= self.current_bid.count*2: # must bid double over joker dice, with non-joker dice
                     return True
                 else:
                     return False
 
-        else:  # overbidding a bid on non-joker dice
-            if roll == 1:  # case of bidding joker dice yourself
+        else: # overbidding a bid on non-joker dice
+            if roll == 1:   # case of bidding joker dice yourself
                 if count >= (self.current_bid.count + self.current_bid.count % 2) / 2:
                     return True
                 else:
                     return False
             else:
-                if count > self.current_bid.count:  # higher count than previous bid
+                if count > self.current_bid.count:  #higher count than previous bid
                     return True
-                elif count == self.current_bid.count and roll > self.current_bid.roll:  # same count with higher value than previous bid
+                elif count == self.current_bid.count and roll > self.current_bid.roll: # same count with higher value than previous bid
                     return True
                 else:
                     return False  # bid not high enough
@@ -342,9 +347,8 @@ class Game:
 
         higher = False
         while not higher:  # Random bid, on a higher count with random dice value
-            # count = int(input("[BID] Number of dice: "))  # Placeholder
-            # roll = int(input("[BID] Value of those dice: "))  # Placeholder
-            count, roll = self.parent_widget.get_spinbox_values()
+            count = int(input("[BID] Number of dice: "))  # Placeholder
+            roll = int(input("[BID] Value of those dice: "))  # Placeholder
             if count > 0 and 1 <= roll <= 6 and self.is_higher_bid(count, roll):
                 higher = True
             else:
@@ -390,6 +394,7 @@ class Game:
                             count = self.current_bid.count + 1
                             roll = random.randint(1, 6)
                             higher = True
+
 
         elif self.players[self.current_player].strategy == 'model':
             if random.randint(1, 100) <= self.model_bluff_chance:  # chance to bluff
@@ -446,8 +451,7 @@ class Game:
 
                 highest_value = [self.players[self.current_player].hand[m] for m in
                                  range(len(self.players[self.current_player].hand))
-                                 if self.players[self.current_player].hand.count(
-                        self.players[self.current_player].hand[m]) == n_of_most]
+                                 if self.players[self.current_player].hand.count(self.players[self.current_player].hand[m]) == n_of_most]
 
                 bid_value = highest_value[random.randint(0, len(
                     highest_value) - 1)]  # determine most common value in hand and choose one of those values from hand (if multiple, chooses randomly)
