@@ -15,7 +15,7 @@ class Player:
 
         # for _ in range(n_starting_dice):
         #     self.hand.append(Die())
-        for _ in range(n_starting_dice): # die object redundant, using ints is probably easier
+        for _ in range(n_starting_dice):  # die object redundant, using ints is probably easier
             self.hand.append(random.randint(1, 6))
         self.hand.sort()
 
@@ -24,7 +24,6 @@ class Player:
         elif difficulty == 2:
             self.strategy = 'model'
             self.model = Model()
-
 
     def get_hand_size(self):
         return len(self.hand)
@@ -36,7 +35,6 @@ class Player:
         """
         self.n_dice -= 1
         return self.hand.pop()
-
 
     def add_die(self):
         """
@@ -56,7 +54,6 @@ class Player:
         Randomly changes the values of the dice in the player's hand.\n
         :return: The new hand.
         """
-
 
         # for die in self.hand:
         #     die.roll()
