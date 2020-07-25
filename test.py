@@ -1,8 +1,9 @@
+import random
+
+from dmchunk import Chunk
 from game import Game
 from model import Model
-from dmchunk import Chunk
 from scipy.stats import binom
-import random
 
 
 def determine_probability(difference, n_unknown_dice, roll_prob):
@@ -37,7 +38,7 @@ def test():
 
         m.add_encounter(ch)  # remember the bid of a player
         m.time += round(random.uniform(1, 4),
-                                              2)  # add time according to length of a turn, might need adjustment
+                        2)  # add time according to length of a turn, might need adjustment
         # m.add_encounter(ch)
 
         ch = Chunk(name="bid_memory" + str(2),
@@ -45,11 +46,9 @@ def test():
                           "player": 2,
                           "dice_value": 6})  # remember the value a player has bid on
 
-
-
         m.add_encounter(ch)  # remember the bid of a player
         m.time += round(random.uniform(1, 4),
-                                              2)  # add time according to length of a turn, might need adjustment
+                        2)  # add time according to length of a turn, might need adjustment
 
         ch = Chunk(name="bid_memory" + str(3),
                    slots={"type": "bid_memory",
@@ -60,7 +59,7 @@ def test():
         m.time += round(random.uniform(1, 4),
                         2)  # add time according to length of a turn, might need adjustment
 
-        retrieve_chunk =  Chunk(name = "partial-test", slots = {"type" : "bid_memory", "player" : 1})
+        retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": 1})
         chunk, latency = m.retrieve(retrieve_chunk)
         if chunk is not None:
 

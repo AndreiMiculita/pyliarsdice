@@ -1,6 +1,7 @@
-from dmchunk import Chunk
 import math
 import random
+
+from dmchunk import Chunk
 
 
 class Model(object):

@@ -1,11 +1,12 @@
-from player import Player
-from bid import Bid
 import random
-from model import Model
-from dmchunk import Chunk
 import time as time
-from scipy.stats import binom
+
 import numpy as np
+from bid import Bid
+from dmchunk import Chunk
+from model import Model
+from player import Player
+from scipy.stats import binom
 
 N_PLAYERS = 4
 N_STARTING_DICE = 5

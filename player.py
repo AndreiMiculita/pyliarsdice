@@ -1,7 +1,8 @@
 import random
+
 from die import Die
-from model import Model
 from dmchunk import Chunk
+from model import Model
 
 
 class Player:

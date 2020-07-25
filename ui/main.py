@@ -12,7 +12,13 @@ howto_text = "assets/howto.txt"
 stylesheet = "assets/style.qss"
 
 
-class Communicate(QObject):
+class CommunicateRandom(QObject):
+    # This is a class attribute, so it gets reassigned every time it's changed in an instance
+    # Couldn't fix it by making an instance attribute
+    start_new_random_game = Signal()
+
+
+class CommunicateCogMod(QObject):
     # This is a class attribute, so it gets reassigned every time it's changed in an instance
     # Couldn't fix it by making an instance attribute
     start_new_game = Signal()
@@ -31,8 +37,8 @@ class StartScreenWidget(QWidget):
         Widget for selecting difficulty
         """
         super(StartScreenWidget, self).__init__()
-        self.difficulties = ["Easy", "Medium", "Hard"]
-        self.start_game_signals = [Communicate(), Communicate(), Communicate()]
+        self.difficulties = ["Play against Random Opponent", "Play against Cognitive Model"]
+        self.start_game_signals = [CommunicateRandom(), CommunicateCogMod()]
         self.show_logo = show_logo
         self.init_ui()
 
@@ -58,11 +64,15 @@ class StartScreenWidget(QWidget):
         vertical_main_layout.addWidget(logo)
         vertical_main_layout.addWidget(title)
 
-        for idx, difficulty in enumerate(self.difficulties):
-            difficulty_button = QPushButton(difficulty)
-            difficulty_button.setStatusTip(f"Start {difficulty} difficulty game")
-            difficulty_button.clicked.connect(self.start_game_signals[idx].start_new_game.emit)
-            vertical_main_layout.addWidget(difficulty_button)
+        random_difficulty_button = QPushButton(text=self.difficulties[0])
+        random_difficulty_button.setStatusTip(f"Start game against an opponent that takes random actions.")
+        random_difficulty_button.clicked.connect(self.start_game_signals[0].start_new_random_game.emit)
+        vertical_main_layout.addWidget(random_difficulty_button)
+
+        new_cog_mod_game_button = QPushButton(text=self.difficulties[1])
+        new_cog_mod_game_button.setStatusTip(f"Start game against a cognitive model.")
+        new_cog_mod_game_button.clicked.connect(self.start_game_signals[1].start_new_game.emit)
+        vertical_main_layout.addWidget(new_cog_mod_game_button)
 
         self.setLayout(vertical_main_layout)
 
@@ -137,7 +147,7 @@ class MainWindow(QMainWindow):
         new_game_action = QAction('New Game', self)
         new_game_action.setShortcut(QKeySequence.New)
         new_game_action.setStatusTip('Start a new game.')
-        new_game_action.triggered.connect(lambda: self.restart(show_logo=False))
+        new_game_action.triggered.connect(lambda: self.central_widget.setCurrentIndex(0))
 
         exit_action = QAction('Exit', self)
         exit_action.setShortcut(QKeySequence.Close)
@@ -189,8 +199,8 @@ class MainWindow(QMainWindow):
         """
         start_screen_widget = StartScreenWidget(show_logo=show_logo)
 
-        for idx, signal in enumerate(start_screen_widget.start_game_signals):
-            signal.start_new_game.connect(lambda: self.restart_aux(idx=idx))
+        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0))
+        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1))
 
         return start_screen_widget
 
@@ -199,15 +209,20 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(new_game_widget)
         self.central_widget.setCurrentWidget(new_game_widget)
 
-    # def closeEvent(self, event):
-    #     reply = QMessageBox.question(self, 'Confirmation',
-    #                                  "Are you sure you want to quit?", QMessageBox.Yes |
-    #                                  QMessageBox.No, QMessageBox.No)
-    #
-    #     if reply == QMessageBox.Yes:
-    #         event.accept()
-    #     else:
-    #         event.ignore()
+    def closeEvent(self, event):
+        """
+        Confirming that you really want to close.
+        Don't rename this, it won't work anymore.
+        :param event: the close event
+        """
+        reply = QMessageBox.question(self, 'Confirmation',
+                                     "Are you sure you want to quit?", QMessageBox.Yes |
+                                     QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
     def show_how_to_play(self):
         """

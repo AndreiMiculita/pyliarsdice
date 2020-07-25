@@ -25,3 +25,6 @@ QLabel {
 QScrollArea * {
     background-color: transparent;
 }
+QMessageBox {
+    background-color:#004400;
+}
