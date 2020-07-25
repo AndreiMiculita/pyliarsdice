@@ -53,7 +53,7 @@ class MainWidget(QWidget):
 
         # use https://loading.io/
         enemy_loading_label = QLabel()
-        enemy_loading_movie = QMovie("assets/images/loader.gif")
+        enemy_loading_movie = QMovie("../assets/images/loader.gif")
         enemy_loading_movie.setScaledSize(QSize(50, 50))
         enemy_loading_label.setMovie(enemy_loading_movie)
         enemy_loading_movie.start()
