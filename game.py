@@ -501,8 +501,8 @@ class Game:
         over = False
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
-        while not over:
 
+        while not over:
             self.n_total_dice = 0
             winner = []
             for p_idx in range(self.n_players):  # Counts dice, which also determines winner

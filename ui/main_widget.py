@@ -1,6 +1,10 @@
+import threading
+import time
+
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton
+from game import Game
 
 
 class MainWidget(QWidget):
@@ -13,8 +17,14 @@ class MainWidget(QWidget):
         super(MainWidget, self).__init__()
         self.init_ui()
         print(f"Difficulty: {difficulty}")
+        game = Game(n_players=2, n_starting_dice=5)
+        game_thread = threading.Thread(target=game.play)
+        game_thread.start()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initialize UI layout. There shouldn't be any functionality here
+        """
         vertical_main_layout = QGridLayout()
         vertical_main_layout.setSpacing(10)
 
@@ -72,10 +82,10 @@ class MainWidget(QWidget):
         # Here the player can select the number of dice to bet
         select_number_layout = QVBoxLayout()
         select_number_label = QLabel("Number")
-        select_number_spin_box = QSpinBox()
-        select_number_spin_box.setRange(1, 6)
+        self.select_number_spin_box = QSpinBox()
+        self.select_number_spin_box.setRange(1, 6)
         select_number_layout.addWidget(select_number_label)
-        select_number_layout.addWidget(select_number_spin_box)
+        select_number_layout.addWidget(self.select_number_spin_box)
 
         player_times_label = QLabel("×")
         player_times_label.resize(player_times_label.sizeHint())
@@ -83,10 +93,10 @@ class MainWidget(QWidget):
         # Here the player can select the type of dice to bet
         select_dice_layout = QVBoxLayout()
         select_dice_label = QLabel("Dice")
-        select_dice_spin_box = QSpinBox()
-        select_dice_spin_box.setRange(1, 6)
+        self.select_dice_spin_box = QSpinBox()
+        self.select_dice_spin_box.setRange(1, 6)
         select_dice_layout.addWidget(select_dice_label)
-        select_dice_layout.addWidget(select_dice_spin_box)
+        select_dice_layout.addWidget(self.select_dice_spin_box)
 
         player_bet_layout.addLayout(select_number_layout)
         player_bet_layout.addWidget(player_times_label)
@@ -128,7 +138,9 @@ class MainWidget(QWidget):
         Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
         :return:
         """
-        print("Bet")
+        print(int(self.select_number_spin_box.value()))
+        time.sleep(0.1) # Wait for 2nd question
+        print(int(self.select_dice_spin_box.value()))
         return NotImplemented
 
     def call_bluff(self):
@@ -136,7 +148,7 @@ class MainWidget(QWidget):
         Action to be done when the "call bluff" button is pressed (send signal to the game)
         :return:
         """
-        print("Call bluff")
+        print("1")
         return NotImplemented
 
     def display_dice_player(self, dice: [int]):

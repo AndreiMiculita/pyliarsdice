@@ -1,12 +1,14 @@
 # Allow access to command-line arguments
 import sys
+import threading
 
 # Import the core and GUI elements of Qt
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from main_widget import MainWidget
+from ui.main_widget import MainWidget
+from game import Game
 
 howto_text = "assets/howto.txt"
 stylesheet = "assets/style.qss"
