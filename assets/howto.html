@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #004400;
+            color: white;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+The game consists of multiple rounds. In every round, all players shake their cups and place them down, such that the dice
+are only visible to themselves.
+<img src="https://imgur.com/fvK8FTN.png" alt="Hidden dice image" style="width:100%; padding: 10px 0;"/>
+Then, one of the players (in particular, the player who has lost the previous
+round) starts with a bid. In a clock-wise fashion, we go to the next player's turn.
+Except for the first turn in the round, every player has a choice between two actions:
+<ul>
+    <li>
+        <b>Overbid the previous player</b> - overbidding means that either the number of dice is higher than the bid of
+        the
+        previous player, or the value of the die is higher than that of the previous player (with the same <i>number</i> of dice).
+    </li>
+    <li>
+        <b>Overbidding with Joker dice</b> - a joker die counts as double the number of dice when it's used as a bid.
+        This is because every other value has a double chance of appearing on the table (since a joker also counts towards
+        their number), while the joker itself is only based on the probability of appearing itself.
+    </li>
+</ul>
+A bid can be anything, independently of the roll of dice under the cup. This means <b>bluffing</b> is a substantial part of
+this game and can be strategically used to cause other players to lie.
+<img src="https://imgur.com/cOSMJnj.png" alt="Thinking emoji" style="width:30%; padding: 10px 35%;"/>
+<ul>
+    <li>
+        <b>Calling the previous player a liar</b> - whenever you believe that the bid of the previous player is a lie (i.e.
+        the number of dice of the bid is not on the table), you can call that player a liar.
+    </li>
+</ul>
+<img src="https://imgur.com/f4adlkF.png" alt="People playing image" style="width:100%; padding: 10px 0;"/>
+When someone has performed the action of calling the previous player a liar, every player has to specify
+whether he or she believes that the number of dice of the bid is on the table or not, in a clock-wise fashion.
+Then, everyone opens their cup and the dice are counted and compared to the bid.
+If the number of the bid is <b>equal to or less than</b> the number of dice on the table, the bid is correct. However, if the
+number of the bid is greater than the number of the dice on the table, the bid is a lie. All the players who are
+correct lose one die.
+<img src="https://imgur.com/IvaVoee.png" alt="People playing image" style="width:100%; padding: 10px 0;"/>
+After this the round has ended, a new round starts with the remaining number of dice for each player, restarting the
+bidding with the player who lost the last round. For multiple players, this will be the person who was either correctly
+called a liar, or the player who incorrectly called another player a liar.
+After every round, all the players who were correct lose a die. The goal is to be the first to lose all of the dice
+from your cup. However, the game will be played until all players except one have no more dice remaining their cups.
+</body>
+</html>

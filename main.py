@@ -6,11 +6,12 @@ import threading
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from PySide2.QtWebEngineWidgets import QWebEngineView
 
 from ui.main_widget import MainWidget
 from game import Game
 
-howto_text = "assets/howto.txt"
+howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
 
@@ -96,30 +97,14 @@ class HowToPlayWidget(QWidget):
         back_button = QPushButton("Back")
         back_button.clicked.connect(self.back_signal.back.emit)
 
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(False)
-
-        vertical_instructions_group = QGroupBox()
-        vertical_instructions_layout = QVBoxLayout()
-        how_to_play_label = QLabel()
-        # TODO: add formatting (bold, italic, bullets), fix scrolling
+        how_to_play_label = QWebEngineView()
         with open(howto_text, "r") as how_to_file_handle:
-            how_to_play_label.setText(how_to_file_handle.read())
-
-        how_to_play_label.setWordWrap(True)
-        # size_policy = QSizePolicy()
-        # size_policy.setHorizontalPolicy(QSizePolicy.MinimumExpanding)
-        # how_to_play_label.setSizePolicy(size_policy)
-
-        how_to_play_label.resize(100, 500)
-
-        vertical_instructions_layout.addWidget(how_to_play_label)
-
-        vertical_instructions_group.setLayout(vertical_instructions_layout)
-        scroll_area.setWidget(vertical_instructions_group)
+            how_to_play_label.setHtml(how_to_file_handle.read())
+            # how_to_play_label.setAttribute(Qt.WA_TranslucentBackground, True)
+            # how_to_play_label.page.setBackgroundColor(Qt.transparent)
 
         vertical_main_layout.addWidget(back_button)
-        vertical_main_layout.addWidget(scroll_area)
+        vertical_main_layout.addWidget(how_to_play_label)
         self.setLayout(vertical_main_layout)
 
 
