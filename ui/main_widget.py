@@ -9,17 +9,19 @@ from game import Game
 
 class MainWidget(QWidget):
 
-    def __init__(self, difficulty: int):
+    def __init__(self, difficulty: int, opponents: int):
         """
         This widget is everything in the window, except for the menu bar and status bar.
         :param difficulty: an integer value for the difficulty (0: easy, 1: medium, 2: hard)
         """
         super(MainWidget, self).__init__()
+        self.opponents = opponents
         self.init_ui()
         print(f"Difficulty: {difficulty}")
-        game = Game(n_players=2, n_starting_dice=5)
-        game_thread = threading.Thread(target=game.play)
-        game_thread.start()
+        # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
+        game = Game(n_players=opponents+1, n_starting_dice=5, difficulty=difficulty+1)
+        self.game_thread = threading.Thread(target=game.play)
+        self.game_thread.start()
 
     def init_ui(self) -> None:
         """
@@ -30,46 +32,65 @@ class MainWidget(QWidget):
 
         # Enemy half of the screen -------------------------
 
-        # Enemy cup
-        # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
-        # but not the types
-        enemy_cup_group = QGroupBox("Enemy Cup")
-        enemy_cup_group.setProperty("cssClass", "cup")
+        # Display all enemies in a group with a horizontal layout
+        all_enemies_group = QGroupBox("Enemies")
+        all_enemies_layout = QHBoxLayout()
 
-        enemy_bet_group = QGroupBox("Enemy Bet")
-        enemy_bet_layout = QHBoxLayout()
+        for i in range(0, self.opponents):
 
-        # Here we display the amount of dice the enemy has bet
-        enemy_number_label = QLabel("1")
-        enemy_number_label.resize(enemy_number_label.sizeHint())
+            enemy_group = QGroupBox(f"Player {i+1}")  # Player 0 is human user
+            enemy_layout = QGridLayout()
 
-        enemy_times_label = QLabel("×")
-        enemy_times_label.resize(enemy_times_label.sizeHint())
+            # Enemy cup
+            # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
+            # but not the types
+            enemy_cup_group = QGroupBox("Enemy Cup")
+            enemy_cup_group.setProperty("cssClass", "cup")
 
-        # Here we dispaly the type of dice the enemy has bet
-        enemy_dice_label = QLabel("1")
-        enemy_dice_label.resize(enemy_dice_label.sizeHint())
+            enemy_bet_group = QGroupBox("Enemy Bet")
+            enemy_bet_layout = QHBoxLayout()
 
-        enemy_bet_layout.addWidget(enemy_number_label)
-        enemy_bet_layout.addWidget(enemy_times_label)
-        enemy_bet_layout.addWidget(enemy_dice_label)
+            # Here we display the amount of dice the enemy has bet
+            enemy_number_label = QLabel("1")
+            enemy_number_label.resize(enemy_number_label.sizeHint())
 
-        enemy_bet_group.setLayout(enemy_bet_layout)
+            enemy_times_label = QLabel("×")
+            enemy_times_label.resize(enemy_times_label.sizeHint())
 
-        # Here we'll show if the enemy is thinking, or if they call your bluff
-        enemy_action_group = QGroupBox("Enemy Action")
-        enemy_action_layout = QVBoxLayout()
-        enemy_action_label = QLabel("Thinking")
+            # Here we dispaly the type of dice the enemy has bet
+            enemy_dice_label = QLabel("1")
+            enemy_dice_label.resize(enemy_dice_label.sizeHint())
 
-        # use https://loading.io/
-        enemy_loading_label = QLabel()
-        enemy_loading_movie = QMovie("assets/images/loader.gif")
-        enemy_loading_movie.setScaledSize(QSize(50, 50))
-        enemy_loading_label.setMovie(enemy_loading_movie)
-        enemy_loading_movie.start()
-        enemy_action_layout.addWidget(enemy_action_label)
-        enemy_action_layout.addWidget(enemy_loading_label)
-        enemy_action_group.setLayout(enemy_action_layout)
+            enemy_bet_layout.addWidget(enemy_number_label)
+            enemy_bet_layout.addWidget(enemy_times_label)
+            enemy_bet_layout.addWidget(enemy_dice_label)
+
+            enemy_bet_group.setLayout(enemy_bet_layout)
+
+            # Here we'll show if the enemy is thinking, or if they call your bluff
+            enemy_action_group = QGroupBox("Enemy Action")
+            enemy_action_layout = QVBoxLayout()
+            enemy_action_label = QLabel("Thinking")
+
+            # use https://loading.io/
+            enemy_loading_label = QLabel()
+            enemy_loading_movie = QMovie("assets/images/loader.gif")
+            enemy_loading_movie.setScaledSize(QSize(50, 50))
+            enemy_loading_label.setMovie(enemy_loading_movie)
+            enemy_loading_movie.start()
+            enemy_action_layout.addWidget(enemy_action_label)
+            enemy_action_layout.addWidget(enemy_loading_label)
+            enemy_action_group.setLayout(enemy_action_layout)
+
+            enemy_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
+            enemy_layout.addWidget(enemy_bet_group, 1, 0, 1, 1)
+            enemy_layout.addWidget(enemy_action_group, 1, 1, 1, 1)
+
+            enemy_group.setLayout(enemy_layout)
+
+            all_enemies_layout.addWidget(enemy_group)
+
+        all_enemies_group.setLayout(all_enemies_layout)
 
         # Player half of the screen -------------------------
 
@@ -125,9 +146,7 @@ class MainWidget(QWidget):
         actions_group.setLayout(actions_layout)
 
         # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
-        vertical_main_layout.addWidget(enemy_bet_group, 1, 0, 1, 1)
-        vertical_main_layout.addWidget(enemy_action_group, 1, 1, 1, 1)
+        vertical_main_layout.addWidget(all_enemies_group, 0, 0, 2, 2)
         vertical_main_layout.addWidget(player_cup_group, 2, 0, 1, 2)
         vertical_main_layout.addWidget(player_bet_group, 3, 0, 1, 1)
         vertical_main_layout.addWidget(actions_group, 3, 1, 1, 1)
@@ -139,7 +158,7 @@ class MainWidget(QWidget):
         :return:
         """
         print(int(self.select_number_spin_box.value()))
-        time.sleep(0.1) # Wait for 2nd question
+        time.sleep(0.1)  # Wait for 2nd question
         print(int(self.select_dice_spin_box.value()))
         return NotImplemented
 

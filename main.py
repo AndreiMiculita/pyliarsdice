@@ -186,13 +186,15 @@ class MainWindow(QMainWindow):
         """
         start_screen_widget = StartScreenWidget(show_logo=show_logo)
 
-        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0))
-        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1))
+        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0,
+                                                                                opponents=2))
+        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1,
+                                                                         opponents=2))
 
         return start_screen_widget
 
-    def restart_aux(self, idx: int):
-        new_game_widget = MainWidget(difficulty=idx)
+    def restart_aux(self, idx: int, opponents: int):
+        new_game_widget = MainWidget(difficulty=idx, opponents=opponents)
         self.central_widget.addWidget(new_game_widget)
         self.central_widget.setCurrentWidget(new_game_widget)
 
@@ -207,6 +209,7 @@ class MainWindow(QMainWindow):
                                      QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
+            # TODO close all game threads
             event.accept()
         else:
             event.ignore()
