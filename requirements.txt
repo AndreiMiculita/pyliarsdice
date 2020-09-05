@@ -1,2 +1,5 @@
-PySide2==5.14.2
-shiboken2==5.14.2
+PySide2==5.15.0
+shiboken2==5.15.0
+
+numpy~=1.19.1
+scipy~=1.5.2

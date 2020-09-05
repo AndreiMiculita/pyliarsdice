@@ -14,6 +14,9 @@ from game import Game
 howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
+# Minimum and maximum limit to number of opponents
+opponent_limits = (1, 10)
+
 
 class CommunicateRandom(QObject):
     # This is a class attribute, so it gets reassigned every time it's changed in an instance
@@ -35,12 +38,13 @@ class GoBack(QObject):
 
 class StartScreenWidget(QWidget):
 
-    def __init__(self, show_logo=True):
+    def __init__(self, select_enemies_spinbox: QSpinBox, show_logo=True):
         """
         Widget for selecting difficulty
         """
         super(StartScreenWidget, self).__init__()
-        self.difficulties = ["Play against Random Opponent", "Play against Cognitive Model"]
+        self.select_enemies_spinbox = select_enemies_spinbox
+        self.difficulties = ["Play against Random Opponent(s)", "Play against Cognitive Model Opponent(s)"]
         self.start_game_signals = [CommunicateRandom(), CommunicateCogMod()]
         self.show_logo = show_logo
         self.init_ui()
@@ -67,13 +71,23 @@ class StartScreenWidget(QWidget):
         vertical_main_layout.addWidget(logo)
         vertical_main_layout.addWidget(title)
 
+        # This could be anything, I think
+        self.select_enemies_spinbox.setRange(*opponent_limits)
+
+        select_enemies_group = QGroupBox("Select number of opponents ({0}-{1})".format(*opponent_limits))
+        select_enemies_layout = QVBoxLayout()
+        select_enemies_layout.addWidget(self.select_enemies_spinbox)
+        select_enemies_group.setLayout(select_enemies_layout)
+
+        vertical_main_layout.addWidget(select_enemies_group)
+
         random_difficulty_button = QPushButton(text=self.difficulties[0])
-        random_difficulty_button.setStatusTip(f"Start game against an opponent that takes random actions.")
+        random_difficulty_button.setStatusTip(f"Start game against one or more opponents that take random actions.")
         random_difficulty_button.clicked.connect(self.start_game_signals[0].start_new_random_game.emit)
         vertical_main_layout.addWidget(random_difficulty_button)
 
         new_cog_mod_game_button = QPushButton(text=self.difficulties[1])
-        new_cog_mod_game_button.setStatusTip(f"Start game against a cognitive model.")
+        new_cog_mod_game_button.setStatusTip(f"Start game against one or more cognitive models.")
         new_cog_mod_game_button.clicked.connect(self.start_game_signals[1].start_new_game.emit)
         vertical_main_layout.addWidget(new_cog_mod_game_button)
 
@@ -115,6 +129,7 @@ class MainWindow(QMainWindow):
         The main window. Everything takes place inside it.
         """
         super(MainWindow, self).__init__()
+        self.select_enemies_spinbox = QSpinBox()
         self.central_widget = QStackedWidget()
         self.init_ui()
 
@@ -160,7 +175,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction(how_to_play_action)
         help_menu.addAction(about_action)
 
-        self.resize(350, 550)
+        self.resize(450, 550)
         self.center()
         self.setWindowTitle("Liar's Dice")
         self.setWindowIcon(QIcon("assets/images/dice_icon.png"))
@@ -184,17 +199,18 @@ class MainWindow(QMainWindow):
         Start a new game
         :return:
         """
-        start_screen_widget = StartScreenWidget(show_logo=show_logo)
+        start_screen_widget = StartScreenWidget(select_enemies_spinbox=self.select_enemies_spinbox, show_logo=show_logo)
 
         start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0,
-                                                                                opponents=2))
+                                                                                                         opponents=2))
         start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1,
-                                                                         opponents=2))
+                                                                                                  opponents=2))
 
         return start_screen_widget
 
     def restart_aux(self, idx: int, opponents: int):
-        new_game_widget = MainWidget(difficulty=idx, opponents=opponents)
+
+        new_game_widget = MainWidget(difficulty=idx, opponents=int(self.select_enemies_spinbox.value()))
         self.central_widget.addWidget(new_game_widget)
         self.central_widget.setCurrentWidget(new_game_widget)
 
