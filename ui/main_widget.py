@@ -19,8 +19,8 @@ class MainWidget(QWidget):
         self.init_ui()
         print(f"Difficulty: {difficulty}")
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
-        game = Game(n_players=opponents+1, n_starting_dice=5, difficulty=difficulty+1)
-        self.game_thread = threading.Thread(target=game.play)
+        self.game = Game(n_players=opponents+1, n_starting_dice=5, difficulty=difficulty+1)
+        self.game_thread = threading.Thread(target=self.game.play)
         self.game_thread.start()
 
     def init_ui(self) -> None:
@@ -181,3 +181,7 @@ class MainWidget(QWidget):
     def display_dice_enemy(self, dice: [int]):
         print("Enemy dice: ", dice)
         return NotImplemented
+
+    def __delete__(self, instance):
+        self.game.over = True
+        super(MainWidget, self).__delete__()
