@@ -9,13 +9,12 @@ from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView
 
 from ui.main_widget import MainWidget
-from game import Game
 
 howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
 # Minimum and maximum limit to number of opponents
-opponent_limits = (1, 10)
+opponent_limits = (1, 4)
 
 
 class CommunicateRandom(QObject):
