@@ -6,6 +6,7 @@ from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton
 from game import Game
+from ui_controller import UIController
 
 dice_images = ["assets/images/dice-1-star.png",
                "assets/images/dice-2.png",
@@ -17,7 +18,7 @@ dice_images = ["assets/images/dice-1-star.png",
 dice_image_unknown = "assets/images/dice-q.png"
 
 
-class MainWidget(QWidget):
+class MainWidget(QWidget, UIController):
 
     def __init__(self, difficulty: int, opponents: int):
         """
@@ -234,6 +235,33 @@ class MainWidget(QWidget):
             die_img_label.setScaledContents(False)
             enemy_cup_layout.addWidget(die_img_label)
         self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}").setLayout(enemy_cup_layout)
+
+    def display_action_enemy(self, enemy_nr: int, action: int):
+        """
+        Display which action an enemy is currently executing
+        :param enemy_nr: which enemy to display the action for
+        :param action: id of the action: 0 - thinking, 1 - bet down
+        :return:
+        """
+        # TODO: implement this
+        if action == 0:
+            pass
+
+    def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
+        self.all_enemies_group.findChild(QLabel, f"enemy_number{enemy_nr}").setText(str(number))
+        self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}").setText(str(number))
+
+    def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
+        """
+        Set the limits for the spinbox
+        :param number_min: min limit for number of dice
+        :param number_max: max limit for type of dice
+        :param dice_min: min limit for type of dice
+        :param dice_max: max limit for type of dice
+        :return:
+        """
+        self.select_number_spin_box.setRange(number_min, number_max)
+        self.select_dice_spin_box.setRange(dice_min, dice_max)
 
     def __delete__(self, instance):
         self.game.over = True
