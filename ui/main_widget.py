@@ -27,15 +27,16 @@ class MainWidget(QWidget, UIController):
         :param opponents: integer representing how many opponents there are
         """
         super(MainWidget, self).__init__()
-        self.all_enemies_group = QGroupBox("Enemies")
+        self.call_bluff_button = QPushButton('CALL BLUFF (C)')
+        self.bet_button = QPushButton('BET (B)')
+        self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
         self.player_cup_group = QGroupBox("Your Cup")
         self.opponents = opponents
         self.init_ui()
-        print(f"Difficulty: {difficulty}")
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
-        self.game = Game(n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1)
+        self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1)
         self.game_thread = threading.Thread(target=self.game.play)
         self.game_thread.start()
 
@@ -141,18 +142,16 @@ class MainWidget(QWidget, UIController):
         actions_group = QGroupBox('Your Action')
         actions_layout = QVBoxLayout()
 
-        bet_btn = QPushButton('BET (B)')
-        bet_btn.setShortcut("B")
-        bet_btn.setStatusTip('Bet the selected amount and dice.')
-        bet_btn.clicked.connect(self.bet)
+        self.bet_button.setShortcut("B")
+        self.bet_button.setStatusTip('Bet the selected amount and dice.')
+        self.bet_button.clicked.connect(self.bet)
 
-        call_bluff_btn = QPushButton('CALL BLUFF (C)')
-        call_bluff_btn.setShortcut("C")
-        call_bluff_btn.setStatusTip("Call the opponent's bluff.")
-        bet_btn.clicked.connect(lambda: self.display_anonymous_dice_enemy(1, 2))
+        self.call_bluff_button.setShortcut("C")
+        self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
+        self.bet_button.clicked.connect(lambda: self.display_anonymous_dice_enemy(1, 2))
 
-        actions_layout.addWidget(bet_btn)
-        actions_layout.addWidget(call_bluff_btn)
+        actions_layout.addWidget(self.bet_button)
+        actions_layout.addWidget(self.call_bluff_button)
 
         actions_group.setLayout(actions_layout)
 
@@ -228,7 +227,7 @@ class MainWidget(QWidget, UIController):
         for die in dice:
             print(die, dice_images[die - 1])
             die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
-            die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
+            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio, mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
             die_img_label.setPixmap(die_image)
             die_img_label.resize(50, 50)
@@ -262,6 +261,15 @@ class MainWidget(QWidget, UIController):
         """
         self.select_number_spin_box.setRange(number_min, number_max)
         self.select_dice_spin_box.setRange(dice_min, dice_max)
+
+    def set_controls_enabled(self, enabled: bool):
+        """
+        Enables or disables the bet/call bluff button
+        :param enabled: whether the controls are enabled or not
+        :return:
+        """
+        self.bet_button.setEnabled(enabled)
+        self.call_bluff_button.setEnabled(enabled)
 
     def __delete__(self, instance):
         self.game.over = True

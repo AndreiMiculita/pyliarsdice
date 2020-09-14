@@ -1,7 +1,7 @@
 class UIController:
     """
     This is a base class which must be inherited by the main widget.
-    Basically an interface to avoid cyclical imports
+    Basically an interface to avoid cyclical imports.
     """
 
     def display_dice_player(self, dice: [int]):
@@ -20,4 +20,7 @@ class UIController:
         return NotImplemented
 
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
+        return NotImplemented
+
+    def set_controls_enabled(self, enabled: bool):
         return NotImplemented

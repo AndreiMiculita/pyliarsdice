@@ -8,6 +8,8 @@ from model import Model
 from player import Player
 from scipy.stats import binom
 
+from ui_controller import UIController
+
 N_PLAYERS = 4
 N_STARTING_DICE = 5
 DIFFICULTY = 1
@@ -57,7 +59,8 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, n_players=4, n_starting_dice=5, difficulty=2):
+    def __init__(self, ui_controller: UIController, n_players=4, n_starting_dice=5, difficulty=2):
+        self.ui_controller = ui_controller
         self.difficulty = difficulty  # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
         self.players = [Player(n_starting_dice, self.difficulty) for i in range(n_players)]
         self.n_players = n_players
