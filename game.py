@@ -1,5 +1,6 @@
 import random
 import time as time
+import ui.invoker as invoker
 
 import numpy as np
 from bid import Bid
@@ -9,6 +10,7 @@ from player import Player
 from scipy.stats import binom
 
 from ui_controller import UIController
+
 
 N_PLAYERS = 4
 N_STARTING_DICE = 5
@@ -208,6 +210,8 @@ class Game:
             doubt = int(input(
                 f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
                 f"1=yes, 0=no: "))  # Placeholder
+
+        invoker.invoke_in_main_thread(self.ui_controller.set_controls_enabled, False)
         return doubt
 
     def resolve_doubt(self):

@@ -1,7 +1,7 @@
 import threading
 import time
 
-from PySide2 import QtCore, QtGui
+from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton
@@ -37,7 +37,10 @@ class MainWidget(QWidget, UIController):
         self.init_ui()
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
         self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1)
+
+        # TODO use Qthread?
         self.game_thread = threading.Thread(target=self.game.play)
+
         self.game_thread.start()
 
     def init_ui(self) -> None:
@@ -148,7 +151,7 @@ class MainWidget(QWidget, UIController):
 
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
-        self.bet_button.clicked.connect(lambda: self.display_anonymous_dice_enemy(1, 2))
+        self.bet_button.clicked.connect(self.bet)
 
         actions_layout.addWidget(self.bet_button)
         actions_layout.addWidget(self.call_bluff_button)
@@ -227,7 +230,8 @@ class MainWidget(QWidget, UIController):
         for die in dice:
             print(die, dice_images[die - 1])
             die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
-            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio, mode=QtCore.Qt.SmoothTransformation)
+            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
+                                         mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
             die_img_label.setPixmap(die_image)
             die_img_label.resize(50, 50)
@@ -244,6 +248,12 @@ class MainWidget(QWidget, UIController):
         """
         # TODO: implement this
         if action == 0:
+            pass
+        elif action == 1:
+            pass
+        elif action == 2:
+            pass
+        else:
             pass
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
