@@ -27,8 +27,12 @@ class MainWidget(QWidget, UIController):
         :param opponents: integer representing how many opponents there are
         """
         super(MainWidget, self).__init__()
+        self.actions_group = QGroupBox('Your Action', objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
+        self.trust_button = QPushButton('TRUST (T)')
         self.bet_button = QPushButton('BET (B)')
+        self.set_bluff_controls_enabled(False)
+        self.set_bet_controls_enabled(False)
         self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
@@ -62,21 +66,22 @@ class MainWidget(QWidget, UIController):
             # Enemy cup
             # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
             # but not the types
-            enemy_cup_group = QGroupBox("Enemy Cup", objectName=f"enemy_cup{i}")
+            # Note that enemies are indexed from 1, player is 0
+            enemy_cup_group = QGroupBox("Enemy Cup", objectName=f"enemy_cup{i + 1}")
             enemy_cup_group.setProperty("cssClass", "cup")
 
             enemy_bet_group = QGroupBox("Enemy Bet")
             enemy_bet_layout = QHBoxLayout()
 
             # Here we display the amount of dice the enemy has bet
-            enemy_number_label = QLabel("1", objectName=f"enemy_number{i}")
+            enemy_number_label = QLabel("1", objectName=f"enemy_number{i + 1}")
             enemy_number_label.resize(enemy_number_label.sizeHint())
 
             enemy_times_label = QLabel("×")
             enemy_times_label.resize(enemy_times_label.sizeHint())
 
             # Here we display the type of dice the enemy has bet
-            enemy_dice_label = QLabel("1", objectName=f"enemy_dice{i}")
+            enemy_dice_label = QLabel("1", objectName=f"enemy_dice{i + 1}")
             enemy_dice_label.resize(enemy_dice_label.sizeHint())
 
             enemy_bet_layout.addWidget(enemy_number_label)
@@ -86,9 +91,10 @@ class MainWidget(QWidget, UIController):
             enemy_bet_group.setLayout(enemy_bet_layout)
 
             # Here we'll show if the enemy is thinking, or if they call your bluff
-            enemy_action_group = QGroupBox("Enemy Action")
+            enemy_action_group = QGroupBox("Enemy Action", objectName=f"enemy_action_group{i + 1}")
+            print(f"init i = {i}")
             enemy_action_layout = QVBoxLayout()
-            enemy_action_label = QLabel("Thinking", objectName=f"enemy_action{i}")
+            enemy_action_label = QLabel("Thinking", objectName=f"enemy_action_label{i + 1}")
 
             # use https://loading.io/
             enemy_loading_label = QLabel()
@@ -142,7 +148,6 @@ class MainWidget(QWidget, UIController):
 
         # This is a group that contains the buttons for betting and calling a bluff
         # The buttons are linked to the functions below this function
-        actions_group = QGroupBox('Your Action')
         actions_layout = QVBoxLayout()
 
         self.bet_button.setShortcut("B")
@@ -151,18 +156,23 @@ class MainWidget(QWidget, UIController):
 
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
-        self.bet_button.clicked.connect(self.bet)
+        self.call_bluff_button.clicked.connect(self.call_bluff)
+
+        self.trust_button.setShortcut("T")
+        self.trust_button.setStatusTip("Trust the opponent.")
+        self.trust_button.clicked.connect(self.trust)
 
         actions_layout.addWidget(self.bet_button)
         actions_layout.addWidget(self.call_bluff_button)
+        actions_layout.addWidget(self.trust_button)
 
-        actions_group.setLayout(actions_layout)
+        self.actions_group.setLayout(actions_layout)
 
         # Put all the groups into a vertical layout
         vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2, 2)
         vertical_main_layout.addWidget(self.player_cup_group, 2, 0, 1, 2)
         vertical_main_layout.addWidget(player_bet_group, 3, 0, 1, 1)
-        vertical_main_layout.addWidget(actions_group, 3, 1, 1, 1)
+        vertical_main_layout.addWidget(self.actions_group, 3, 1, 1, 1)
         self.setLayout(vertical_main_layout)
 
     def bet(self):
@@ -183,6 +193,14 @@ class MainWidget(QWidget, UIController):
         print("1")
         return NotImplemented
 
+    def trust(self):
+        """
+        Action to be done when the "trust" button is pressed (send signal to the game)
+        :return:
+        """
+        print("0")
+        return NotImplemented
+
     def display_dice_player(self, dice: [int]):
         """
         Display the dice under the player's cup
@@ -191,7 +209,7 @@ class MainWidget(QWidget, UIController):
         """
         player_cup_layout = QHBoxLayout()
         for die in dice:
-            print(die, dice_images[die - 1])
+            # print(die, dice_images[die - 1])
             die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
             die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
             die_img_label = QLabel()
@@ -272,14 +290,50 @@ class MainWidget(QWidget, UIController):
         self.select_number_spin_box.setRange(number_min, number_max)
         self.select_dice_spin_box.setRange(dice_min, dice_max)
 
-    def set_controls_enabled(self, enabled: bool):
+    def set_bluff_controls_enabled(self, enabled: bool):
+        """
+        Enables or disables the bet/call bluff button
+        :param enabled: whether the controls are enabled or not
+        :return:
+        """
+        self.call_bluff_button.setEnabled(enabled)
+        self.trust_button.setEnabled(enabled)
+
+    def set_bet_controls_enabled(self, enabled: bool):
         """
         Enables or disables the bet/call bluff button
         :param enabled: whether the controls are enabled or not
         :return:
         """
         self.bet_button.setEnabled(enabled)
-        self.call_bluff_button.setEnabled(enabled)
+
+    def indicate_turn(self, player: int):
+        """
+        This indicates whose turn it is. For human player, it lightens the box containing the 3 actions
+        For enemy, it lightens the box labeled action for the respective enemy
+        :param player: int  with value 0 for human player, >0 for opponents
+        :return:
+        """
+        if player == 0:
+            # Lighten the action box for player
+            self.actions_group.setStyleSheet("#ActionsGroup  { background-color: #006600;}")
+            # Darken the action box for all opponents
+            for i in range(self.opponents):
+                print(f"i = {i}")
+                self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
+                    f"#enemy_action{i + 1}  {{background-color: #004400;}}")
+        else:
+            # Darken the action box for player
+            self.actions_group.setStyleSheet("#ActionsGroup  { background-color: #004400;}")
+            # Darken the action box for all opponents but the one required
+            for i in range(self.opponents):
+                print(f"i = {i}")
+                if i + 1 != player:
+                    self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
+                        f"#enemy_action{i + 1}  {{background-color: #004400;}}")
+                else:
+                    self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
+                        f"#enemy_action{i + 1}  {{background-color: #006600;}}")
 
     def __delete__(self, instance):
         self.game.over = True

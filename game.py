@@ -11,7 +11,6 @@ from scipy.stats import binom
 
 from ui_controller import UIController
 
-
 N_PLAYERS = 4
 N_STARTING_DICE = 5
 DIFFICULTY = 1
@@ -204,14 +203,17 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
+        invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, True)
+
         doubt = int(input(
             f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
+
         while doubt != 0 and doubt != 1:
             doubt = int(input(
                 f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
                 f"1=yes, 0=no: "))  # Placeholder
+        invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, False)
 
-        invoker.invoke_in_main_thread(self.ui_controller.set_controls_enabled, False)
         return doubt
 
     def resolve_doubt(self):
@@ -238,12 +240,14 @@ class Game:
                 # current and previous turn
 
                 if self.players[idx].strategy == 'human':
+                    invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, True)
                     believe = int(input(
                         f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                         f"table? 1=yes, 0=no: "))  # Placeholder
                     while believe != 0 and believe != 1:
                         believe = int(input(
                             f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
+                    invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, False)
 
                 elif self.players[idx].strategy == 'random':
                     if random.randint(1, 100) >= 50:
@@ -360,6 +364,8 @@ class Game:
         """
 
         higher = False
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, True)
+
         while not higher:  # Random bid, on a higher count with random dice value
             count = int(input("[BID] Number of dice: "))  # Placeholder
             roll = int(input("[BID] Value of those dice: "))  # Placeholder
@@ -367,6 +373,7 @@ class Game:
                 higher = True
             else:
                 print('Bid impossible or not high enough, try again!')
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, False)
 
         return count, roll
 
@@ -534,15 +541,22 @@ class Game:
                 self.all_roll()
                 print(
                     f'All players rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
+                invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, self.players[0].hand)
+                # Display this on enemy 1
+                # TODO: display separately for each enemy
+                invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy,
+                                              1, self.n_total_dice - len(self.players[0].hand))
                 self.state = states['bidding_phase']
                 continue
 
             # Check whether the current player wants to doubt before asking the bid.
             if self.state == states['doubting_phase']:
-                if self.current_player == 0: print(
-                    f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice}')
+                if self.current_player == 0:
+                    print(f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice}')
+                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, self.players[0].hand)
                 # input("Press [Enter] to continue...\n")
                 print(f'[TURN]: Player {self.current_player}')
+                invoker.invoke_in_main_thread(self.ui_controller.indicate_turn(self.current_player))
 
                 # if self.players[self.current_player].strategy == 'model':
                 #     print(f'Number of chunks in dm: {len(self.players[self.current_player].model.dm)}')
