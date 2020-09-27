@@ -30,3 +30,6 @@ class UIController:
 
     def indicate_turn(self, player: int):
         return NotImplemented
+
+    def display_winner_and_close(self, player: int):
+        return NotImplemented

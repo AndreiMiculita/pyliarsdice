@@ -4,7 +4,8 @@ import time
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
-from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton
+from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton, \
+    QMessageBox
 from game import Game
 from ui_controller import UIController
 
@@ -27,17 +28,18 @@ class MainWidget(QWidget, UIController):
         :param opponents: integer representing how many opponents there are
         """
         super(MainWidget, self).__init__()
+        self.turn_label = QLabel(text="")
         self.actions_group = QGroupBox('Your Action', objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
         self.trust_button = QPushButton('TRUST (T)')
         self.bet_button = QPushButton('BET (B)')
-        self.set_bluff_controls_enabled(False)
-        self.set_bet_controls_enabled(False)
         self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
         self.player_cup_group = QGroupBox("Your Cup")
         self.opponents = opponents
+        self.set_bluff_controls_enabled(False)
+        self.set_bet_controls_enabled(False)
         self.init_ui()
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
         self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1)
@@ -92,7 +94,7 @@ class MainWidget(QWidget, UIController):
 
             # Here we'll show if the enemy is thinking, or if they call your bluff
             enemy_action_group = QGroupBox("Enemy Action", objectName=f"enemy_action_group{i + 1}")
-            print(f"init i = {i}")
+            # print(f"init i = {i}")
             enemy_action_layout = QVBoxLayout()
             enemy_action_label = QLabel("Thinking", objectName=f"enemy_action_label{i + 1}")
 
@@ -169,10 +171,11 @@ class MainWidget(QWidget, UIController):
         self.actions_group.setLayout(actions_layout)
 
         # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2, 2)
-        vertical_main_layout.addWidget(self.player_cup_group, 2, 0, 1, 2)
-        vertical_main_layout.addWidget(player_bet_group, 3, 0, 1, 1)
-        vertical_main_layout.addWidget(self.actions_group, 3, 1, 1, 1)
+        vertical_main_layout.addWidget(self.turn_label, 0, 0, 1, 2)
+        vertical_main_layout.addWidget(self.all_enemies_group, 1, 0, 2, 2)
+        vertical_main_layout.addWidget(self.player_cup_group, 3, 0, 1, 2)
+        vertical_main_layout.addWidget(player_bet_group, 4, 0, 1, 1)
+        vertical_main_layout.addWidget(self.actions_group, 4, 1, 1, 1)
         self.setLayout(vertical_main_layout)
 
     def bet(self):
@@ -221,7 +224,7 @@ class MainWidget(QWidget, UIController):
 
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
         """
-
+        Display how many dice the enemy has, without showing what they are
         :param enemy_nr: which enemy to display the dice for
         :param dice_count: how many anonymous dice to display
         :return:
@@ -239,14 +242,14 @@ class MainWidget(QWidget, UIController):
 
     def display_dice_enemy(self, enemy_nr: int, dice: [int]):
         """
-
+        Displays what dice the enemy has
         :param enemy_nr: which enemy to display the dice for
         :param dice: list of dice numbers that the enemy is holding
         :return:
         """
         enemy_cup_layout = QHBoxLayout()
         for die in dice:
-            print(die, dice_images[die - 1])
+            # print(die, dice_images[die - 1])
             die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
@@ -275,12 +278,19 @@ class MainWidget(QWidget, UIController):
             pass
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
+        """
+        Displays what the enemy has bet
+        :param enemy_nr: which enemy has bet
+        :param number: how many dice the enemy has bet
+        :param dice: what dice (1-6) the enemy has bet
+        :return:
+        """
         self.all_enemies_group.findChild(QLabel, f"enemy_number{enemy_nr}").setText(str(number))
-        self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}").setText(str(number))
+        self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}").setText(str(dice))
 
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         """
-        Set the limits for the spinbox
+        Set the limits for the spinboxes
         :param number_min: min limit for number of dice
         :param number_max: max limit for type of dice
         :param dice_min: min limit for type of dice
@@ -292,7 +302,7 @@ class MainWidget(QWidget, UIController):
 
     def set_bluff_controls_enabled(self, enabled: bool):
         """
-        Enables or disables the bet/call bluff button
+        Enables or disables the call bluff/trust buttons
         :param enabled: whether the controls are enabled or not
         :return:
         """
@@ -301,39 +311,34 @@ class MainWidget(QWidget, UIController):
 
     def set_bet_controls_enabled(self, enabled: bool):
         """
-        Enables or disables the bet/call bluff button
+        Enables or disables the bet button and spinboxes
         :param enabled: whether the controls are enabled or not
         :return:
         """
+        self.select_number_spin_box.setEnabled(enabled)
+        self.select_dice_spin_box.setEnabled(enabled)
         self.bet_button.setEnabled(enabled)
 
     def indicate_turn(self, player: int):
         """
-        This indicates whose turn it is. For human player, it lightens the box containing the 3 actions
-        For enemy, it lightens the box labeled action for the respective enemy
+        This indicates whose turn it is, in the label at the top of the window.
         :param player: int  with value 0 for human player, >0 for opponents
         :return:
         """
         if player == 0:
-            # Lighten the action box for player
-            self.actions_group.setStyleSheet("#ActionsGroup  { background-color: #006600;}")
-            # Darken the action box for all opponents
-            for i in range(self.opponents):
-                print(f"i = {i}")
-                self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
-                    f"#enemy_action{i + 1}  {{background-color: #004400;}}")
+            self.turn_label.setText("Your turn")
         else:
-            # Darken the action box for player
-            self.actions_group.setStyleSheet("#ActionsGroup  { background-color: #004400;}")
-            # Darken the action box for all opponents but the one required
-            for i in range(self.opponents):
-                print(f"i = {i}")
-                if i + 1 != player:
-                    self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
-                        f"#enemy_action{i + 1}  {{background-color: #004400;}}")
-                else:
-                    self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{i + 1}").setStyleSheet(
-                        f"#enemy_action{i + 1}  {{background-color: #006600;}}")
+            self.turn_label.setText(f"Opponent {player}'s turn")
+
+    def display_winner_and_close(self, player: int):
+        reply = QMessageBox.question(self, 'End of game',
+                                     f"Player {player} won! Close the game?", QMessageBox.Yes |
+                                     QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            self.close()
+        else:
+            self.close()
 
     def __delete__(self, instance):
         self.game.over = True

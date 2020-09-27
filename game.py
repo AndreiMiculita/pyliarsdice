@@ -272,6 +272,12 @@ class Game:
 
         print('Players hands are opened: ', end='')
         print(handstring)
+
+        # Reveal all dice in ui
+        for idx, player in enumerate(self.players):
+            if idx > 0:
+                invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, idx, player.hand)
+
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
 
         if count >= bid_count:  #
@@ -287,6 +293,9 @@ class Game:
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
             print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
+            if idx > 0:
+                invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy, idx,
+                                              self.players[idx].get_hand_size())
         print()
 
     ###############################################################
@@ -365,6 +374,9 @@ class Game:
 
         higher = False
         invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, True)
+
+        # TODO: how will this work?
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_limits, 0, 10, 1, 6)
 
         while not higher:  # Random bid, on a higher count with random dice value
             count = int(input("[BID] Number of dice: "))  # Placeholder
@@ -566,7 +578,7 @@ class Game:
                 if doubt:
                     print(f'Player {self.current_player} does not believe the bid of Player {self.previous_player}')
                     self.resolve_doubt()
-                    self.state = states['start']
+                    # self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
                     self.state = states['bidding_phase']
@@ -577,6 +589,8 @@ class Game:
             if self.state == states['bidding_phase']:
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
+                invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, self.current_player,
+                                              self.current_bid.count, self.current_bid.roll)
                 self.models_remember_bid()
                 self.update_turn()
                 self.state = states['doubting_phase']
@@ -586,9 +600,11 @@ class Game:
                 over = True
                 if len(winner) <= 1:
                     print(f"Player {winner[0]} has played away all its dice and won the game!.")
+                    invoker.invoke_in_main_thread(self.ui_controller.display_winner_and_close, winner[0])
                 else:
                     winners = str(winner)[1:-1]
                     print(f"Players {winners} have played away all their dice and won the game!.")
+                    invoker.invoke_in_main_thread(self.ui_controller.display_winner_and_close, winners)
                 continue
 
         print(f'Chunks retrieved during game: {self.chunk_retrieval_count}')
