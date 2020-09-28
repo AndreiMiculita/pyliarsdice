@@ -1,14 +1,14 @@
 import random
-import time as time
-import ui.invoker as invoker
+from multiprocessing import Queue
 
 import numpy as np
+from scipy.stats import binom
+
+import ui.invoker as invoker
 from bid import Bid
 from dmchunk import Chunk
 from model import Model
 from player import Player
-from scipy.stats import binom
-
 from ui_controller import UIController
 
 N_PLAYERS = 4
@@ -60,8 +60,9 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, ui_controller: UIController, n_players=4, n_starting_dice=5, difficulty=2):
+    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2):
         self.ui_controller = ui_controller
+        self.input_queue = input_queue
         self.difficulty = difficulty  # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
         self.players = [Player(n_starting_dice, self.difficulty) for i in range(n_players)]
         self.n_players = n_players
@@ -205,13 +206,19 @@ class Game:
         """
         invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, True)
 
-        doubt = int(input(
-            f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
+        # doubt = int(input(
+        #     f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
+        print(f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: ")
+        doubt = int(self.input_queue.get(block=True))
 
         while doubt != 0 and doubt != 1:
-            doubt = int(input(
+            # doubt = int(input(
+            #     f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
+            #     f"1=yes, 0=no: "))  # Placeholder
+            print(
                 f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
-                f"1=yes, 0=no: "))  # Placeholder
+                f"1=yes, 0=no: ")
+            doubt = int(self.input_queue.get(block=True))
         invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, False)
 
         return doubt
@@ -241,12 +248,19 @@ class Game:
 
                 if self.players[idx].strategy == 'human':
                     invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, True)
-                    believe = int(input(
-                        f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
-                        f"table? 1=yes, 0=no: "))  # Placeholder
+                    # believe = int(input(
+                    #     f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
+                    #     f"table? 1=yes, 0=no: "))  # Placeholder
+                    print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
+                          f"table? 1=yes, 0=no: ")
+                    believe = int(self.input_queue.get(block=True))
                     while believe != 0 and believe != 1:
-                        believe = int(input(
-                            f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
+                        # believe = int(input(
+                        #     f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
+                        print(
+                            f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll}'
+                            f' is on the table? 1=yes, 0=no: ')
+                        believe = int(self.input_queue.get(block=True))
                     invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, False)
 
                 elif self.players[idx].strategy == 'random':
@@ -379,8 +393,12 @@ class Game:
         invoker.invoke_in_main_thread(self.ui_controller.set_bet_limits, 0, 10, 1, 6)
 
         while not higher:  # Random bid, on a higher count with random dice value
-            count = int(input("[BID] Number of dice: "))  # Placeholder
-            roll = int(input("[BID] Value of those dice: "))  # Placeholder
+            # count = int(input("[BID] Number of dice: "))  # Placeholder
+            print("[BID] Number of dice: ")  # Placeholder
+            count = int(self.input_queue.get(block=True))
+            # roll = int(input("[BID] Value of those dice: "))  # Placeholder
+            print("[BID] Value of those dice: ")  # Placeholder
+            roll = int(self.input_queue.get(block=True))
             if count > 0 and 1 <= roll <= 6 and self.is_higher_bid(count, roll):
                 higher = True
             else:

@@ -1,11 +1,14 @@
+import time
 import threading
 import time
+from multiprocessing import Queue
 
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton, \
     QMessageBox
+
 from game import Game
 from ui_controller import UIController
 
@@ -41,8 +44,11 @@ class MainWidget(QWidget, UIController):
         self.set_bluff_controls_enabled(False)
         self.set_bet_controls_enabled(False)
         self.init_ui()
+        self.q = Queue()
+
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
-        self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1)
+        self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1,
+                         input_queue=self.q)
 
         # TODO use Qthread?
         self.game_thread = threading.Thread(target=self.game.play)
@@ -183,10 +189,12 @@ class MainWidget(QWidget, UIController):
         Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
         :return:
         """
+        # TODO redirect this stdout to the stdin of the game thread
         print(int(self.select_number_spin_box.value()))
+        self.q.put(int(self.select_number_spin_box.value()))
         time.sleep(0.1)  # Wait for 2nd question
         print(int(self.select_dice_spin_box.value()))
-        return NotImplemented
+        self.q.put(int(self.select_dice_spin_box.value()))
 
     def call_bluff(self):
         """
@@ -194,7 +202,7 @@ class MainWidget(QWidget, UIController):
         :return:
         """
         print("1")
-        return NotImplemented
+        self.q.put("1")
 
     def trust(self):
         """
@@ -202,7 +210,7 @@ class MainWidget(QWidget, UIController):
         :return:
         """
         print("0")
-        return NotImplemented
+        self.q.put("0")
 
     def display_dice_player(self, dice: [int]):
         """
@@ -220,7 +228,6 @@ class MainWidget(QWidget, UIController):
             die_img_label.setScaledContents(False)
             player_cup_layout.addWidget(die_img_label)
         self.player_cup_group.setLayout(player_cup_layout)
-        return NotImplemented
 
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
         """
@@ -260,9 +267,10 @@ class MainWidget(QWidget, UIController):
             enemy_cup_layout.addWidget(die_img_label)
         self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}").setLayout(enemy_cup_layout)
 
-    def display_action_enemy(self, enemy_nr: int, action: int):
+    def display_action_enemy(self, enemy_nr: int, action: int, target: int):
         """
         Display which action an enemy is currently executing
+        :param target: who the action is directed towards (e.g. who they are doubting)
         :param enemy_nr: which enemy to display the action for
         :param action: id of the action: 0 - thinking, 1 - bet down
         :return:

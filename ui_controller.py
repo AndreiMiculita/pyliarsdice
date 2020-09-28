@@ -13,7 +13,7 @@ class UIController:
     def display_dice_enemy(self, enemy_nr: int, dice: [int]):
         return NotImplemented
 
-    def display_action_enemy(self, enemy_nr: int, action: int):
+    def display_action_enemy(self, enemy_nr: int, action: int, target: int):
         return NotImplemented
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
