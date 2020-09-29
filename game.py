@@ -347,7 +347,9 @@ class Game:
         if self.current_player == self.player_ID:
             count, roll = self.ui_bid()
         else:
+            invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player, action=0)
             count, roll = self.model_bid()
+            invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player, action=1)
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):

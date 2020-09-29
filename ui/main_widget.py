@@ -101,18 +101,6 @@ class MainWidget(QWidget, UIController):
             # Here we'll show if the enemy is thinking, or if they call your bluff
             enemy_action_group = QGroupBox("Enemy Action", objectName=f"enemy_action_group{i + 1}")
             # print(f"init i = {i}")
-            enemy_action_layout = QVBoxLayout()
-            enemy_action_label = QLabel("Thinking", objectName=f"enemy_action_label{i + 1}")
-
-            # use https://loading.io/
-            enemy_loading_label = QLabel()
-            enemy_loading_movie = QMovie("assets/images/loader.gif")
-            enemy_loading_movie.setScaledSize(QSize(50, 50))
-            enemy_loading_label.setMovie(enemy_loading_movie)
-            enemy_loading_movie.start()
-            enemy_action_layout.addWidget(enemy_action_label)
-            enemy_action_layout.addWidget(enemy_loading_label)
-            enemy_action_group.setLayout(enemy_action_layout)
 
             enemy_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
             enemy_layout.addWidget(enemy_bet_group, 1, 0, 1, 1)
@@ -267,23 +255,37 @@ class MainWidget(QWidget, UIController):
             enemy_cup_layout.addWidget(die_img_label)
         self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}").setLayout(enemy_cup_layout)
 
-    def display_action_enemy(self, enemy_nr: int, action: int, target: int):
+    def display_action_enemy(self, enemy_nr: int, action: int, target: int = 0):
         """
         Display which action an enemy is currently executing
-        :param target: who the action is directed towards (e.g. who they are doubting)
         :param enemy_nr: which enemy to display the action for
-        :param action: id of the action: 0 - thinking, 1 - bet down
+        :param action: id of the action: 0 - thinking, 1 - doubting, 2 - waiting
+        :param target: (optional)  who the action is directed towards (e.g. who they are doubting)
         :return:
         """
         # TODO: implement this
+        enemy_action_layout = QVBoxLayout()
+        enemy_action_image_label = QLabel()
+
         if action == 0:
-            pass
+            enemy_action_label = QLabel("Thinking", objectName=f"enemy_action_label{enemy_nr}")
+            # use https://loading.io/
+            enemy_loading_movie = QMovie("assets/images/loader.gif")
         elif action == 1:
-            pass
+            enemy_action_label = QLabel(f"Doubting player{target}!", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_loading_movie = QMovie("assets/images/exclamation.gif")
         elif action == 2:
-            pass
+            enemy_action_label = QLabel("Waiting", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_loading_movie = QMovie("assets/images/waiting.gif")
         else:
             pass
+
+        enemy_loading_movie.setScaledSize(QSize(50, 50))
+        enemy_action_image_label.setMovie(enemy_loading_movie)
+        enemy_loading_movie.start()
+        enemy_action_layout.addWidget(enemy_action_label)
+        enemy_action_layout.addWidget(enemy_action_image_label)
+        self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}").setLayout(enemy_action_layout)
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
         """
