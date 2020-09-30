@@ -233,7 +233,11 @@ class MainWidget(QWidget, UIController):
             die_img_label.resize(50, 50)
             die_img_label.setScaledContents(False)
             enemy_cup_layout.addWidget(die_img_label)
-        self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}").setLayout(enemy_cup_layout)
+        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
+        if enemy_cup_group is not None:
+            enemy_cup_group.setLayout(enemy_cup_layout)
+        else:
+            print(f"enemy {enemy_nr} cup group not found")
 
     def display_dice_enemy(self, enemy_nr: int, dice: [int]):
         """
@@ -253,7 +257,11 @@ class MainWidget(QWidget, UIController):
             die_img_label.resize(50, 50)
             die_img_label.setScaledContents(False)
             enemy_cup_layout.addWidget(die_img_label)
-        self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}").setLayout(enemy_cup_layout)
+        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
+        if enemy_cup_group is not None:
+            enemy_cup_group.setLayout(enemy_cup_layout)
+        else:
+            print(f"enemy {enemy_nr} cup group not found")
 
     def display_action_enemy(self, enemy_nr: int, action: int, target: int = 0):
         """
@@ -285,7 +293,11 @@ class MainWidget(QWidget, UIController):
         enemy_loading_movie.start()
         enemy_action_layout.addWidget(enemy_action_label)
         enemy_action_layout.addWidget(enemy_action_image_label)
-        self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}").setLayout(enemy_action_layout)
+        enemy_action_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}")
+        if enemy_action_group is not None:
+            enemy_action_group.setLayout(enemy_action_layout)
+        else:
+            print(f"Enemy {enemy_nr} action group not found")
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
         """
@@ -295,8 +307,16 @@ class MainWidget(QWidget, UIController):
         :param dice: what dice (1-6) the enemy has bet
         :return:
         """
-        self.all_enemies_group.findChild(QLabel, f"enemy_number{enemy_nr}").setText(str(number))
-        self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}").setText(str(dice))
+        number_label = self.all_enemies_group.findChild(QLabel, f"enemy_number{enemy_nr}")
+        if number_label is not None:
+            number_label.setText(str(number))
+        else:
+            print(f"Number label for enemy{enemy_nr} not found")
+        dice_label = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
+        if dice_label is not None:
+            dice_label.setText(str(dice))
+        else:
+            print(f"Dice label for enemy{enemy_nr} not found")
 
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         """

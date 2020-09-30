@@ -609,7 +609,8 @@ class Game:
             if self.state == states['bidding_phase']:
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
-                invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, self.current_player,
+                if self.current_player != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, self.current_player,
                                               self.current_bid.count, self.current_bid.roll)
                 self.models_remember_bid()
                 self.update_turn()
