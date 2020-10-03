@@ -393,7 +393,8 @@ class Game:
         invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=True)
 
         # TODO: how will this work?
-        invoker.invoke_in_main_thread(self.ui_controller.set_bet_limits, number_min=0, number_max=10, dice_min=1, dice_max=6)
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_limits, number_min=0, number_max=10, dice_min=1,
+                                      dice_max=6)
 
         while not higher:  # Random bid, on a higher count with random dice value
             # count = int(input("[BID] Number of dice: "))  # Placeholder
@@ -575,10 +576,12 @@ class Game:
                 print(
                     f'All players rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
                 invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
-                # Display this on enemy 1
-                # TODO: display separately for each enemy
-                invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy,
-                                              enemy_nr=1, dice_count=self.n_total_dice - len(self.players[0].hand))
+
+                for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
+                    if idx > 0:
+                        invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy,
+                                                      enemy_nr=idx, dice_count=player.get_hand_size())
+
                 self.state = states['bidding_phase']
                 continue
 

@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
 
     def restart_aux(self, idx: int, opponents: int):
 
-        new_game_widget = MainWidget(difficulty=idx, opponents=int(self.select_enemies_spinbox.value()))
+        new_game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()))
         self.central_widget.addWidget(new_game_widget)
         self.central_widget.setCurrentWidget(new_game_widget)
 

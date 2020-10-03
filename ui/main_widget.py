@@ -12,7 +12,8 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLab
 from game import Game
 from ui_controller import UIController
 
-dice_images = ["assets/images/dice-1-star.png",
+dice_images = ["assets/images/dice-blank.png",
+               "assets/images/dice-1-star.png",
                "assets/images/dice-2.png",
                "assets/images/dice-3.png",
                "assets/images/dice-4.png",
@@ -24,33 +25,36 @@ dice_image_unknown = "assets/images/dice-q.png"
 
 class MainWidget(QWidget, UIController):
 
-    def __init__(self, difficulty: int, opponents: int):
+    def __init__(self, difficulty: int, n_opponents: int):
         """
         This widget is everything in the window, except for the menu bar and status bar.
         :param difficulty: an integer value for the difficulty (0: random, 1: model)
-        :param opponents: integer representing how many opponents there are
+        :param n_opponents: integer representing how many opponents there are
         """
         super(MainWidget, self).__init__()
         self.turn_label = QLabel(text="")
         self.actions_group = QGroupBox('Your Action', objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
-        self.trust_button = QPushButton('TRUST (T)')
+        self.trust_button = QPushButton('BELIEVE BID (T)')
         self.bet_button = QPushButton('BET (B)')
         self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
         self.player_cup_group = QGroupBox("Your Cup")
-        self.opponents = opponents
+        self.n_opponents = n_opponents
         self.set_bluff_controls_enabled(False)
         self.set_bet_controls_enabled(False)
         self.init_ui()
+
+        for enemy_nr in range(1, n_opponents + 1):
+            self.display_bet_enemy(enemy_nr=enemy_nr, number=0, dice=0)
+
         self.q = Queue()
 
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
-        self.game = Game(ui_controller=self, n_players=opponents + 1, n_starting_dice=5, difficulty=difficulty + 1,
+        self.game = Game(ui_controller=self, n_players=n_opponents + 1, n_starting_dice=5, difficulty=difficulty + 1,
                          input_queue=self.q)
 
-        # TODO use Qthread?
         self.game_thread = threading.Thread(target=self.game.play)
 
         self.game_thread.start()
@@ -67,7 +71,7 @@ class MainWidget(QWidget, UIController):
         # Display all enemies in a group with a horizontal layout
         all_enemies_layout = QHBoxLayout()
 
-        for i in range(0, self.opponents):
+        for i in range(0, self.n_opponents):
             enemy_group = QGroupBox(f"Player {i + 1}")  # Player 0 is human user
             enemy_layout = QGridLayout()
 
@@ -82,14 +86,14 @@ class MainWidget(QWidget, UIController):
             enemy_bet_layout = QHBoxLayout()
 
             # Here we display the amount of dice the enemy has bet
-            enemy_number_label = QLabel("1", objectName=f"enemy_number{i + 1}")
+            enemy_number_label = QLabel("", objectName=f"enemy_number{i + 1}")
             enemy_number_label.resize(enemy_number_label.sizeHint())
 
             enemy_times_label = QLabel("×")
             enemy_times_label.resize(enemy_times_label.sizeHint())
 
             # Here we display the type of dice the enemy has bet
-            enemy_dice_label = QLabel("1", objectName=f"enemy_dice{i + 1}")
+            enemy_dice_label = QLabel("", objectName=f"enemy_dice{i + 1}")
             enemy_dice_label.resize(enemy_dice_label.sizeHint())
 
             enemy_bet_layout.addWidget(enemy_number_label)
@@ -175,9 +179,9 @@ class MainWidget(QWidget, UIController):
     def bet(self):
         """
         Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
+        Prints bet to stdout, and also sends it into the input queue
         :return:
         """
-        # TODO redirect this stdout to the stdin of the game thread
         print(int(self.select_number_spin_box.value()))
         self.q.put(int(self.select_number_spin_box.value()))
         time.sleep(0.1)  # Wait for 2nd question
@@ -187,6 +191,7 @@ class MainWidget(QWidget, UIController):
     def call_bluff(self):
         """
         Action to be done when the "call bluff" button is pressed (send signal to the game)
+        Prints action to stdout, and also sends it into the input queue
         :return:
         """
         print("1")
@@ -195,6 +200,7 @@ class MainWidget(QWidget, UIController):
     def trust(self):
         """
         Action to be done when the "trust" button is pressed (send signal to the game)
+        Prints action to stdout, and also sends it into the input queue
         :return:
         """
         print("0")
@@ -209,7 +215,7 @@ class MainWidget(QWidget, UIController):
         player_cup_layout = QHBoxLayout()
         for die in dice:
             # print(die, dice_images[die - 1])
-            die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
+            die_image = QPixmap(dice_images[die])
             die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
             die_img_label = QLabel()
             die_img_label.setPixmap(die_image)
@@ -226,7 +232,7 @@ class MainWidget(QWidget, UIController):
         """
         enemy_cup_layout = QHBoxLayout()
         for die in range(dice_count):
-            die_image = QPixmap(dice_image_unknown)  # dice images are indexed from 0
+            die_image = QPixmap(dice_image_unknown)
             die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
             die_img_label = QLabel()
             die_img_label.setPixmap(die_image)
@@ -249,7 +255,7 @@ class MainWidget(QWidget, UIController):
         enemy_cup_layout = QHBoxLayout()
         for die in dice:
             # print(die, dice_images[die - 1])
-            die_image = QPixmap(dice_images[die - 1])  # dice images are indexed from 0
+            die_image = QPixmap(dice_images[die])
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
@@ -312,9 +318,14 @@ class MainWidget(QWidget, UIController):
             number_label.setText(str(number))
         else:
             print(f"Number label for enemy{enemy_nr} not found")
-        dice_label = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
+        dice_label: QLabel = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
         if dice_label is not None:
-            dice_label.setText(str(dice))
+            die_image = QPixmap(dice_images[dice])
+            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
+                                         mode=QtCore.Qt.SmoothTransformation)
+            dice_label.setPixmap(die_image)
+            dice_label.resize(50, 50)
+            dice_label.setScaledContents(False)
         else:
             print(f"Dice label for enemy{enemy_nr} not found")
 
