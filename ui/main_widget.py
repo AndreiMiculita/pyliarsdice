@@ -47,7 +47,8 @@ class MainWidget(QWidget, UIController):
         self.init_ui()
 
         for enemy_nr in range(1, n_opponents + 1):
-            self.display_bet_enemy(enemy_nr=enemy_nr, number=0, dice=0)
+            self.display_bet_enemy(enemy_nr=enemy_nr, number="", dice=0)
+            self.display_action_enemy(enemy_nr=enemy_nr, action=2)
 
         self.q = Queue()
 
@@ -221,6 +222,11 @@ class MainWidget(QWidget, UIController):
             die_img_label.setPixmap(die_image)
             die_img_label.setScaledContents(False)
             player_cup_layout.addWidget(die_img_label)
+
+        # First remove the old layout
+        if self.player_cup_group.layout() is not None:
+            # Set new parent for layout, which will be garbage collected
+            QWidget().setLayout(self.player_cup_group.layout())
         self.player_cup_group.setLayout(player_cup_layout)
 
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
@@ -241,6 +247,10 @@ class MainWidget(QWidget, UIController):
             enemy_cup_layout.addWidget(die_img_label)
         enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
         if enemy_cup_group is not None:
+            # First remove the old layout
+            if enemy_cup_group.layout() is not None:
+                # Set new parent for layout, which will be garbage collected
+                QWidget().setLayout(enemy_cup_group.layout())
             enemy_cup_group.setLayout(enemy_cup_layout)
         else:
             print(f"enemy {enemy_nr} cup group not found")
@@ -265,6 +275,10 @@ class MainWidget(QWidget, UIController):
             enemy_cup_layout.addWidget(die_img_label)
         enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
         if enemy_cup_group is not None:
+            # First remove the old layout
+            if enemy_cup_group.layout() is not None:
+                # Set new parent for layout, which will be garbage collected
+                QWidget().setLayout(enemy_cup_group.layout())
             enemy_cup_group.setLayout(enemy_cup_layout)
         else:
             print(f"enemy {enemy_nr} cup group not found")
@@ -289,18 +303,22 @@ class MainWidget(QWidget, UIController):
             enemy_action_label = QLabel(f"Doubting player{target}!", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/exclamation.gif")
         elif action == 2:
-            enemy_action_label = QLabel("Waiting", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_action_label = QLabel("...", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/waiting.gif")
         else:
             pass
 
-        enemy_loading_movie.setScaledSize(QSize(50, 50))
+        enemy_loading_movie.setScaledSize(QSize(70, 70))
         enemy_action_image_label.setMovie(enemy_loading_movie)
         enemy_loading_movie.start()
         enemy_action_layout.addWidget(enemy_action_label)
         enemy_action_layout.addWidget(enemy_action_image_label)
         enemy_action_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}")
         if enemy_action_group is not None:
+            # First remove the old layout
+            if enemy_action_group.layout() is not None:
+                # Set new parent for layout, which will be garbage collected
+                QWidget().setLayout(enemy_action_group.layout())
             enemy_action_group.setLayout(enemy_action_layout)
         else:
             print(f"Enemy {enemy_nr} action group not found")
@@ -380,6 +398,7 @@ class MainWidget(QWidget, UIController):
             self.close()
         else:
             self.close()
+
 
     def __delete__(self, instance):
         self.game.over = True

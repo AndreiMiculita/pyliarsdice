@@ -1,4 +1,5 @@
 import random
+import time
 from multiprocessing import Queue
 
 import numpy as np
@@ -203,7 +204,7 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
-        invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True)
+        invoker.invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=True)
 
         # doubt = int(input(
         #     f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
@@ -218,7 +219,7 @@ class Game:
                 f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
                 f"1=yes, 0=no: ")
             doubt = int(self.input_queue.get(block=True))
-        invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=False)
+        invoker.invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=False)
 
         return doubt
 
@@ -250,6 +251,7 @@ class Game:
                     # believe = int(input(
                     #     f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                     #     f"table? 1=yes, 0=no: "))  # Placeholder
+                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
                     print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                           f"table? 1=yes, 0=no: ")
                     believe = int(self.input_queue.get(block=True))
@@ -286,10 +288,12 @@ class Game:
         print('Players hands are opened: ', end='')
         print(handstring)
 
-        # Reveal all dice in ui
+        # Reveal all dice in ui and wait for a bit
         for idx, player in enumerate(self.players):
             if idx > 0:
                 invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand)
+            time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
+        time.sleep(0.1 * self.n_total_dice)  # Wait for 2nd question
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
 
@@ -349,8 +353,9 @@ class Game:
             invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                           action=0)
             count, roll = self.model_bid()
+            time.sleep(0.5) # To show the model thinking animation
             invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
-                                          action=1)
+                                          action=2)
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -602,6 +607,12 @@ class Game:
                 if doubt:
                     print(f'Player {self.current_player} does not believe the bid of Player {self.previous_player}')
                     self.resolve_doubt()
+                    if self.current_player == self.player_ID:
+                        invoker.invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
+                                                      enemy_nr=self.current_player,
+                                                      action=1,
+                                                      target=self.previous_player)
+                        time.sleep(0.2)
                     # self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
@@ -616,6 +627,9 @@ class Game:
                 if self.current_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=self.current_player,
                                                   number=self.current_bid.count, dice=self.current_bid.roll)
+                if self.previous_player != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=self.previous_player,
+                                                  number="", dice=0)
                 self.models_remember_bid()
                 self.update_turn()
                 self.state = states['doubting_phase']
