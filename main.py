@@ -224,7 +224,9 @@ class MainWindow(QMainWindow):
                                      QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            # TODO close all game threads
+            if isinstance(self.central_widget.currentWidget(), MainWidget):
+                self.central_widget.currentWidget().q.put("quit")
+                print("quit")
             event.accept()
         else:
             event.ignore()

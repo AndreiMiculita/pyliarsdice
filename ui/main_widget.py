@@ -12,7 +12,7 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLab
 from game import Game
 from ui_controller import UIController
 
-dice_images = ["assets/images/dice-blank.png",
+dice_images = ["assets/images/dice-none.png",
                "assets/images/dice-1-star.png",
                "assets/images/dice-2.png",
                "assets/images/dice-3.png",
@@ -90,7 +90,7 @@ class MainWidget(QWidget, UIController):
             enemy_number_label = QLabel("", objectName=f"enemy_number{i + 1}")
             enemy_number_label.resize(enemy_number_label.sizeHint())
 
-            enemy_times_label = QLabel("×")
+            enemy_times_label = QLabel("", objectName=f"enemy_x{i + 1}")
             enemy_times_label.resize(enemy_times_label.sizeHint())
 
             # Here we display the type of dice the enemy has bet
@@ -300,7 +300,7 @@ class MainWidget(QWidget, UIController):
             # use https://loading.io/
             enemy_loading_movie = QMovie("assets/images/loader.gif")
         elif action == 1:
-            enemy_action_label = QLabel(f"Doubting player{target}!", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_action_label = QLabel(f"Doubting Player {target}!", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/exclamation.gif")
         elif action == 2:
             enemy_action_label = QLabel("...", objectName=f"enemy_action_label{enemy_nr}")
@@ -336,6 +336,11 @@ class MainWidget(QWidget, UIController):
             number_label.setText(str(number))
         else:
             print(f"Number label for enemy{enemy_nr} not found")
+        x_label = self.all_enemies_group.findChild(QLabel, f"enemy_x{enemy_nr}")
+        if x_label is not None:
+            x_label.setText("×" if dice != 0 else "")
+        else:
+            print(f"X label for enemy{enemy_nr} not found")
         dice_label: QLabel = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
         if dice_label is not None:
             die_image = QPixmap(dice_images[dice])
@@ -359,12 +364,16 @@ class MainWidget(QWidget, UIController):
         self.select_number_spin_box.setRange(number_min, number_max)
         self.select_dice_spin_box.setRange(dice_min, dice_max)
 
-    def set_bluff_controls_enabled(self, enabled: bool):
+    def set_bluff_controls_enabled(self, enabled: bool, target: int = 0):
         """
         Enables or disables the call bluff/trust buttons
         :param enabled: whether the controls are enabled or not
+        :param target: who to doubt/trust
         :return:
         """
+        self.call_bluff_button.setText(f"CALL PLAYER {target}'S BLUFF (C)" if enabled else f"CALL BLUFF (C)")
+        self.trust_button.setText(f"TRUST PLAYER {target} (T)" if enabled else f"TRUST (T)")
+
         self.call_bluff_button.setEnabled(enabled)
         self.trust_button.setEnabled(enabled)
 
@@ -398,8 +407,3 @@ class MainWidget(QWidget, UIController):
             self.close()
         else:
             self.close()
-
-
-    def __delete__(self, instance):
-        self.game.over = True
-        super(MainWidget, self).__delete__()

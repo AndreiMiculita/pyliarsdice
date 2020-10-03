@@ -204,12 +204,14 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
-        invoker.invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=True)
+        invoker.invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=True, target=self.previous_player)
 
         # doubt = int(input(
         #     f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: "))  # Placeholder
         print(f"Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? 1=yes, 0=no: ")
         doubt = int(self.input_queue.get(block=True))
+        if doubt == "quit":
+            quit(0)
 
         while doubt != 0 and doubt != 1:
             # doubt = int(input(
@@ -219,6 +221,8 @@ class Game:
                 f"(Try again) Do you want to doubt and call {self.current_bid.count} x {self.current_bid.roll} a lie? "
                 f"1=yes, 0=no: ")
             doubt = int(self.input_queue.get(block=True))
+            if doubt == "quit":
+                quit(0)
         invoker.invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=False)
 
         return doubt
@@ -247,7 +251,7 @@ class Game:
                 # current and previous turn
 
                 if self.players[idx].strategy == 'human':
-                    invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True)
+                    invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True, target=self.previous_player)
                     # believe = int(input(
                     #     f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                     #     f"table? 1=yes, 0=no: "))  # Placeholder
@@ -255,6 +259,8 @@ class Game:
                     print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                           f"table? 1=yes, 0=no: ")
                     believe = int(self.input_queue.get(block=True))
+                    if believe == "quit":
+                        quit(0)
                     while believe != 0 and believe != 1:
                         # believe = int(input(
                         #     f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the table? 1=yes, 0=no: '))  # Placeholder
@@ -262,6 +268,8 @@ class Game:
                             f'(Try again) Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll}'
                             f' is on the table? 1=yes, 0=no: ')
                         believe = int(self.input_queue.get(block=True))
+                        if believe == "quit":
+                            quit(0)
                     invoker.invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=False)
 
                 elif self.players[idx].strategy == 'random':
@@ -353,9 +361,6 @@ class Game:
             invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                           action=0)
             count, roll = self.model_bid()
-            time.sleep(0.5) # To show the model thinking animation
-            invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
-                                          action=2)
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -405,9 +410,13 @@ class Game:
             # count = int(input("[BID] Number of dice: "))  # Placeholder
             print("[BID] Number of dice: ")  # Placeholder
             count = int(self.input_queue.get(block=True))
+            if count == "quit":
+                quit(0)
             # roll = int(input("[BID] Value of those dice: "))  # Placeholder
             print("[BID] Value of those dice: ")  # Placeholder
             roll = int(self.input_queue.get(block=True))
+            if roll == "quit":
+                quit(0)
             if count > 0 and 1 <= roll <= 6 and self.is_higher_bid(count, roll):
                 higher = True
             else:
@@ -577,6 +586,7 @@ class Game:
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
                 print(f'[FIRST TURN]: Player {self.current_player}')
+                invoker.invoke_in_main_thread(self.ui_controller.indicate_turn, player=self.current_player)
                 self.all_roll()
                 print(
                     f'All players rolled the dice! My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice} \n')
@@ -607,7 +617,7 @@ class Game:
                 if doubt:
                     print(f'Player {self.current_player} does not believe the bid of Player {self.previous_player}')
                     self.resolve_doubt()
-                    if self.current_player == self.player_ID:
+                    if self.current_player != self.player_ID:
                         invoker.invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
                                                       enemy_nr=self.current_player,
                                                       action=1,
@@ -630,6 +640,10 @@ class Game:
                 if self.previous_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=self.previous_player,
                                                   number="", dice=0)
+                time.sleep(1)  # To show the model thinking animation
+                if self.current_player != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
+                                                  action=2)
                 self.models_remember_bid()
                 self.update_turn()
                 self.state = states['doubting_phase']
@@ -649,3 +663,4 @@ class Game:
         print(f'Chunks retrieved during game: {self.chunk_retrieval_count}')
         print(f'Chunk retrieve failures during game: {self.chunk_retrieval_failure_count}')
         print('Game Finished!')
+        quit(0)

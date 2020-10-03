@@ -22,7 +22,7 @@ class UIController:
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         return NotImplemented
 
-    def set_bluff_controls_enabled(self, enabled: bool):
+    def set_bluff_controls_enabled(self, enabled: bool, target: int):
         return NotImplemented
 
     def set_bet_controls_enabled(self, enabled: bool):
