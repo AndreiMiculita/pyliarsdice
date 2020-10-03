@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
 
         if reply == QMessageBox.Yes:
             if isinstance(self.central_widget.currentWidget(), MainWidget):
-                self.central_widget.currentWidget().q.put("quit")
+                self.central_widget.currentWidget().q.put("-1")
                 print("quit")
             event.accept()
         else:

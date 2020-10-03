@@ -1,4 +1,3 @@
-import time
 import threading
 import time
 from multiprocessing import Queue
@@ -6,8 +5,8 @@ from multiprocessing import Queue
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
-from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, QPushButton, \
-    QMessageBox
+from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
+    QPushButton, QMessageBox
 
 from game import Game
 from ui_controller import UIController
@@ -33,7 +32,7 @@ class MainWidget(QWidget, UIController):
         """
         super(MainWidget, self).__init__()
         self.turn_label = QLabel(text="")
-        self.actions_group = QGroupBox('Your Action', objectName="ActionsGroup")  # objectName required for CSS
+        self.actions_group = QGroupBox(title='Your Action', objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
         self.trust_button = QPushButton('BELIEVE BID (T)')
         self.bet_button = QPushButton('BET (B)')
@@ -80,21 +79,21 @@ class MainWidget(QWidget, UIController):
             # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
             # but not the types
             # Note that enemies are indexed from 1, player is 0
-            enemy_cup_group = QGroupBox("Enemy Cup", objectName=f"enemy_cup{i + 1}")
+            enemy_cup_group = QGroupBox(title="Enemy Cup", objectName=f"enemy_cup{i + 1}")
             enemy_cup_group.setProperty("cssClass", "cup")
 
             enemy_bet_group = QGroupBox("Enemy Bet")
             enemy_bet_layout = QHBoxLayout()
 
             # Here we display the amount of dice the enemy has bet
-            enemy_number_label = QLabel("", objectName=f"enemy_number{i + 1}")
+            enemy_number_label = QLabel(text="", objectName=f"enemy_number{i + 1}")
             enemy_number_label.resize(enemy_number_label.sizeHint())
 
-            enemy_times_label = QLabel("", objectName=f"enemy_x{i + 1}")
+            enemy_times_label = QLabel(text="", objectName=f"enemy_x{i + 1}")
             enemy_times_label.resize(enemy_times_label.sizeHint())
 
             # Here we display the type of dice the enemy has bet
-            enemy_dice_label = QLabel("", objectName=f"enemy_dice{i + 1}")
+            enemy_dice_label = QLabel(text="", objectName=f"enemy_dice{i + 1}")
             enemy_dice_label.resize(enemy_dice_label.sizeHint())
 
             enemy_bet_layout.addWidget(enemy_number_label)
@@ -104,7 +103,7 @@ class MainWidget(QWidget, UIController):
             enemy_bet_group.setLayout(enemy_bet_layout)
 
             # Here we'll show if the enemy is thinking, or if they call your bluff
-            enemy_action_group = QGroupBox("Enemy Action", objectName=f"enemy_action_group{i + 1}")
+            enemy_action_group = QGroupBox(title="Enemy Action", objectName=f"enemy_action_group{i + 1}")
             # print(f"init i = {i}")
 
             enemy_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
@@ -296,14 +295,14 @@ class MainWidget(QWidget, UIController):
         enemy_action_image_label = QLabel()
 
         if action == 0:
-            enemy_action_label = QLabel("Thinking", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_action_label = QLabel(text="Thinking", objectName=f"enemy_action_label{enemy_nr}")
             # use https://loading.io/
             enemy_loading_movie = QMovie("assets/images/loader.gif")
         elif action == 1:
-            enemy_action_label = QLabel(f"Doubting Player {target}!", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_action_label = QLabel(text=f"Doubting Player {target}!", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/exclamation.gif")
         elif action == 2:
-            enemy_action_label = QLabel("...", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_action_label = QLabel(text="...", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/waiting.gif")
         else:
             pass
@@ -341,7 +340,7 @@ class MainWidget(QWidget, UIController):
             x_label.setText("×" if dice != 0 else "")
         else:
             print(f"X label for enemy{enemy_nr} not found")
-        dice_label: QLabel = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
+        dice_label = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
         if dice_label is not None:
             die_image = QPixmap(dice_images[dice])
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
