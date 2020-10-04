@@ -6,7 +6,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
-    QPushButton, QMessageBox
+    QPushButton, QMessageBox, QStackedWidget
 
 from game import Game
 from ui_controller import UIController
@@ -31,10 +31,11 @@ class MainWidget(QWidget, UIController):
         :param n_opponents: integer representing how many opponents there are
         """
         super(MainWidget, self).__init__()
+        self.player_action_group = QStackedWidget()
         self.turn_label = QLabel(text="")
-        self.actions_group = QGroupBox(title='Your Action', objectName="ActionsGroup")  # objectName required for CSS
+        self.doubt_or_believe_group = QGroupBox(title='Your Action', objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
-        self.trust_button = QPushButton('BELIEVE BID (T)')
+        self.trust_button = QPushButton('BELIEVE BID (V)')
         self.bet_button = QPushButton('BET (B)')
         self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
@@ -121,7 +122,8 @@ class MainWidget(QWidget, UIController):
         self.player_cup_group.setProperty("cssClass", "cup")
 
         player_bet_group = QGroupBox("Your Bet")
-        player_bet_layout = QHBoxLayout()
+        player_bet_layout = QVBoxLayout()
+        player_bet_selection_layout = QHBoxLayout()
 
         # Here the player can select the number of dice to bet
         select_number_layout = QVBoxLayout()
@@ -140,9 +142,16 @@ class MainWidget(QWidget, UIController):
         select_dice_layout.addWidget(select_dice_label)
         select_dice_layout.addWidget(self.select_dice_spin_box)
 
-        player_bet_layout.addLayout(select_number_layout)
-        player_bet_layout.addWidget(player_times_label)
-        player_bet_layout.addLayout(select_dice_layout)
+        player_bet_selection_layout.addLayout(select_number_layout)
+        player_bet_selection_layout.addWidget(player_times_label)
+        player_bet_selection_layout.addLayout(select_dice_layout)
+
+        self.bet_button.setShortcut("B")
+        self.bet_button.setStatusTip('Bet the selected amount and dice.')
+        self.bet_button.clicked.connect(self.bet)
+
+        player_bet_layout.addLayout(player_bet_selection_layout)
+        player_bet_layout.addWidget(self.bet_button)
 
         player_bet_group.setLayout(player_bet_layout)
 
@@ -150,30 +159,27 @@ class MainWidget(QWidget, UIController):
         # The buttons are linked to the functions below this function
         actions_layout = QVBoxLayout()
 
-        self.bet_button.setShortcut("B")
-        self.bet_button.setStatusTip('Bet the selected amount and dice.')
-        self.bet_button.clicked.connect(self.bet)
-
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
         self.call_bluff_button.clicked.connect(self.call_bluff)
 
-        self.trust_button.setShortcut("T")
-        self.trust_button.setStatusTip("Trust the opponent.")
+        self.trust_button.setShortcut("V")
+        self.trust_button.setStatusTip("Believe the opponent.")
         self.trust_button.clicked.connect(self.trust)
 
-        actions_layout.addWidget(self.bet_button)
-        actions_layout.addWidget(self.call_bluff_button)
         actions_layout.addWidget(self.trust_button)
+        actions_layout.addWidget(self.call_bluff_button)
 
-        self.actions_group.setLayout(actions_layout)
+        self.doubt_or_believe_group.setLayout(actions_layout)
+        
+        self.player_action_group.addWidget(player_bet_group)
+        self.player_action_group.addWidget(self.doubt_or_believe_group)
 
         # Put all the groups into a vertical layout
         vertical_main_layout.addWidget(self.turn_label, 0, 0, 1, 2)
         vertical_main_layout.addWidget(self.all_enemies_group, 1, 0, 2, 2)
         vertical_main_layout.addWidget(self.player_cup_group, 3, 0, 1, 2)
-        vertical_main_layout.addWidget(player_bet_group, 4, 0, 1, 1)
-        vertical_main_layout.addWidget(self.actions_group, 4, 1, 1, 1)
+        vertical_main_layout.addWidget(self.player_action_group, 4, 0, 1, 2)
         self.setLayout(vertical_main_layout)
 
     def bet(self):
@@ -371,10 +377,12 @@ class MainWidget(QWidget, UIController):
         :return:
         """
         self.call_bluff_button.setText(f"CALL PLAYER {target}'S BLUFF (C)" if enabled else f"CALL BLUFF (C)")
-        self.trust_button.setText(f"TRUST PLAYER {target} (T)" if enabled else f"TRUST (T)")
+        self.trust_button.setText(f"BELIEVE PLAYER {target} (V)" if enabled else f"BELIEVE (V)")
 
         self.call_bluff_button.setEnabled(enabled)
         self.trust_button.setEnabled(enabled)
+
+        self.player_action_group.setCurrentIndex(1)
 
     def set_bet_controls_enabled(self, enabled: bool):
         """
@@ -385,6 +393,8 @@ class MainWidget(QWidget, UIController):
         self.select_number_spin_box.setEnabled(enabled)
         self.select_dice_spin_box.setEnabled(enabled)
         self.bet_button.setEnabled(enabled)
+
+        self.player_action_group.setCurrentIndex(0)
 
     def indicate_turn(self, player: int):
         """
