@@ -72,10 +72,12 @@ class StartScreenWidget(QWidget):
 
         # This could be anything, I think
         self.select_enemies_spinbox.setRange(*opponent_limits)
+        self.select_enemies_spinbox.setMaximumWidth(50)
 
         select_enemies_group = QGroupBox("Select number of opponents ({0}-{1})".format(*opponent_limits))
         select_enemies_layout = QVBoxLayout()
         select_enemies_layout.addWidget(self.select_enemies_spinbox)
+        select_enemies_layout.setAlignment(Qt.AlignCenter)
         select_enemies_group.setLayout(select_enemies_layout)
 
         vertical_main_layout.addWidget(select_enemies_group)
@@ -247,7 +249,14 @@ class MainWindow(QMainWindow):
         """
         about_box = QMessageBox()
         about_box.setWindowTitle("About")
-        about_box.setText("Liar's Dice implemented in python. Add licenses and other info here.")
+        about_box.setTextFormat(Qt.RichText)
+        about_box.setText(f"Liar's Dice implemented in Python, with Cognitive Model opponents.<br>"
+                          f"Developed for the Cognitive Modelling: Complex Behavior course at the University of "
+                          f"Groningen.<br>"
+                          f"Model: Oscar de Vries<br>"
+                          f"View: Andrei Miculita<br>"
+                          f"Controller: Tomasso Parisotto<br>"
+                          f"GitHub: <a href='https://github.com/AndreiMiculita/pyliarsdice'>link</a>")
         about_box.exec_()
 
 

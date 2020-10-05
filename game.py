@@ -394,7 +394,8 @@ class Game:
         """
 
         higher = False
-        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=True)
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=True,
+                                      previous_bet=f"{self.current_bid.count} × {self.current_bid.roll}")
 
         count, roll = 0, 0
         invoker.invoke_in_main_thread(self.ui_controller.set_bet_limits, number_min=0, number_max=10, dice_min=1,
@@ -413,7 +414,8 @@ class Game:
                 higher = True
             else:
                 print('Bid impossible or not high enough, try again!')
-        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=False)
+        invoker.invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=False,
+                                      previous_bet=f"{self.current_bid.count} × {self.current_bid.roll}")
 
         return count, roll
 

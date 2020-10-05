@@ -6,7 +6,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
-    QPushButton, QMessageBox, QStackedWidget
+    QPushButton, QMessageBox, QStackedWidget, QFrame
 
 from game import Game
 from ui_controller import UIController
@@ -33,11 +33,14 @@ class MainWidget(QWidget, UIController):
         super(MainWidget, self).__init__()
         self.player_action_group = QStackedWidget()
         self.turn_label = QLabel(text="")
-        self.doubt_or_believe_group = QGroupBox(title='Your Action', objectName="ActionsGroup")  # objectName required for CSS
+        self.difficulty_label = QLabel(
+            text="Playing against cognitive model." if difficulty == 1 else "Playing against random model.")
+        self.doubt_or_believe_group = QGroupBox(title='Your Action',
+                                                objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
         self.trust_button = QPushButton('BELIEVE BID (V)')
         self.bet_button = QPushButton('BET (B)')
-        self.all_enemies_group = QGroupBox("Enemies")  # Use findChild to address individual components for each enemy
+        self.all_enemies_group = QFrame()  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
         self.player_cup_group = QGroupBox("Your Cup")
@@ -67,6 +70,14 @@ class MainWidget(QWidget, UIController):
         vertical_main_layout = QGridLayout()
         vertical_main_layout.setSpacing(10)
 
+        top_group = QFrame()
+
+        top_group_layout = QHBoxLayout()
+        top_group_layout.addWidget(self.turn_label)
+        top_group_layout.addWidget(self.difficulty_label)
+
+        top_group.setLayout(top_group_layout)
+
         # Enemy half of the screen -------------------------
 
         # Display all enemies in a group with a horizontal layout
@@ -80,10 +91,10 @@ class MainWidget(QWidget, UIController):
             # Before the cup is lifted, this should only show dice with question marks, or the number of dice under it,
             # but not the types
             # Note that enemies are indexed from 1, player is 0
-            enemy_cup_group = QGroupBox(title="Enemy Cup", objectName=f"enemy_cup{i + 1}")
+            enemy_cup_group = QGroupBox(title="Cup", objectName=f"enemy_cup{i + 1}")
             enemy_cup_group.setProperty("cssClass", "cup")
 
-            enemy_bet_group = QGroupBox("Enemy Bet")
+            enemy_bet_group = QGroupBox("Bet")
             enemy_bet_layout = QHBoxLayout()
 
             # Here we display the amount of dice the enemy has bet
@@ -104,7 +115,7 @@ class MainWidget(QWidget, UIController):
             enemy_bet_group.setLayout(enemy_bet_layout)
 
             # Here we'll show if the enemy is thinking, or if they call your bluff
-            enemy_action_group = QGroupBox(title="Enemy Action", objectName=f"enemy_action_group{i + 1}")
+            enemy_action_group = QGroupBox(title="Action", objectName=f"enemy_action_group{i + 1}")
             # print(f"init i = {i}")
 
             enemy_layout.addWidget(enemy_cup_group, 0, 0, 1, 2)
@@ -171,15 +182,17 @@ class MainWidget(QWidget, UIController):
         actions_layout.addWidget(self.call_bluff_button)
 
         self.doubt_or_believe_group.setLayout(actions_layout)
-        
+
         self.player_action_group.addWidget(player_bet_group)
         self.player_action_group.addWidget(self.doubt_or_believe_group)
 
         # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(self.turn_label, 0, 0, 1, 2)
-        vertical_main_layout.addWidget(self.all_enemies_group, 1, 0, 2, 2)
-        vertical_main_layout.addWidget(self.player_cup_group, 3, 0, 1, 2)
-        vertical_main_layout.addWidget(self.player_action_group, 4, 0, 1, 2)
+        vertical_main_layout.addWidget(top_group, 0, 0, 1,
+                                       2 * self.n_opponents)
+        vertical_main_layout.addWidget(self.all_enemies_group, 1, 0, 2,
+                                       2 * self.n_opponents)
+        vertical_main_layout.addWidget(self.player_cup_group, 3, self.n_opponents - 1, 1, 2)
+        vertical_main_layout.addWidget(self.player_action_group, 4, self.n_opponents - 1, 1, 2)
         self.setLayout(vertical_main_layout)
 
     def bet(self):
@@ -384,16 +397,18 @@ class MainWidget(QWidget, UIController):
 
         self.player_action_group.setCurrentIndex(1)
 
-    def set_bet_controls_enabled(self, enabled: bool):
+    def set_bet_controls_enabled(self, enabled: bool, previous_bet: str = ""):
         """
         Enables or disables the bet button and spinboxes
         :param enabled: whether the controls are enabled or not
+        :param previous_bet: bet which must be beaten
         :return:
         """
         self.select_number_spin_box.setEnabled(enabled)
         self.select_dice_spin_box.setEnabled(enabled)
         self.bet_button.setEnabled(enabled)
-
+        self.bet_button.setStatusTip(
+            f"Bet the selected amount and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
         self.player_action_group.setCurrentIndex(0)
 
     def indicate_turn(self, player: int):
