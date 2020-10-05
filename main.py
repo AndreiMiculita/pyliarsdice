@@ -9,6 +9,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView
 
 from ui.main_widget import MainWidget
+from ui.sliding_stacked_widget import SlidingStackedWidget
 
 howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
@@ -131,7 +132,7 @@ class MainWindow(QMainWindow):
         """
         super(MainWindow, self).__init__()
         self.select_enemies_spinbox = QSpinBox()
-        self.central_widget = QStackedWidget()
+        self.central_widget = SlidingStackedWidget()
         self.init_ui()
 
     def init_ui(self):
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(self.restart(show_logo=True))
         how_to_play_widget = HowToPlayWidget()
         how_to_play_widget.back_signal.back.connect(
-            lambda: self.central_widget.setCurrentIndex(self.central_widget.currentIndex() - 1))
+            lambda: self.central_widget.setCurrentIndex(self.central_widget.slideInPrev))
         self.central_widget.addWidget(how_to_play_widget)
 
         self.setCentralWidget(self.central_widget)
@@ -150,7 +151,7 @@ class MainWindow(QMainWindow):
         new_game_action = QAction('New Game', self)
         new_game_action.setShortcut(QKeySequence.New)
         new_game_action.setStatusTip('Start a new game.')
-        new_game_action.triggered.connect(lambda: self.central_widget.setCurrentIndex(0))
+        new_game_action.triggered.connect(lambda: self.central_widget.slideInIdx(0))
 
         exit_action = QAction('Exit', self)
         exit_action.setShortcut(QKeySequence.Close)
@@ -213,7 +214,7 @@ class MainWindow(QMainWindow):
 
         new_game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()))
         self.central_widget.addWidget(new_game_widget)
-        self.central_widget.setCurrentWidget(new_game_widget)
+        self.central_widget.slideInWgt(new_game_widget)
 
     def closeEvent(self, event):
         """
@@ -239,7 +240,7 @@ class MainWindow(QMainWindow):
         :return:
         """
         # Get a reference to the old central widget so that we can return to it
-        self.central_widget.setCurrentIndex(1)
+        self.central_widget.slideInIdx(1)
 
     @staticmethod
     def show_about():

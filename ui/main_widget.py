@@ -3,8 +3,8 @@ import time
 from multiprocessing import Queue
 
 from PySide2 import QtCore
-from PySide2.QtCore import QSize
-from PySide2.QtGui import QMovie, QPixmap
+from PySide2.QtCore import QSize, QTimeLine
+from PySide2.QtGui import QMovie, QPixmap, QPainter
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame
 
@@ -20,6 +20,7 @@ dice_images = ["assets/images/dice-none.png",
                "assets/images/dice-6.png"]
 
 dice_image_unknown = "assets/images/dice-q.png"
+
 
 
 class MainWidget(QWidget, UIController):
