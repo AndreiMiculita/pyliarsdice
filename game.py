@@ -97,6 +97,17 @@ class Game:
     def all_roll(self):
         for p in self.players:
             p.roll_hand()
+        for idx, p in enumerate(self.players):
+            if idx != self.player_ID:
+                invoker.invoke_in_main_thread(self.ui_controller.display_rolling_dice_enemy,
+                                              enemy_nr=idx,
+                                              dice_count=p.get_hand_size())
+            else:
+                invoker.invoke_in_main_thread(self.ui_controller.display_rolling_dice_player,
+                                              dice_count=p.get_hand_size())
+
+        # Sleep for 2 seconds, animation will play
+        time.sleep(2)
 
     def update_turn_generic(self):  # sets turn to the next player
         self.turn = (self.turn + 1) % self.n_players
@@ -294,7 +305,7 @@ class Game:
             if idx > 0:
                 invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand)
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
-        time.sleep(0.1 * self.n_total_dice)  # Wait for 2nd question
+        time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
 
@@ -304,9 +315,10 @@ class Game:
         else:
             # Player doubts and it's right - player loses a die
             self.players[self.current_player].remove_die()
-            self.current_player = (
-                                          self.current_player + self.n_players - 1) % self.n_players  # previous
+            self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
+
+        # TODO: shouldn't there be another all_roll somewhere here? Andrei
 
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
@@ -387,7 +399,6 @@ class Game:
 
     def ui_bid(self):
         """
-        TODO: Needs to be connected to the GUI
         Ask the human player for a new bid.
         :return: count: The number of dice with the same value in the bid.\n
         roll: The dice value to bid.

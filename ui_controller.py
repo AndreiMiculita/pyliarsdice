@@ -7,7 +7,13 @@ class UIController:
     def display_dice_player(self, dice: [int]):
         return NotImplemented
 
+    def display_rolling_dice_player(self, dice_count: int):
+        return NotImplemented
+
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
+        return NotImplemented
+
+    def display_rolling_dice_enemy(self, enemy_nr: int, dice_count: int):
         return NotImplemented
 
     def display_dice_enemy(self, enemy_nr: int, dice: [int]):

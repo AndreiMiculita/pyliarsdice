@@ -1,3 +1,4 @@
+import random
 import threading
 import time
 from multiprocessing import Queue
@@ -20,7 +21,8 @@ dice_images = ["assets/images/dice-none.png",
                "assets/images/dice-6.png"]
 
 dice_image_unknown = "assets/images/dice-q.png"
-
+dice_images_rolling = ["assets/images/dice-rolling-1.gif", "assets/images/dice-rolling-2.gif",
+                       "assets/images/dice-rolling-3.gif"]
 
 
 class MainWidget(QWidget, UIController):
@@ -248,6 +250,27 @@ class MainWidget(QWidget, UIController):
             QWidget().setLayout(self.player_cup_group.layout())
         self.player_cup_group.setLayout(player_cup_layout)
 
+    def display_rolling_dice_player(self, dice_count: int):
+        """
+        Display rolling dice for player
+        :param dice: list of dice numbers that the player is holding
+        :return:
+        """
+        player_cup_layout = QHBoxLayout()
+        for die in range(dice_count):
+            dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
+            dice_rolling_movie.setScaledSize(QSize(50, 50))
+            die_img_label = QLabel()
+            die_img_label.setMovie(dice_rolling_movie)
+            dice_rolling_movie.start()
+            player_cup_layout.addWidget(die_img_label)
+
+        # First remove the old layout
+        if self.player_cup_group.layout() is not None:
+            # Set new parent for layout, which will be garbage collected
+            QWidget().setLayout(self.player_cup_group.layout())
+        self.player_cup_group.setLayout(player_cup_layout)
+
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
         """
         Display how many dice the enemy has, without showing what they are
@@ -263,6 +286,31 @@ class MainWidget(QWidget, UIController):
             die_img_label.setPixmap(die_image)
             die_img_label.resize(50, 50)
             die_img_label.setScaledContents(False)
+            enemy_cup_layout.addWidget(die_img_label)
+        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
+        if enemy_cup_group is not None:
+            # First remove the old layout
+            if enemy_cup_group.layout() is not None:
+                # Set new parent for layout, which will be garbage collected
+                QWidget().setLayout(enemy_cup_group.layout())
+            enemy_cup_group.setLayout(enemy_cup_layout)
+        else:
+            print(f"enemy {enemy_nr} cup group not found")
+
+    def display_rolling_dice_enemy(self, enemy_nr: int, dice_count: int):
+        """
+        Display animated rolling dice
+        :param enemy_nr: which enemy to display the dice for
+        :param dice_count: how many anonymous dice to display
+        :return:
+        """
+        enemy_cup_layout = QHBoxLayout()
+        for die in range(dice_count):
+            dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
+            dice_rolling_movie.setScaledSize(QSize(50, 50))
+            die_img_label = QLabel()
+            die_img_label.setMovie(dice_rolling_movie)
+            dice_rolling_movie.start()
             enemy_cup_layout.addWidget(die_img_label)
         enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
         if enemy_cup_group is not None:
@@ -310,7 +358,6 @@ class MainWidget(QWidget, UIController):
         :param target: (optional)  who the action is directed towards (e.g. who they are doubting)
         :return:
         """
-        # TODO: implement this
         enemy_action_layout = QVBoxLayout()
         enemy_action_image_label = QLabel()
 
