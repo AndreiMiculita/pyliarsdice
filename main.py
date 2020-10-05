@@ -131,8 +131,11 @@ class MainWindow(QMainWindow):
         The main window. Everything takes place inside it.
         """
         super(MainWindow, self).__init__()
+        self.how_to_play_action = QAction('How to play', self)
+        self.how_to_play_widget = HowToPlayWidget()
         self.select_enemies_spinbox = QSpinBox()
         self.central_widget = SlidingStackedWidget()
+        self.game_widget = None
         self.init_ui()
 
     def init_ui(self):
@@ -141,10 +144,8 @@ class MainWindow(QMainWindow):
         :return:
         """
         self.central_widget.addWidget(self.restart(show_logo=True))
-        how_to_play_widget = HowToPlayWidget()
-        how_to_play_widget.back_signal.back.connect(
-            lambda: self.central_widget.setCurrentIndex(self.central_widget.slideInPrev))
-        self.central_widget.addWidget(how_to_play_widget)
+        self.how_to_play_widget.back_signal.back.connect(
+            lambda: self.central_widget.slideInIdx(self.central_widget.currentIndex() - 1))
 
         self.setCentralWidget(self.central_widget)
 
@@ -158,10 +159,9 @@ class MainWindow(QMainWindow):
         exit_action.setStatusTip('Exit application.')
         exit_action.triggered.connect(self.close)
 
-        how_to_play_action = QAction('How to play', self)
-        how_to_play_action.setStatusTip('View game instructions.')
-        how_to_play_action.setShortcut(QKeySequence.HelpContents)
-        how_to_play_action.triggered.connect(self.show_how_to_play)
+        self.how_to_play_action.setStatusTip('View game instructions.')
+        self.how_to_play_action.setShortcut(QKeySequence.HelpContents)
+        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play(prv_ind=0))
 
         about_action = QAction('About', self)
         about_action.setStatusTip("About Liar's Dice.")
@@ -174,7 +174,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(new_game_action)
         file_menu.addAction(exit_action)
         help_menu = menubar.addMenu('&Help')
-        help_menu.addAction(how_to_play_action)
+        help_menu.addAction(self.how_to_play_action)
         help_menu.addAction(about_action)
 
         self.resize(450, 550)
@@ -201,20 +201,24 @@ class MainWindow(QMainWindow):
         Start a new game
         :return:
         """
+
+        if self.game_widget is not None:
+            self.central_widget.removeWidget(self.game_widget)
+
         start_screen_widget = StartScreenWidget(select_enemies_spinbox=self.select_enemies_spinbox, show_logo=show_logo)
 
-        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0,
-                                                                                                         opponents=2))
-        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1,
-                                                                                                  opponents=2))
+        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0))
+        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1))
+        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play(prv_ind=0))
 
         return start_screen_widget
 
-    def restart_aux(self, idx: int, opponents: int):
+    def restart_aux(self, idx: int):
 
-        new_game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()))
-        self.central_widget.addWidget(new_game_widget)
-        self.central_widget.slideInWgt(new_game_widget)
+        self.game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()))
+        self.central_widget.addWidget(self.game_widget)
+        self.central_widget.slideInWgt(self.game_widget)
+        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play(prv_ind=1))
 
     def closeEvent(self, event):
         """
@@ -234,13 +238,19 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
-    def show_how_to_play(self):
+    def show_how_to_play(self, prv_ind: int):
         """
         Show a window explaining how to play the game
         :return:
         """
-        # Get a reference to the old central widget so that we can return to it
-        self.central_widget.slideInIdx(1)
+        print(f"prv_ind={prv_ind}")
+        self.how_to_play_widget.back_signal.back.connect(
+            lambda: self.central_widget.slideInIdx(prv_ind))
+        # Add it if it doesn't exist
+        if self.central_widget.indexOf(self.how_to_play_widget) == -1:
+            self.central_widget.addWidget(self.how_to_play_widget)
+        # Move to it
+        self.central_widget.slideInWgt(self.how_to_play_widget)
 
     @staticmethod
     def show_about():
