@@ -20,7 +20,7 @@ class Invoker(QtCore.QObject):
             event.fn(*event.args, **event.kwargs)
         except TypeError:
             print(f"Error calling {event.fn} with {event.args} and {event.kwargs}")
-
+            # pass
         return True
 
 

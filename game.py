@@ -252,7 +252,8 @@ class Game:
             handstring += f'Player {idx}: {self.players[idx].hand} '
 
         # Ask all players whether they believe the bid, remove their dice accordingly
-        for idx in range(self.n_players):
+        for player in range(self.n_players):
+            idx = (self.current_player + self.n_players + player) % self.n_players  # this makes sure the players are asked in the correct order (starting from the first player after the doubting)
 
             if idx != self.current_player and idx != self.previous_player:  # only apply to other players than
                 # current and previous turn
@@ -384,10 +385,16 @@ class Game:
 
         else:  # overbidding a bid on non-joker dice
             if roll == 1:  # case of bidding joker dice yourself
-                if count >= (self.current_bid.count + self.current_bid.count % 2) / 2:
-                    return True
-                else:
-                    return False
+                if self.current_bid.count % 2 == 1:  # bet was on uneven
+                    if count >= (self.current_bid.count + self.current_bid.count % 2) / 2:
+                        return True
+                    else:
+                        return False
+                else:  # bet had even dice
+                    if count > self.current_bid.count / 2:
+                        return True
+                    else:
+                        return False
             else:
                 if count > self.current_bid.count:  # higher count than previous bid
                     return True
@@ -630,7 +637,7 @@ class Game:
                                                       action=1,
                                                       target=self.previous_player)
                         time.sleep(0.2)
-                    # self.state = states['start']
+                    self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
                     self.state = states['bidding_phase']
