@@ -15,7 +15,7 @@ howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
 # Minimum and maximum limit to number of opponents
-opponent_limits = (1, 4)
+opponent_limits = (1, 3)
 
 
 class CommunicateRandom(QObject):
@@ -44,7 +44,7 @@ class StartScreenWidget(QWidget):
         """
         super(StartScreenWidget, self).__init__()
         self.select_enemies_spinbox = select_enemies_spinbox
-        self.difficulties = ["Play against Random Opponent(s)", "Play against Cognitive Model Opponent(s)"]
+        self.difficulties = ["Play against Random Opponent(s) [Easy mode]", "Play against Cognitive Model Opponent(s) [Fun mode]"]
         self.start_game_signals = [CommunicateRandom(), CommunicateCogMod()]
         self.show_logo = show_logo
         self.init_ui()
