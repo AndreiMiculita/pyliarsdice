@@ -303,7 +303,7 @@ class Game:
         # Reveal all dice in ui and wait for a bit
         for idx, player in enumerate(self.players):
             if idx > 0:
-                invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand)
+                invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand, highlight=bid_roll)
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
         time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 

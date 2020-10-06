@@ -20,6 +20,14 @@ dice_images = ["assets/images/dice-none.png",
                "assets/images/dice-5.png",
                "assets/images/dice-6.png"]
 
+dice_images_highlighted = ["assets/images/dice-none.png",
+                           "assets/images/dice-1-star-highlighted.png",
+                           "assets/images/dice-2-highlighted.png",
+                           "assets/images/dice-3-highlighted.png",
+                           "assets/images/dice-4-highlighted.png",
+                           "assets/images/dice-5-highlighted.png",
+                           "assets/images/dice-6-highlighted.png"]
+
 dice_image_unknown = "assets/images/dice-q.png"
 dice_images_rolling = ["assets/images/dice-rolling-1.gif", "assets/images/dice-rolling-2.gif",
                        "assets/images/dice-rolling-3.gif"]
@@ -322,17 +330,17 @@ class MainWidget(QWidget, UIController):
         else:
             print(f"enemy {enemy_nr} cup group not found")
 
-    def display_dice_enemy(self, enemy_nr: int, dice: [int]):
+    def display_dice_enemy(self, enemy_nr: int, dice: [int], highlight: int):
         """
         Displays what dice the enemy has
         :param enemy_nr: which enemy to display the dice for
         :param dice: list of dice numbers that the enemy is holding
+        :param highlight: dice type (1-6) to highlight; 0 for no highlight
         :return:
         """
         enemy_cup_layout = QHBoxLayout()
         for die in dice:
-            # print(die, dice_images[die - 1])
-            die_image = QPixmap(dice_images[die])
+            die_image = QPixmap(dice_images_highlighted[die] if die == highlight else dice_images[die])
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
