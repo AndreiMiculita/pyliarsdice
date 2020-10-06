@@ -658,6 +658,7 @@ class Game:
                 if self.current_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                                   action=2)
+
                 self.models_remember_bid()
                 self.update_turn()
                 self.state = states['doubting_phase']
@@ -678,3 +679,13 @@ class Game:
         print(f'Chunk retrieve failures during game: {self.chunk_retrieval_failure_count}')
         print('Game Finished!')
         quit(0)
+
+"""
+#TODO: 
+- Random waiting times (in a range)
+- Create Reasoning text file for every ACT-R agent (concatenate strings of text). Make available as option to show
+- Highlight dice correctly in final dice count. Also add button to continue for user
+- Add ! and (checkmark) for agents correctly
+- Not show the agent's bet already while they are thinking
+- Add 'rolling' state to agents (such that they are not waiting while rolling)
+"""
