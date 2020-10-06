@@ -21,12 +21,12 @@ dice_images = ["assets/images/dice-none.png",
                "assets/images/dice-6.png"]
 
 dice_images_highlighted = ["assets/images/dice-none.png",
-                           "assets/images/dice-1-star-highlighted.png",
-                           "assets/images/dice-2-highlighted.png",
-                           "assets/images/dice-3-highlighted.png",
-                           "assets/images/dice-4-highlighted.png",
-                           "assets/images/dice-5-highlighted.png",
-                           "assets/images/dice-6-highlighted.png"]
+                           "assets/images/dice-1-star-highlighted-g.png",
+                           "assets/images/dice-2-highlighted-g.png",
+                           "assets/images/dice-3-highlighted-g.png",
+                           "assets/images/dice-4-highlighted-g.png",
+                           "assets/images/dice-5-highlighted-g.png",
+                           "assets/images/dice-6-highlighted-g.png"]
 
 dice_image_unknown = "assets/images/dice-q.png"
 dice_images_rolling = ["assets/images/dice-rolling-1.gif", "assets/images/dice-rolling-2.gif",
@@ -45,7 +45,7 @@ class MainWidget(QWidget, UIController):
         self.player_action_group = QStackedWidget()
         self.turn_label = QLabel(text="")
         self.difficulty_label = QLabel(
-            text="Playing against cognitive model." if difficulty == 1 else "Playing against random model.")
+            text="Playing against cognitive model(s)." if difficulty == 1 else "Playing against random model(s).")
         self.doubt_or_believe_group = QGroupBox(title='Your Action',
                                                 objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
@@ -151,6 +151,8 @@ class MainWidget(QWidget, UIController):
         select_number_layout = QVBoxLayout()
         select_number_label = QLabel("Number")
         self.select_number_spin_box.setRange(1, 6)
+        self.select_number_spin_box.setFixedHeight(30)
+        self.select_number_spin_box.setFixedWidth(70)
         select_number_layout.addWidget(select_number_label)
         select_number_layout.addWidget(self.select_number_spin_box)
 
@@ -161,6 +163,8 @@ class MainWidget(QWidget, UIController):
         select_dice_layout = QVBoxLayout()
         select_dice_label = QLabel("Dice")
         self.select_dice_spin_box.setRange(1, 6)
+        self.select_dice_spin_box.setFixedHeight(30)
+        self.select_dice_spin_box.setFixedWidth(70)
         select_dice_layout.addWidget(select_dice_label)
         select_dice_layout.addWidget(self.select_dice_spin_box)
 
@@ -264,6 +268,13 @@ class MainWidget(QWidget, UIController):
         :param dice: list of dice numbers that the player is holding
         :return:
         """
+
+        # self.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
+        #                                   number="", dice=3)
+
+
+
+
         player_cup_layout = QHBoxLayout()
         for die in range(dice_count):
             dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
@@ -278,6 +289,10 @@ class MainWidget(QWidget, UIController):
             # Set new parent for layout, which will be garbage collected
             QWidget().setLayout(self.player_cup_group.layout())
         self.player_cup_group.setLayout(player_cup_layout)
+
+
+        # self.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
+        #                                action=2)
 
     def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
         """
@@ -340,7 +355,7 @@ class MainWidget(QWidget, UIController):
         """
         enemy_cup_layout = QHBoxLayout()
         for die in dice:
-            die_image = QPixmap(dice_images_highlighted[die] if die == highlight else dice_images[die])
+            die_image = QPixmap(dice_images_highlighted[die] if (die == highlight or die == 1) else dice_images[die])
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
@@ -379,6 +394,12 @@ class MainWidget(QWidget, UIController):
         elif action == 2:
             enemy_action_label = QLabel(text="...", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/waiting.gif")
+        elif action == 3:
+            enemy_action_label = QLabel(text="Rolling Dice", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_loading_movie = QMovie("assets/images/rolling_dice.gif")
+        elif action == 4:
+            enemy_action_label = QLabel(text=f"Believing Player {target}", objectName=f"enemy_action_label{enemy_nr}")
+            enemy_loading_movie = QMovie("assets/images/checkmark.gif")
         else:
             pass
 
