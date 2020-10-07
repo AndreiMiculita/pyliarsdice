@@ -114,7 +114,6 @@ class Game:
         # Sleep for 2 seconds, animation will play
         time.sleep(random.uniform(2.5, 3.5))  # agent 'rolling dice'
 
-
         for idx, p in enumerate(self.players):
             if idx != self.player_ID:
                 invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
@@ -148,6 +147,7 @@ class Game:
         else:
             doubt = self.model_doubt()
 
+
         return doubt
 
     def determine_model_doubt(self, player_index):
@@ -172,6 +172,7 @@ class Game:
                 # TODO: think about how to set the threshold
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round(believe_threshold[0], 3)}')
+                self.players[player_index].reasoning_string += f'Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:\nProbability of bid is {round(probability_of_bid,3)}, believe threshold is {round(believe_threshold[0], 3)}\n'
                 if probability_of_bid >= believe_threshold[0]:
                     doubt = False
                 else:
@@ -192,6 +193,7 @@ class Game:
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
                                                      1)  # compare probability to non-static threshold,
                 # TODO: think about how to set the threshold
+                self.players[player_index].reasoning_string += f'Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:\nProbability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}\n'
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round( believe_threshold[0], 3)}')
                 if probability_of_bid >= believe_threshold[0]:
@@ -218,7 +220,10 @@ class Game:
 
         elif self.players[self.current_player].strategy == 'model':
             doubt = self.determine_model_doubt(self.current_player)
-
+            if doubt:
+                self.players[self.current_player].reasoning_string += f'I do not believe {self.current_bid.count} x {self.current_bid.roll} is on the table\n'
+            else:
+                self.players[self.current_player].reasoning_string += f'I believe {self.current_bid.count} x {self.current_bid.roll} is on the table\n'
         return doubt
 
     def ui_doubt(self):
@@ -279,7 +284,7 @@ class Game:
                     if x != 0:
                         y += np.log(x * 2)
                     else:
-                        y += 1 # increase starting waiting time by a little
+                        y += 1  # increase starting waiting time by a little
 
                     print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
                     time.sleep(y)  # agent 'thinking'
@@ -369,7 +374,6 @@ class Game:
         for i in lose_dice_players:
             self.players[i].remove_die()
 
-        # TODO: shouldn't there be another all_roll somewhere here? Andrei
 
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
@@ -411,6 +415,8 @@ class Game:
                     except ValueError:
                         number += 1
 
+                self.players[i].reasoning_string += f'Storing chunk to remember that Player {self.current_player} has made a bet on dice value {self.current_bid.roll}\n'
+
     def bidding(self):
         """
         Asks the current player for a new bid.
@@ -422,6 +428,7 @@ class Game:
             invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                           action=0)
             count, roll = self.model_bid()
+            self.players[self.current_player].reasoning_string += f'I am bidding: {count} x {roll} is on the table\n'
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -536,15 +543,16 @@ class Game:
 
         elif self.players[self.current_player].strategy == 'model':
             if random.randint(1, 100) <= self.model_bluff_chance:  # chance to bluff
-
                 if random.randint(1,
                                   100) >= 66:  # determine which player the model will bluff on, next player has a
                     # higher chance, since he has to assess the bid.
                     bluff_player = self.previous_player
                     # print('[DEBUG] bluffing on prev player')
+                    self.players[self.current_player].reasoning_string += 'Bluffing on one of the dice values bet on by previous player\n'
                 else:
                     bluff_player = (self.current_player + 1) % self.n_players
                     # print('[DEBUG] bluffing on next player')
+                    self.players[self.current_player].reasoning_string += 'Bluffing on one of the dice values bet on by next player\n'
 
                 retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": bluff_player})
                 chunk, latency = self.players[self.current_player].model.retrieve(
@@ -556,12 +564,16 @@ class Game:
                     roll = chunk.slots['dice_value']  #
                     # print(f'[MODEL] Player {self.current_player} will bluff on {roll}, since Player {bluff_player}
                     # has bid on {roll} before')
+                    self.players[self.current_player].reasoning_string += f'Bluffing on {roll}, since Player {bluff_player} has bet on {roll} before\n'
                 else:  # no chunk was retrieved / retrieval failure
                     self.chunk_retrieval_failure_count += 1
+                    self.players[self.current_player].reasoning_string += f'Can not remember a value Player {bluff_player} has bet on before, bluffing on random value\n'
                     # print('[DEBUG] no chunk was retrieved / retrieval failure')
                     roll = random.randint(1, 6)  # bluffing happens on a random die value
 
                 if roll == 1:  # bluff will be on joker dice
+                    self.players[
+                        self.current_player].reasoning_string += f'Bluffing on joker dice\n'
                     if self.current_bid.roll == 1:  # current bid is on joker dice, so + 1 suffices
                         count = self.current_bid.count + 1
                     else:  # current bid is not on joker dice, calculate first possible bid on joker dice
@@ -599,6 +611,8 @@ class Game:
                 # hand (if multiple, chooses randomly)
 
                 roll = bid_value
+                self.players[
+                    self.current_player].reasoning_string += f'Determine a value to bet on, from one of the most common dice values in hand, which is {roll}\n'
 
                 if roll == 1:  # bidding on the joker dice
                     if self.current_bid.roll == 1:  # current bid is on joker dice, so + 1 suffices
@@ -621,6 +635,8 @@ class Game:
                         else:
                             count = self.current_bid.count + 1  # else: increment count, and bid on the value
 
+                self.players[
+                    self.current_player].reasoning_string += f'Determined bid is {count} x {roll}\n'
         return count, roll
 
     def clear_ui_bets(self):
@@ -649,6 +665,7 @@ class Game:
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
+
             # print(f"[DEBUG] Current Player: {self.current_player} - Current Bid: {self.current_bid} - Current
             # State: {rev_states[self.state]} - Dice in game: {self.n_total_dice}")
 
@@ -666,7 +683,11 @@ class Game:
                 self.all_roll()
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
-                    f'Total number of dice remaining = {self.n_total_dice} \n')
+                      f'Total number of dice remaining = {self.n_total_dice} \n')
+
+                for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
+                    if idx != self.player_ID:
+                        self.players[idx].reasoning_string += f'My hand is {self.players[idx].hand}\n'
 
                 invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
 
@@ -674,6 +695,7 @@ class Game:
                     if idx > 0:
                         invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy,
                                                       enemy_nr=idx, dice_count=player.get_hand_size())
+
 
                 if self.current_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy,
@@ -686,7 +708,7 @@ class Game:
                     if x != 0:
                         y += np.log(x * 2)
                     else:
-                        y += 1 # increase starting waiting time by a little
+                        y += 1  # increase starting waiting time by a little
                     print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
                     time.sleep(y)  # agent 'thinking'
 
@@ -716,7 +738,7 @@ class Game:
                     if x != 0:
                         y += np.log(x * 2)
                     else:
-                        y += 1 # increase starting waiting time by a little
+                        y += 1  # increase starting waiting time by a little
                     print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
                     time.sleep(y)  # agent 'thinking'
                 doubt = self.doubting()
@@ -730,6 +752,7 @@ class Game:
                                                       target=self.previous_player)
 
                     self.resolve_doubt()
+                    print(f'-------Player 1 reasoning ---- \n {self.players[1].reasoning_string} -----------------')
                     self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
