@@ -367,7 +367,12 @@ class Game:
             if idx > 0:
                 invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy, enemy_nr=idx,
                                               dice_count=self.players[idx].get_hand_size())
+
         print()
+
+        for idx in range(self.n_players):
+            if idx > 0:
+                print(f'Player {idx} has {len(self.players[idx].model.dm)} chunks stored')
 
     ###############################################################
     ######                    BIDDING PHASE                  ######
@@ -671,11 +676,10 @@ class Game:
             # Check whether the current player wants to doubt before asking the bid.
             if self.state == states['doubting_phase']:
                 if self.current_player == self.player_ID:
-                    print(f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
-                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[self.player_ID].hand)
-
-
-
+                    print(
+                        f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
+                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player,
+                                                  dice=self.players[self.player_ID].hand)
 
                 print(f'[TURN]: Player {self.current_player}')
                 invoker.invoke_in_main_thread(self.ui_controller.indicate_turn(player=self.current_player))

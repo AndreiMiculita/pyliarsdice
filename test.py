@@ -29,8 +29,9 @@ def test():
     # This loops tests the number of chunks used / encountered wrt time
     rem_chunk = 0
     not_rem_chunk = 0
-    for _ in range(1000):
+    for _ in range(1):
         m = Model()
+
         ch = Chunk(name="bid_memory" + str(1),
                    slots={"type": "bid_memory",
                           "player": 1,
@@ -41,6 +42,7 @@ def test():
                         2)  # add time according to length of a turn, might need adjustment
         # m.add_encounter(ch)
 
+
         ch = Chunk(name="bid_memory" + str(2),
                    slots={"type": "bid_memory",
                           "player": 2,
@@ -50,6 +52,7 @@ def test():
         m.time += round(random.uniform(1, 4),
                         2)  # add time according to length of a turn, might need adjustment
 
+
         ch = Chunk(name="bid_memory" + str(3),
                    slots={"type": "bid_memory",
                           "player": 3,
@@ -58,7 +61,7 @@ def test():
         m.add_encounter(ch)  # remember the bid of a player
         m.time += round(random.uniform(1, 4),
                         2)  # add time according to length of a turn, might need adjustment
-
+        print(len(m.dm))
         retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": 1})
         chunk, latency = m.retrieve(retrieve_chunk)
         if chunk is not None:
@@ -88,9 +91,9 @@ def test():
     # chunk, latency = m.retrieve_partial(retrieve_chunk, trace=True)
 
     # print(chunk.player)
-
-    game = Game(n_players=4, n_starting_dice=5)
-    game.play()
+    #
+    # game = Game(n_players=4, n_starting_dice=5)
+    # game.play()
 
 
 if __name__ == '__main__':
