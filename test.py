@@ -4,6 +4,8 @@ from dmchunk import Chunk
 from game import Game
 from model import Model
 from scipy.stats import binom
+import numpy as np
+import random
 
 
 def determine_probability(difference, n_unknown_dice, roll_prob):
@@ -29,6 +31,7 @@ def test():
     # This loops tests the number of chunks used / encountered wrt time
     rem_chunk = 0
     not_rem_chunk = 0
+
     for _ in range(1):
         m = Model()
 
@@ -42,7 +45,6 @@ def test():
                         2)  # add time according to length of a turn, might need adjustment
         # m.add_encounter(ch)
 
-
         ch = Chunk(name="bid_memory" + str(2),
                    slots={"type": "bid_memory",
                           "player": 2,
@@ -51,7 +53,6 @@ def test():
         m.add_encounter(ch)  # remember the bid of a player
         m.time += round(random.uniform(1, 4),
                         2)  # add time according to length of a turn, might need adjustment
-
 
         ch = Chunk(name="bid_memory" + str(3),
                    slots={"type": "bid_memory",
@@ -96,5 +97,11 @@ def test():
     # game.play()
 
 
+def test2():
+    for x in range(1, 10):
+        y = np.log(x * 2) + random.uniform(1, 1.5)
+        print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+
+
 if __name__ == '__main__':
-    test()
+    test2()

@@ -112,7 +112,8 @@ class Game:
                                               dice_count=p.get_hand_size())
 
         # Sleep for 2 seconds, animation will play
-        time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+        time.sleep(random.uniform(2.5, 3.5))  # agent 'rolling dice'
+
 
         for idx, p in enumerate(self.players):
             if idx != self.player_ID:
@@ -272,7 +273,16 @@ class Game:
                 # current and previous turn
                 if idx != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.indicate_turn, player=idx)
-                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+                    # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+                    x = len(self.players[idx].model.dm)  # counts number of chunks in memory
+                    y = random.uniform(1, 1.5)
+                    if x != 0:
+                        y += np.log(x * 2)
+                    else:
+                        y += 1 # increase starting waiting time by a little
+
+                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+                    time.sleep(y)  # agent 'thinking'
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
@@ -655,9 +665,9 @@ class Game:
                 invoker.invoke_in_main_thread(self.ui_controller.indicate_turn, player=self.current_player)
                 self.all_roll()
 
-                print(
-                    f'All players rolled the dice! My hand is {self.players[0].hand} \n'
+                print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                     f'Total number of dice remaining = {self.n_total_dice} \n')
+
                 invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
@@ -669,7 +679,17 @@ class Game:
                     invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                                   enemy_nr=self.current_player,
                                                   action=0)
-                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+
+                    # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+                    x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
+                    y = random.uniform(1, 1.5)
+                    if x != 0:
+                        y += np.log(x * 2)
+                    else:
+                        y += 1 # increase starting waiting time by a little
+                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+                    time.sleep(y)  # agent 'thinking'
+
                 self.state = states['bidding_phase']
                 continue
 
@@ -690,7 +710,15 @@ class Game:
                     invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                                   enemy_nr=self.current_player,
                                                   action=0)
-                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+                    # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+                    x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
+                    y = random.uniform(1, 1.5)
+                    if x != 0:
+                        y += np.log(x * 2)
+                    else:
+                        y += 1 # increase starting waiting time by a little
+                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+                    time.sleep(y)  # agent 'thinking'
                 doubt = self.doubting()
 
                 if doubt:

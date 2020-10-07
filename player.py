@@ -13,6 +13,7 @@ class Player:
         """
         self.n_dice = n_starting_dice
         self.hand = []
+        self.reasoning_string = ''
 
         # for _ in range(n_starting_dice):
         #     self.hand.append(Die())
@@ -87,3 +88,7 @@ class Player:
 
     def renew_model(self):
         self.model = Model()
+        self.reasoning_string = ''
+
+    def add_to_reasoning_string(self, string):
+        self.reasoning_string += string
