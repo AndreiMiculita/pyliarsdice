@@ -99,15 +99,25 @@ class Game:
             p.roll_hand()
         for idx, p in enumerate(self.players):
             if idx != self.player_ID:
+                invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
+                                              action=3)
+
                 invoker.invoke_in_main_thread(self.ui_controller.display_rolling_dice_enemy,
                                               enemy_nr=idx,
                                               dice_count=p.get_hand_size())
+
+
             else:
                 invoker.invoke_in_main_thread(self.ui_controller.display_rolling_dice_player,
                                               dice_count=p.get_hand_size())
 
         # Sleep for 2 seconds, animation will play
-        time.sleep(2)
+        time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
+
+        for idx, p in enumerate(self.players):
+            if idx != self.player_ID:
+                invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
+                                              action=2)
 
     def update_turn_generic(self):  # sets turn to the next player
         self.turn = (self.turn + 1) % self.n_players
@@ -157,8 +167,8 @@ class Game:
                                                            1 / 3)  # probability that at least the difference of a
                 # given value is in the unknown dice, 1/3 prob since joker dice also add to total
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
-                                                     1)  # compare probability to non-static threshold, TODO: think
-                # about how to set the threshold
+                                                     1)  # compare probability to non-static threshold,
+                # TODO: think about how to set the threshold
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round(believe_threshold[0], 3)}')
                 if probability_of_bid >= believe_threshold[0]:
@@ -179,8 +189,8 @@ class Game:
                                                            1 / 6)  # probability that at least the difference of
                 # joker dice is in the unknown dice, prob = 1/6
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
-                                                     1)  # compare probability to non-static threshold, TODO: think
-                # about how to set the threshold
+                                                     1)  # compare probability to non-static threshold,
+                # TODO: think about how to set the threshold
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round( believe_threshold[0], 3)}')
                 if probability_of_bid >= believe_threshold[0]:
@@ -240,6 +250,7 @@ class Game:
         bid_roll = self.current_bid.roll
         bid_count = self.current_bid.count
         count = 0
+        lose_dice_players = []  # save such that players dice are gone after hands are shown
 
         print('[RESOLVING DOUBT] Every remaining player has to state whether they believe the bid or not')
         handstring = ''
@@ -253,10 +264,15 @@ class Game:
 
         # Ask all players whether they believe the bid, remove their dice accordingly
         for player in range(self.n_players):
-            idx = (self.current_player + self.n_players + player) % self.n_players  # this makes sure the players are asked in the correct order (starting from the first player after the doubting)
+
+            idx = (self.current_player + self.n_players + player) % self.n_players
+            # this makes sure the players are asked in the correct order (starting from the first player after the doubting)
 
             if idx != self.current_player and idx != self.previous_player:  # only apply to other players than
                 # current and previous turn
+                if idx != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.indicate_turn, player=idx)
+                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
@@ -265,7 +281,12 @@ class Game:
                     invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
                     print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                           f"table? 1=yes, 0=no: ")
-                    believe = int(self.input_queue.get(block=True))
+                    believe_ui = int(self.input_queue.get(block=True))
+                    if believe_ui == 0:  # these were swapped, this circumvents the problem
+                        believe = True
+                    else:
+                        believe = False
+                    print(f'believe ui response = {believe}')
                     if believe == -1:
                         quit(0)
                     while believe != 0 and believe != 1:
@@ -283,6 +304,7 @@ class Game:
                     else:
                         believe = False
 
+
                 elif self.players[idx].strategy == 'model':
                     if self.determine_model_doubt(idx):
                         believe = False  # if doubt is true -> believe = False (and vice versa)
@@ -290,13 +312,24 @@ class Game:
                         believe = True
 
                 if believe:
+                    invoker.invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
+                                                  enemy_nr=idx,
+                                                  action=4,
+                                                  target=self.previous_player)
                     print(f'Player {idx} believes the bid is on the table')
                     if count >= bid_count:  # lose a die when the bid is believed and true, or not believe and false
-                        self.players[idx].remove_die()
+                        lose_dice_players.append(idx)
+                        # self.players[idx].remove_die()
+
                 else:
+                    invoker.invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
+                                                  enemy_nr=idx,
+                                                  action=1,
+                                                  target=self.previous_player)
                     print(f'Player {idx} does not believe the bid is on the table')
                     if count < bid_count:
-                        self.players[idx].remove_die()
+                        lose_dice_players.append(idx)
+                        # self.players[idx].remove_die()
 
         print('Players hands are opened: ', end='')
         print(handstring)
@@ -304,7 +337,11 @@ class Game:
         # Reveal all dice in ui and wait for a bit
         for idx, player in enumerate(self.players):
             if idx > 0:
-                invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand, highlight=bid_roll)
+                invoker.invoke_in_main_thread(self.ui_controller.display_dice_enemy, enemy_nr=idx, dice=player.hand,
+                                              highlight=bid_roll)
+            else:
+                # TODO: Add such that human players dice are highlighted as well.
+                pass
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
         time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
@@ -318,6 +355,9 @@ class Game:
             self.players[self.current_player].remove_die()
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
+
+        for i in lose_dice_players:
+            self.players[i].remove_die()
 
         # TODO: shouldn't there be another all_roll somewhere here? Andrei
 
@@ -568,6 +608,12 @@ class Game:
 
         return count, roll
 
+    def clear_ui_bets(self):
+        for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
+            if idx != self.player_ID:
+                invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=idx,
+                                              number="", dice=0)
+
     ########################################################################
     ######           MAIN LOOP THAT RUNS STATE MACHINE                ######
     ########################################################################
@@ -596,12 +642,14 @@ class Game:
 
             if self.state == states['start']:
                 self.reset_models()
+                self.clear_ui_bets()
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 invoker.invoke_in_main_thread(self.ui_controller.indicate_turn, player=self.current_player)
                 self.all_roll()
+
                 print(
                     f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                     f'Total number of dice remaining = {self.n_total_dice} \n')
@@ -612,31 +660,44 @@ class Game:
                         invoker.invoke_in_main_thread(self.ui_controller.display_anonymous_dice_enemy,
                                                       enemy_nr=idx, dice_count=player.get_hand_size())
 
+                if self.current_player != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy,
+                                                  enemy_nr=self.current_player,
+                                                  action=0)
+                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
                 self.state = states['bidding_phase']
                 continue
 
             # Check whether the current player wants to doubt before asking the bid.
             if self.state == states['doubting_phase']:
-                if self.current_player == 0:
-                    print(f'My hand is {self.players[0].hand} \nTotal number of dice remaining = {self.n_total_dice}')
-                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[0].hand)
+                if self.current_player == self.player_ID:
+                    print(f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
+                    invoker.invoke_in_main_thread(self.ui_controller.display_dice_player, dice=self.players[self.player_ID].hand)
+
+
+
+
                 print(f'[TURN]: Player {self.current_player}')
                 invoker.invoke_in_main_thread(self.ui_controller.indicate_turn(player=self.current_player))
 
                 # if self.players[self.current_player].strategy == 'model':
                 #     print(f'Number of chunks in dm: {len(self.players[self.current_player].model.dm)}')
-
+                if self.current_player != self.player_ID:
+                    invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy,
+                                                  enemy_nr=self.current_player,
+                                                  action=0)
+                    time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
                 doubt = self.doubting()
 
                 if doubt:
                     print(f'Player {self.current_player} does not believe the bid of Player {self.previous_player}')
-                    self.resolve_doubt()
                     if self.current_player != self.player_ID:
                         invoker.invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
                                                       enemy_nr=self.current_player,
                                                       action=1,
                                                       target=self.previous_player)
-                        time.sleep(0.2)
+
+                    self.resolve_doubt()
                     self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
@@ -646,15 +707,17 @@ class Game:
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
+
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
                 if self.current_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=self.current_player,
                                                   number=self.current_bid.count, dice=self.current_bid.roll)
-                if self.previous_player != self.player_ID:
+
+                if self.previous_player != self.player_ID and self.previous_player != self.current_player:
                     invoker.invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=self.previous_player,
                                                   number="", dice=0)
-                time.sleep(1)  # To show the model thinking animation
+
                 if self.current_player != self.player_ID:
                     invoker.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                                   action=2)
@@ -680,12 +743,10 @@ class Game:
         print('Game Finished!')
         quit(0)
 
+
 """
 #TODO: 
-- Random waiting times (in a range)
 - Create Reasoning text file for every ACT-R agent (concatenate strings of text). Make available as option to show
-- Highlight dice correctly in final dice count. Also add button to continue for user
-- Add ! and (checkmark) for agents correctly
-- Not show the agent's bet already while they are thinking
-- Add 'rolling' state to agents (such that they are not waiting while rolling)
+- Highlight dice correctly in final dice count (now todo: add for human player). Also add button or click to continue for user after game is finished, such that it has time to count
+- Enemy bet not always shown (fixed I think)
 """

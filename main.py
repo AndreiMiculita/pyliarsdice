@@ -72,8 +72,12 @@ class StartScreenWidget(QWidget):
         vertical_main_layout.addWidget(title)
 
         # This could be anything, I think
+
+        self.select_enemies_spinbox.setFixedHeight(30)
+        self.select_enemies_spinbox.setFixedWidth(70)
         self.select_enemies_spinbox.setRange(*opponent_limits)
-        self.select_enemies_spinbox.setMaximumWidth(50)
+
+        # self.select_enemies_spinbox.setMaximumWidth(50)
 
         select_enemies_group = QGroupBox("Select number of opponents ({0}-{1})".format(*opponent_limits))
         select_enemies_layout = QVBoxLayout()
