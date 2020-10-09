@@ -4,19 +4,13 @@ class UIController:
     Basically an interface to avoid cyclical imports.
     """
 
-    def display_dice_player(self, dice: [int]):
+    def display_dice(self, player_nr: int, dice: [int], highlight: int):
         return NotImplemented
 
-    def display_rolling_dice_player(self, dice_count: int):
+    def display_rolling_dice(self, player_nr: int, dice_count: int):
         return NotImplemented
 
-    def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
-        return NotImplemented
-
-    def display_rolling_dice_enemy(self, enemy_nr: int, dice_count: int):
-        return NotImplemented
-
-    def display_dice_enemy(self, enemy_nr: int, dice: [int], highlight: int):
+    def display_anonymous_dice(self, player_nr: int, dice_count: int):
         return NotImplemented
 
     def display_action_enemy(self, enemy_nr: int, action: int, target: int):

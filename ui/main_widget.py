@@ -240,40 +240,52 @@ class MainWidget(QWidget, UIController):
         print("0")
         self.q.put("0")
 
-    def display_dice_player(self, dice: [int]):
+    def put_layout_in_cup(self, player_nr, layout: QHBoxLayout):
+        if player_nr == 0:
+            # First remove the old layout
+            if self.player_cup_group.layout() is not None:
+                # Set new parent for layout, which will be garbage collected
+                QWidget().setLayout(self.player_cup_group.layout())
+            self.player_cup_group.setLayout(layout)
+        else:
+            enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{player_nr}")
+            if enemy_cup_group is not None:
+                # First remove the old layout
+                if enemy_cup_group.layout() is not None:
+                    # Set new parent for layout, which will be garbage collected
+                    QWidget().setLayout(enemy_cup_group.layout())
+                enemy_cup_group.setLayout(layout)
+            else:
+                print(f"enemy {player_nr} cup group not found")
+
+    def display_dice(self, player_nr: int, dice: [int], highlight: int):
         """
-        Display the dice under the player's cup
+        Displays what dice a player has
+        :param player_nr: which player to display the dice for
         :param dice: list of dice numbers that the player is holding
+        :param highlight: dice type (1-6) to highlight; 0 for no highlight
         :return:
         """
         player_cup_layout = QHBoxLayout()
         for die in dice:
-            # print(die, dice_images[die - 1])
-            die_image = QPixmap(dice_images[die])
-            die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
+            die_image = QPixmap(
+                dice_images_highlighted[die] if die == highlight or die == 1 else dice_images[die])
+            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
+                                         mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
             die_img_label.setPixmap(die_image)
             die_img_label.setScaledContents(False)
             player_cup_layout.addWidget(die_img_label)
 
-        # First remove the old layout
-        if self.player_cup_group.layout() is not None:
-            # Set new parent for layout, which will be garbage collected
-            QWidget().setLayout(self.player_cup_group.layout())
-        self.player_cup_group.setLayout(player_cup_layout)
+        self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
 
-    def display_rolling_dice_player(self, dice_count: int):
+    def display_rolling_dice(self, player_nr: int, dice_count: int):
         """
         Display rolling dice for player
-        :param dice: list of dice numbers that the player is holding
+        :param player_nr: which player to display the dice for
+        :param dice_count: how many rolling dice to show
         :return:
         """
-
-        # self.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
-        #                                   number="", dice=3)
-
-
-
 
         player_cup_layout = QHBoxLayout()
         for die in range(dice_count):
@@ -284,24 +296,16 @@ class MainWidget(QWidget, UIController):
             dice_rolling_movie.start()
             player_cup_layout.addWidget(die_img_label)
 
-        # First remove the old layout
-        if self.player_cup_group.layout() is not None:
-            # Set new parent for layout, which will be garbage collected
-            QWidget().setLayout(self.player_cup_group.layout())
-        self.player_cup_group.setLayout(player_cup_layout)
+        self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
 
-
-        # self.invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
-        #                                action=2)
-
-    def display_anonymous_dice_enemy(self, enemy_nr: int, dice_count: int):
+    def display_anonymous_dice(self, player_nr: int, dice_count: int):
         """
         Display how many dice the enemy has, without showing what they are
-        :param enemy_nr: which enemy to display the dice for
+        :param player_nr: which enemy to display the dice for
         :param dice_count: how many anonymous dice to display
         :return:
         """
-        enemy_cup_layout = QHBoxLayout()
+        player_cup_layout = QHBoxLayout()
         for die in range(dice_count):
             die_image = QPixmap(dice_image_unknown)
             die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
@@ -309,69 +313,9 @@ class MainWidget(QWidget, UIController):
             die_img_label.setPixmap(die_image)
             die_img_label.resize(50, 50)
             die_img_label.setScaledContents(False)
-            enemy_cup_layout.addWidget(die_img_label)
-        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
-        if enemy_cup_group is not None:
-            # First remove the old layout
-            if enemy_cup_group.layout() is not None:
-                # Set new parent for layout, which will be garbage collected
-                QWidget().setLayout(enemy_cup_group.layout())
-            enemy_cup_group.setLayout(enemy_cup_layout)
-        else:
-            print(f"enemy {enemy_nr} cup group not found")
+            player_cup_layout.addWidget(die_img_label)
 
-    def display_rolling_dice_enemy(self, enemy_nr: int, dice_count: int):
-        """
-        Display animated rolling dice
-        :param enemy_nr: which enemy to display the dice for
-        :param dice_count: how many anonymous dice to display
-        :return:
-        """
-        enemy_cup_layout = QHBoxLayout()
-        for die in range(dice_count):
-            dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
-            dice_rolling_movie.setScaledSize(QSize(50, 50))
-            die_img_label = QLabel()
-            die_img_label.setMovie(dice_rolling_movie)
-            dice_rolling_movie.start()
-            enemy_cup_layout.addWidget(die_img_label)
-        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
-        if enemy_cup_group is not None:
-            # First remove the old layout
-            if enemy_cup_group.layout() is not None:
-                # Set new parent for layout, which will be garbage collected
-                QWidget().setLayout(enemy_cup_group.layout())
-            enemy_cup_group.setLayout(enemy_cup_layout)
-        else:
-            print(f"enemy {enemy_nr} cup group not found")
-
-    def display_dice_enemy(self, enemy_nr: int, dice: [int], highlight: int):
-        """
-        Displays what dice the enemy has
-        :param enemy_nr: which enemy to display the dice for
-        :param dice: list of dice numbers that the enemy is holding
-        :param highlight: dice type (1-6) to highlight; 0 for no highlight
-        :return:
-        """
-        enemy_cup_layout = QHBoxLayout()
-        for die in dice:
-            die_image = QPixmap(dice_images_highlighted[die] if (die == highlight or die == 1) else dice_images[die])
-            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
-                                         mode=QtCore.Qt.SmoothTransformation)
-            die_img_label = QLabel()
-            die_img_label.setPixmap(die_image)
-            die_img_label.resize(50, 50)
-            die_img_label.setScaledContents(False)
-            enemy_cup_layout.addWidget(die_img_label)
-        enemy_cup_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_cup{enemy_nr}")
-        if enemy_cup_group is not None:
-            # First remove the old layout
-            if enemy_cup_group.layout() is not None:
-                # Set new parent for layout, which will be garbage collected
-                QWidget().setLayout(enemy_cup_group.layout())
-            enemy_cup_group.setLayout(enemy_cup_layout)
-        else:
-            print(f"enemy {enemy_nr} cup group not found")
+        self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
 
     def display_action_enemy(self, enemy_nr: int, action: int, target: int = 0):
         """
