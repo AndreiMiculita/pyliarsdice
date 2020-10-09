@@ -258,7 +258,7 @@ class MainWidget(QWidget, UIController):
             else:
                 print(f"enemy {player_nr} cup group not found")
 
-    def display_dice(self, player_nr: int, dice: [int], highlight: int):
+    def display_dice(self, player_nr: int, dice: [int], highlight: int = 0):
         """
         Displays what dice a player has
         :param player_nr: which player to display the dice for
@@ -269,7 +269,7 @@ class MainWidget(QWidget, UIController):
         player_cup_layout = QHBoxLayout()
         for die in dice:
             die_image = QPixmap(
-                dice_images_highlighted[die] if die == highlight or die == 1 else dice_images[die])
+                dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else dice_images[die])
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
             die_img_label = QLabel()
@@ -335,7 +335,7 @@ class MainWidget(QWidget, UIController):
         elif action == 1:
             enemy_action_label = QLabel(text=f"Doubting Player {target}!", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/exclamation.gif")
-        elif action == 2:
+        elif action == 2 or action == 7:
             enemy_action_label = QLabel(text="...", objectName=f"enemy_action_label{enemy_nr}")
             enemy_loading_movie = QMovie("assets/images/waiting.gif")
         elif action == 3:
@@ -360,7 +360,7 @@ class MainWidget(QWidget, UIController):
                 QWidget().setLayout(enemy_action_group.layout())
             enemy_action_group.setLayout(enemy_action_layout)
         else:
-            print(f"Enemy {enemy_nr} action group not found")
+            print(f"Enemy {enemy_nr} action group not found, to display action {action}")
 
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
         """
@@ -374,7 +374,7 @@ class MainWidget(QWidget, UIController):
         if number_label is not None:
             number_label.setText(str(number))
         else:
-            print(f"Number label for enemy{enemy_nr} not found")
+            print(f"Number label for enemy{enemy_nr} not found, to display {number}")
         x_label = self.all_enemies_group.findChild(QLabel, f"enemy_x{enemy_nr}")
         if x_label is not None:
             x_label.setText("×" if dice != 0 else "")
@@ -389,7 +389,7 @@ class MainWidget(QWidget, UIController):
             dice_label.resize(50, 50)
             dice_label.setScaledContents(False)
         else:
-            print(f"Dice label for enemy{enemy_nr} not found")
+            print(f"Dice label for enemy{enemy_nr} not found, to display {dice}")
 
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         """
