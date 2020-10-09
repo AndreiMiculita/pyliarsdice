@@ -836,11 +836,3 @@ class Game:
         print(f'Chunk retrieve failures during game: {self.chunk_retrieval_failure_count}')
         print('Game Finished!')
         quit(0)
-
-
-"""
-#TODO: 
-- Create Reasoning text file for every ACT-R agent (concatenate strings of text). Make available as option to show
-- Highlight dice correctly in final dice count (now todo: add for human player). Also add button or click to continue for user after game is finished, such that it has time to count
-- Enemy bet not always shown (fixed I think)
-"""
