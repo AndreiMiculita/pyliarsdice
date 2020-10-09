@@ -60,11 +60,11 @@ class Model(object):
         slot_vals = chunk.slots.values()
 
         # Add slot values as singleton chunks
-        for v in slot_vals:
-            if type(v) == str and v not in [ch.name for ch in
-                                            self.dm]:  # NT: we want some contraints on the adding of chunks
-                s = Chunk(name=v, slots={})
-                self.add_encounter(s)
+        # for v in slot_vals:
+        #     if type(v) == str and v not in [ch.name for ch in
+        #                                     self.dm]:  # NT: we want some contraints on the adding of chunks
+        #         s = Chunk(name=v, slots={})
+        #         self.add_encounter(s)
 
         # Increment the fan of all chunks that this chunk references in its slots
         if update_fan:
