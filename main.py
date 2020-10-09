@@ -15,7 +15,7 @@ howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
 # Minimum and maximum limit to number of opponents
-opponent_limits = (1, 3)
+opponent_limits = (1, 4)
 
 
 class CommunicateRandom(QObject):
