@@ -10,5 +10,8 @@
 |Increase time with nr of chunks                                                                                   |         |
 |Feedback / click to continue in final count                                                                       |         |
 |Add text space in the middle of the screen, showing the count of final round and who were correct (and lose a die)|         |
-|Add reasoning files for cognitive model                                                                           |         |
+|Add reasoning files for cognitive model                                                                           |  done   |
 |look into processing power of rolling animations (maybe cut the dice and keep only rolling GIF)                   |         |
+|Add exclamation mark and  checkmark to buttons                                                                    |        |
+|Credit images (of dice and gifs etc)                                                                                |        |
+|Update how to play                                                                                                 |        |
