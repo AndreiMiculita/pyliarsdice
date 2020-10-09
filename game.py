@@ -91,6 +91,11 @@ class Game:
             if self.players[idx].strategy == 'model':
                 self.players[idx].model = Model()
 
+    def increase_models_time(self, t):
+        for idx in range(self.n_players):
+            if self.players[idx].strategy == 'model':
+                self.players[idx].model.time += t
+
     def reset(self):
         self.__init__(self.ui_controller, self.input_queue, N_PLAYERS, N_STARTING_DICE, DIFFICULTY)
 
@@ -214,6 +219,10 @@ class Game:
         doubt = False
 
         if self.players[self.current_player].strategy == 'random':
+            y = random.uniform(2.5, 4)
+            time.sleep(y)  # agent 'thinking'
+            self.increase_models_time(y)  # increase the model time with thinking time
+
             believe_percentage = 0.8
             if random.randint(1, 1000) <= 1000 * believe_percentage:
                 doubt = False  # Placeholder
@@ -221,6 +230,17 @@ class Game:
                 doubt = True
 
         elif self.players[self.current_player].strategy == 'model':
+
+            x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
+            y = random.uniform(1, 1.5)
+            if x != 0:
+                y += np.log(x * 2)
+            if y < 2.5:
+                y = 2.5
+            print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+            time.sleep(y)  # agent 'thinking'
+            self.increase_models_time(y)  # increase the model time with thinking time
+
             doubt = self.determine_model_doubt(self.current_player)
             if doubt:
                 self.players[
@@ -235,6 +255,9 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
+        y = random.uniform(2.5,4)
+        self.increase_models_time(y)  # increase model time with approx human 'thinking' time
+
         invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=True,
                               target=self.previous_player)
 
@@ -282,19 +305,15 @@ class Game:
                 # current and previous turn
                 if idx != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.indicate_turn, player=idx)
-                    # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
-                    x = len(self.players[idx].model.dm)  # counts number of chunks in memory
-                    y = random.uniform(1, 1.5)
-                    if x != 0:
-                        y += np.log(x * 2)
-                    if y < 2.5:
-                        y = 2.5
 
                     print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
                     time.sleep(y)  # agent 'thinking'
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
+                    y = random.uniform(2.5, 4)
+                    self.increase_models_time(y)  # increase model time with approx human 'thinking' time
+
                     invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True,
                                           target=self.previous_player)
                     invoke_in_main_thread(
@@ -306,7 +325,7 @@ class Game:
                         believe = True
                     else:
                         believe = False
-                    print(f'believe ui response = {believe}')
+
                     if believe == -1:
                         quit(0)
                     while believe != 0 and believe != 1:
@@ -319,6 +338,10 @@ class Game:
                     invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=False)
 
                 elif self.players[idx].strategy == 'random':
+                    y = random.uniform(2.5, 4)
+                    time.sleep(y)  # agent 'thinking'
+                    self.increase_models_time(y)  # increase the model time with thinking time
+
                     if random.randint(1, 100) >= 50:
                         believe = True
                     else:
@@ -326,6 +349,16 @@ class Game:
 
 
                 elif self.players[idx].strategy == 'model':
+                    x = len(self.players[idx].model.dm)  # counts number of chunks in memory
+                    y = random.uniform(1, 1.5)
+                    if x != 0:
+                        y += np.log(x * 2)
+                    if y < 2.5:
+                        y = 2.5
+                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+                    time.sleep(y)  # agent 'thinking'
+                    self.increase_models_time(y)  # increase the model time with thinking time
+
                     if self.determine_model_doubt(idx):
                         believe = False  # if doubt is true -> believe = False (and vice versa)
                     else:
@@ -375,6 +408,7 @@ class Game:
         for i in lose_dice_players:
             self.players[i].remove_die()
 
+
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
             print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
@@ -386,7 +420,7 @@ class Game:
         print()
 
         for idx in range(self.n_players):
-            if idx > 0:
+            if self.players[idx].strategy == 'model':
                 print(f'Player {idx} has {len(self.players[idx].model.dm)} chunks stored')
 
     ###############################################################
@@ -408,18 +442,18 @@ class Game:
                                           "dice_value": self.current_bid.roll})  # remember the value a player has bid on
                         self.players[i].model.add_encounter(ch)  # remember the bid of a player
 
-                        time_to_add = + round(random.uniform(1, 4),
-                                              2)  # add time according to length of a turn, might need adjustment
-                        self.players[i].model.time += round(time_to_add, 2)
+                        # replaced by actual thinking time
+                        # time_to_add = + round(random.uniform(1, 4),
+                        #                       2)  # add time according to length of a turn, might need adjustment
+                        # self.players[i].model.time += round(time_to_add, 2)
 
                         added = True
                     except ValueError:
                         number += 1
 
-                self.players[
-                    i].reasoning_string += f'Storing chunk to remember that Player {self.current_player} has made a bet on dice value {self.current_bid.roll}\n'
-                print(self.players[i].model.dm[0])
-                # print(self.players[i].model.dm[1])
+                self.players[i].reasoning_string += f'Storing chunk to remember that Player {self.current_player} has made a bet on dice value {self.current_bid.roll}\n'
+
+
 
     def bidding(self):
         """
@@ -427,12 +461,15 @@ class Game:
         Redirection to model for opponents and GUI for human player.
         """
         if self.current_player == self.player_ID:
+            self.increase_models_time(random.uniform(2.5,4))  # increasing model times with a random, since human players might take very long or short to affect models
             count, roll = self.ui_bid()
         else:
             invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                   action=0)
             count, roll = self.model_bid()
-            self.players[self.current_player].reasoning_string += f'I am bidding: {count} x {roll} is on the table\n'
+            if self.players[self.current_player].strategy == 'model':
+                self.players[self.current_player].reasoning_string += f'I am bidding: {count} x {roll} is on the table\n'
+
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -482,7 +519,7 @@ class Game:
                               previous_bet=f"{self.current_bid.count} × {self.current_bid.roll}")
 
         count, roll = 0, 0
-        invoke_in_main_thread(self.ui_controller.set_bet_limits, number_min=0, number_max=10, dice_min=1,
+        invoke_in_main_thread(self.ui_controller.set_bet_limits, number_min=0, number_max=self.n_total_dice, dice_min=1,
                               dice_max=6)
 
         while not higher:  # Random bid, on a higher count with random dice value
@@ -520,7 +557,7 @@ class Game:
                     count = self.current_bid.count + 1
                 else:
                     count = self.current_bid.count * 2  # first non-joker bid over a joker bid must be double the count
-                    roll = random.randint(1, 6)
+                    roll = random.randint(2, 6)
 
             else:  # current bid is not on joker dice
 
@@ -535,14 +572,14 @@ class Game:
                     higher = False
                     while not higher:  # Random bid, on a higher count with random dice value
                         count = self.current_bid.count
-                        roll = random.randint(1, 6)
+                        roll = random.randint(2, 6)
 
                         if count > self.current_bid.count or (
                                 count == self.current_bid.count and roll > self.current_bid.roll):
                             higher = True
                         else:
                             count = self.current_bid.count + 1
-                            roll = random.randint(1, 6)
+                            roll = random.randint(2, 6)
                             higher = True
 
         elif self.players[self.current_player].strategy == 'model':
@@ -560,24 +597,25 @@ class Game:
                     self.players[
                         self.current_player].reasoning_string += 'Aiming to bluff on one of the dice values bet on by next player\n'
 
-                retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": bluff_player})
-                chunk, latency = self.players[self.current_player].model.retrieve(
-                    retrieve_chunk)  # retrieve a chunk from declarative memory
+
+                chunk = None
+                tries = 0
+                while chunk is None and tries < 3: # model has three tries to remember the bet of a player, otherwise models remember too little with the increased time
+                    retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": bluff_player})
+                    chunk, latency = self.players[self.current_player].model.retrieve(
+                        retrieve_chunk)  # retrieve a chunk from declarative memory
+                    tries += 1
 
                 self.players[
                     self.current_player].reasoning_string += f'Trying to memorize a chunk containing a value Player {bluff_player} has bid on\n'
 
                 if chunk is not None:  # a chunk was retrieved
                     self.chunk_retrieval_count += 1
-                    # print(chunk)
                     roll = chunk.slots['dice_value']  #
-                    # print(f'[MODEL] Player {self.current_player} will bluff on {roll}, since Player {bluff_player}
-                    # has bid on {roll} before')
-                    self.players[
-                        self.current_player].reasoning_string += f'Retrieved a chunk containing that {bluff_player} has bet on {roll} this round\n'
-                    self.players[
-                        self.current_player].reasoning_string += f'Bluffing on {roll}, since Player {bluff_player} has bet on {roll} before\n'
+                    self.players[self.current_player].reasoning_string += f'Retrieved a chunk containing that {bluff_player} has bet on {roll} this round\n'
+                    self.players[self.current_player].reasoning_string += f'Bluffing on {roll}, since Player {bluff_player} has bet on {roll} before\n'
                 else:  # no chunk was retrieved / retrieval failure
+                    print('\nfailed')
                     self.chunk_retrieval_failure_count += 1
                     self.players[self.current_player].reasoning_string += f'No chunk was retrieved\n'
                     self.players[
@@ -679,6 +717,7 @@ class Game:
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
+
             # print(f"[DEBUG] Current Player: {self.current_player} - Current Bid: {self.current_bid} - Current
             # State: {rev_states[self.state]} - Dice in game: {self.n_total_dice}")
 
@@ -699,9 +738,8 @@ class Game:
                       f'Total number of dice remaining = {self.n_total_dice} \n')
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
-                    if idx != self.player_ID:
-                        self.players[
-                            idx].reasoning_string += f'----------[Model Reasoning]  NEW ROUND ---------------\n'
+                    if idx != self.player_ID and self.players[idx].strategy == 'model':
+                        self.players[idx].reasoning_string += f'----------[Model Reasoning]  NEW ROUND ---------------\n'
                         self.players[idx].reasoning_string += f'This text shows the reasoning by Player {idx}\n'
                         self.players[idx].reasoning_string += f'My hand is {self.players[idx].hand}\n'
 
@@ -719,15 +757,9 @@ class Game:
                                           enemy_nr=self.current_player,
                                           action=0)
 
-                    # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
-                    x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
-                    y = random.uniform(1, 1.5)
-                    if x != 0:
-                        y += np.log(x * 2)
-                    if y < 2.5:
-                        y = 2.5
-                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
-                    time.sleep(y)  # agent 'thinking'
+                    y = random.uniform(2.5, 4)
+                    time.sleep(y)  # agent 'thinking'  (First turn means never any chunks stored, so random time addition can be both for models and random opponents)
+
 
                 self.state = states['bidding_phase']
                 continue
@@ -751,14 +783,7 @@ class Game:
                                           enemy_nr=self.current_player,
                                           action=0)
                     # time.sleep(random.uniform(1.5, 4))  # agent 'thinking'
-                    x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
-                    y = random.uniform(1, 1.5)
-                    if x != 0:
-                        y += np.log(x * 2)
-                    if y < 2.5:
-                        y = 2.5
-                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
-                    time.sleep(y)  # agent 'thinking'
+
                 doubt = self.doubting()
 
                 if doubt:
@@ -770,7 +795,10 @@ class Game:
                                               target=self.previous_player)
 
                     self.resolve_doubt()
-                    print(f'-------Player 1 reasoning ---- \n {self.players[1].reasoning_string} -----------------')
+                    if self.players[1].strategy == 'model':
+                        print(f'-------Player 1 reasoning ---- \n {self.players[1].reasoning_string} -----------------')
+                    print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
+                    print(f'Chunk retrieve failures during round: {self.chunk_retrieval_failure_count}')
                     self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:

@@ -62,7 +62,7 @@ class Model(object):
         # Add slot values as singleton chunks
         # for v in slot_vals:
         #     if type(v) == str and v not in [ch.name for ch in
-        #                                     self.dm]:  # NT: we want some contraints on the adding of chunks
+        #                                     self.dm]:  # NT: we want some constraints on the adding of chunks
         #         s = Chunk(name=v, slots={})
         #         self.add_encounter(s)
 

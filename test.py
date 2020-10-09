@@ -32,7 +32,7 @@ def test():
     rem_chunk = 0
     not_rem_chunk = 0
 
-    for _ in range(1):
+    for _ in range(1000):
         m = Model()
 
         ch = Chunk(name="bid_memory" + str(1),
@@ -41,7 +41,7 @@ def test():
                           "dice_value": 5})  # remember the value a player has bid on
 
         m.add_encounter(ch)  # remember the bid of a player
-        m.time += round(random.uniform(1, 4),
+        m.time += round(random.uniform(2.5, 4),
                         2)  # add time according to length of a turn, might need adjustment
         # m.add_encounter(ch)
 
@@ -51,7 +51,7 @@ def test():
                           "dice_value": 6})  # remember the value a player has bid on
 
         m.add_encounter(ch)  # remember the bid of a player
-        m.time += round(random.uniform(1, 4),
+        m.time += round(random.uniform(2.5, 4),
                         2)  # add time according to length of a turn, might need adjustment
 
         ch = Chunk(name="bid_memory" + str(3),
@@ -60,19 +60,28 @@ def test():
                           "dice_value": 4})  # remember the value a player has bid on
 
         m.add_encounter(ch)  # remember the bid of a player
-        m.time += round(random.uniform(1, 4),
+        m.time += round(random.uniform(2.5, 4),
                         2)  # add time according to length of a turn, might need adjustment
-        print(len(m.dm))
-        retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": 1})
+        # print(len(m.dm))
+        retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": 3})
         chunk, latency = m.retrieve(retrieve_chunk)
         if chunk is not None:
-
             rem_chunk += 1
-            if chunk.slots['player'] == 2:
-                print('hoi')
+
         else:
-            not_rem_chunk += 1
-            # print('ja')
+            chunk, latency = m.retrieve(retrieve_chunk)
+            if chunk is not None:
+                rem_chunk += 1
+            else:
+                # chunk, latency = m.retrieve(retrieve_chunk)
+                # if chunk is not None:
+                #     rem_chunk += 1
+                #
+                # else:
+                    not_rem_chunk += 1
+                    # print('ja')
+
+
     print(f'remembered chunks: {rem_chunk}')
     print(f'not remembered chunks: {not_rem_chunk}')
 
@@ -104,4 +113,4 @@ def test2():
 
 
 if __name__ == '__main__':
-    test2()
+    test()
