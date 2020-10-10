@@ -2,36 +2,41 @@ import random
 import threading
 import time
 from multiprocessing import Queue
+from typing import Union
 
 from PySide2 import QtCore
-from PySide2.QtCore import QSize, QTimeLine
-from PySide2.QtGui import QMovie, QPixmap, QPainter
+from PySide2.QtCore import QSize
+from PySide2.QtGui import QMovie, QPixmap
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame
 
 from game import Game
 from ui_controller import UIController
 
-dice_images = ["assets/images/dice-none.png",
-               "assets/images/dice-1-star.png",
-               "assets/images/dice-2.png",
-               "assets/images/dice-3.png",
-               "assets/images/dice-4.png",
-               "assets/images/dice-5.png",
-               "assets/images/dice-6.png"]
+preferred_format = "webp" if "webp" in [s.data().decode() for s in QMovie.supportedFormats()] else "gif"
+print("preferred_format", preferred_format)
 
-dice_images_highlighted = ["assets/images/dice-none.png",
-                           "assets/images/dice-1-star-highlighted-g.png",
-                           "assets/images/dice-2-highlighted-g.png",
-                           "assets/images/dice-3-highlighted-g.png",
-                           "assets/images/dice-4-highlighted-g.png",
-                           "assets/images/dice-5-highlighted-g.png",
-                           "assets/images/dice-6-highlighted-g.png"]
+dice_image_paths = ["assets/images/dice-none.png",
+                    "assets/images/dice-1.png",
+                    "assets/images/dice-2.png",
+                    "assets/images/dice-3.png",
+                    "assets/images/dice-4.png",
+                    "assets/images/dice-5.png",
+                    "assets/images/dice-6.png"]
 
-dice_image_unknown = "assets/images/dice-q.png"
-dice_image_blank = "assets/images/dice-blank.png"
-dice_images_rolling = ["assets/images/dice-rolling-1.gif", "assets/images/dice-rolling-2.gif",
-                       "assets/images/dice-rolling-3.gif"]
+dice_images_highlighted_paths = ["assets/images/dice-none.png",
+                                 f"assets/images/dice-1-hl-anim.{preferred_format}",
+                                 f"assets/images/dice-2-hl-anim.{preferred_format}",
+                                 f"assets/images/dice-3-hl-anim.{preferred_format}",
+                                 f"assets/images/dice-4-hl-anim.{preferred_format}",
+                                 f"assets/images/dice-5-hl-anim.{preferred_format}",
+                                 f"assets/images/dice-6-hl-anim.{preferred_format}"]
+
+dice_image_unknown_path = "assets/images/dice-q.png"
+dice_image_blank_path = "assets/images/dice-blank.png"
+dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
+                             f"assets/images/dice-rolling-2.{preferred_format}",
+                             f"assets/images/dice-rolling-3.{preferred_format}"]
 
 
 class MainWidget(QWidget, UIController):
@@ -61,6 +66,17 @@ class MainWidget(QWidget, UIController):
         self.set_bluff_controls_enabled(False)
         self.set_bet_controls_enabled(False)
         self.init_ui()
+        self.dice_images = [QPixmap(d) for d in dice_image_paths]
+        self.dice_images_highlighted = [QMovie(d) for d in dice_images_highlighted_paths]
+        self.dice_images_rolling = [QMovie(d) for d in dice_images_rolling_paths]
+        self.dice_image_unknown = QPixmap(dice_image_unknown_path)
+        self.dice_image_blank = QPixmap(dice_image_blank_path)
+        # use https://loading.io/
+        self.thinking_image = QMovie(f"assets/images/loader.{preferred_format}")
+        self.doubting_image = QMovie(f"assets/images/exclamation.{preferred_format}")
+        self.waiting_image = QMovie(f"assets/images/waiting.{preferred_format}")
+        self.rolling_image = QMovie(f"assets/images/rolling_dice.{preferred_format}")
+        self.believing_image = QMovie(f"assets/images/checkmark.{preferred_format}")
 
         for enemy_nr in range(1, n_opponents + 1):
             self.display_bet_enemy(enemy_nr=enemy_nr, number="", dice=0)
@@ -262,6 +278,27 @@ class MainWidget(QWidget, UIController):
             else:
                 print(f"enemy {player_nr} cup group not found")
 
+    def get_label_with_img(self, image: Union[QMovie, QPixmap], size: (int, int) = (50, 50)):
+        """
+        Utility function that uses QPixmap for non-animated and QMovie for animated
+        
+        :param image: the image to display (as QMovie or QPixmap)
+        :param size: size of the image to display
+        :return: 
+        """
+        img_label = QLabel()
+        if isinstance(image, QMovie):
+            image.setScaledSize(QSize(*size))
+            img_label.setMovie(image)
+            image.start()
+        elif isinstance(image, QPixmap):
+            image = image.scaled(*size, aspectMode=QtCore.Qt.KeepAspectRatio,
+                                 mode=QtCore.Qt.SmoothTransformation)
+            img_label.setPixmap(image)
+            img_label.setScaledContents(False)
+
+        return img_label
+
     def display_dice(self, player_nr: int, dice: [int], state: int = 0, highlight: int = 0):
         """
         Displays what dice a player has
@@ -282,26 +319,17 @@ class MainWidget(QWidget, UIController):
             print(f"Unknown parameter dice={dice} passed to display_dice")
         for die in dice_list:
             if state == 1:  # rolling
-                dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
-                dice_rolling_movie.setScaledSize(QSize(50, 50))
-                die_img_label = QLabel()
-                die_img_label.setMovie(dice_rolling_movie)
-                dice_rolling_movie.start()
+                die_img_label = self.get_label_with_img(random.choice(self.dice_images_rolling))
             else:
                 if isinstance(dice, list):  # dice visible, maybe with highlights
-                    die_image = QPixmap(
-                        dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else dice_images[
-                            die])
+                    die_img_label = self.get_label_with_img(
+                        self.dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else
+                        self.dice_images[die])
                 elif state == 0:  # anonymous
-                    die_image = QPixmap(dice_image_unknown)
+                    die_img_label = self.get_label_with_img(self.dice_image_unknown)
                 else:
-                    die_image = QPixmap(dice_image_blank)
+                    die_img_label = self.get_label_with_img(self.dice_image_blank)
                     print(f"Wrong arguments given to display_dice: {dice}")
-                die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
-                                             mode=QtCore.Qt.SmoothTransformation)
-                die_img_label = QLabel()
-                die_img_label.setPixmap(die_image)
-                die_img_label.setScaledContents(False)
 
             player_cup_layout.addWidget(die_img_label)
 
@@ -317,30 +345,26 @@ class MainWidget(QWidget, UIController):
         :return:
         """
         enemy_action_layout = QVBoxLayout()
-        enemy_action_image_label = QLabel()
 
         if action == 0:
             enemy_action_label = QLabel(text="Thinking", objectName=f"enemy_action_label{enemy_nr}")
-            # use https://loading.io/
-            enemy_loading_movie = QMovie("assets/images/loader.gif")
+            enemy_action_image = self.thinking_image
         elif action == 1:
             enemy_action_label = QLabel(text=f"Doubting Player {target}!", objectName=f"enemy_action_label{enemy_nr}")
-            enemy_loading_movie = QMovie("assets/images/exclamation.gif")
+            enemy_action_image = self.doubting_image
         elif action == 2 or action == 7:
             enemy_action_label = QLabel(text="...", objectName=f"enemy_action_label{enemy_nr}")
-            enemy_loading_movie = QMovie("assets/images/waiting.gif")
+            enemy_action_image = self.waiting_image
         elif action == 3:
             enemy_action_label = QLabel(text="Rolling Dice", objectName=f"enemy_action_label{enemy_nr}")
-            enemy_loading_movie = QMovie("assets/images/rolling_dice.gif")
+            enemy_action_image = self.rolling_image
         elif action == 4:
             enemy_action_label = QLabel(text=f"Believing Player {target}", objectName=f"enemy_action_label{enemy_nr}")
-            enemy_loading_movie = QMovie("assets/images/checkmark.gif")
+            enemy_action_image = self.believing_image
         else:
             pass
 
-        enemy_loading_movie.setScaledSize(QSize(70, 70))
-        enemy_action_image_label.setMovie(enemy_loading_movie)
-        enemy_loading_movie.start()
+        enemy_action_image_label = self.get_label_with_img(enemy_action_image, (70, 70))
         enemy_action_layout.addWidget(enemy_action_label)
         enemy_action_layout.addWidget(enemy_action_image_label)
         enemy_action_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}")
@@ -374,7 +398,7 @@ class MainWidget(QWidget, UIController):
             print(f"X label for enemy{enemy_nr} not found")
         dice_label = self.all_enemies_group.findChild(QLabel, f"enemy_dice{enemy_nr}")
         if dice_label is not None:
-            die_image = QPixmap(dice_images[dice])
+            die_image = self.dice_images[dice]
             die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
                                          mode=QtCore.Qt.SmoothTransformation)
             dice_label.setPixmap(die_image)
