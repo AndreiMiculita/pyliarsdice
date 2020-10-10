@@ -104,14 +104,14 @@ class Game:
             p.roll_hand()
         for idx, p in enumerate(self.players):
             if idx != self.player_ID:
-                invoke_in_main_thread(lambda: self.ui_controller.display_action_enemy(enemy_nr=idx,
-                                                                                      action=3))
+                invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
+                                                                                      action=3)
 
-                invoke_in_main_thread(lambda: self.ui_controller.display_rolling_dice(player_nr=idx,
-                                                                                      dice_count=p.get_hand_size()))
+                invoke_in_main_thread(self.ui_controller.display_rolling_dice, player_nr=idx,
+                                                                                      dice_count=p.get_hand_size())
             else:
-                invoke_in_main_thread(lambda: self.ui_controller.display_rolling_dice(player_nr=self.player_ID,
-                                                                                      dice_count=p.get_hand_size()))
+                invoke_in_main_thread(self.ui_controller.display_rolling_dice, player_nr=self.player_ID,
+                                                                                      dice_count=p.get_hand_size())
 
         # Sleep for 2 seconds, animation will play
         time.sleep(random.uniform(2.5, 3.5))  # agent 'rolling dice'
@@ -306,8 +306,8 @@ class Game:
                 if idx != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.indicate_turn, player=idx)
 
-                    print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
-                    time.sleep(y)  # agent 'thinking'
+                    # print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
+                    # time.sleep(y)  # agent 'thinking'
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
@@ -316,8 +316,7 @@ class Game:
 
                     invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True,
                                           target=self.previous_player)
-                    invoke_in_main_thread(
-                        lambda: self.ui_controller.display_dice(player_nr=self.player_ID, dice=self.players[0].hand))
+                    invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID, dice=self.players[0].hand)
                     print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                           f"table? 1=yes, 0=no: ")
                     believe_ui = int(self.input_queue.get(block=True))
@@ -362,21 +361,21 @@ class Game:
                         believe = True
 
                 if believe:
+                    invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
+                                          enemy_nr=idx,
+                                          action=4,
+                                          target=self.previous_player)
                     print(f'Player {idx} believes the bid is on the table')
-                    invoke_in_main_thread(lambda: self.ui_controller.display_action_enemy(
-                        enemy_nr=idx,
-                        action=4,
-                        target=self.previous_player))
                     if count >= bid_count:  # lose a die when the bid is believed and true, or not believe and false
                         lose_dice_players.append(idx)
                         # self.players[idx].remove_die()
 
                 else:
+                    invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
+                                          enemy_nr=idx,
+                                          action=1,
+                                          target=self.previous_player)
                     print(f'Player {idx} does not believe the bid is on the table')
-                    invoke_in_main_thread(lambda: self.ui_controller.display_action_enemy(
-                        enemy_nr=idx,
-                        action=1,
-                        target=self.previous_player))
                     if count < bid_count:
                         lose_dice_players.append(idx)
                         # self.players[idx].remove_die()
@@ -386,8 +385,8 @@ class Game:
 
         # Reveal all dice in ui and wait for a bit
         for idx, player in enumerate(self.players):
-            invoke_in_main_thread(lambda: self.ui_controller.display_dice(player_nr=idx, dice=player.hand,
-                                                                          highlight=bid_roll))
+            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=player.hand,
+                                                                          highlight=bid_roll)
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
         time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
@@ -410,9 +409,9 @@ class Game:
         for idx in range(self.n_players):
             print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
             if idx != self.player_ID:
-                invoke_in_main_thread(lambda: self.ui_controller.display_anonymous_dice(player_nr=idx,
+                invoke_in_main_thread(self.ui_controller.display_anonymous_dice, player_nr=idx,
                                                                                         dice_count=self.players[
-                                                                                            idx].get_hand_size()))
+                                                                                            idx].get_hand_size())
 
         print()
 
@@ -734,14 +733,14 @@ class Game:
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                       f'Total number of dice remaining = {self.n_total_dice} \n')
 
-                invoke_in_main_thread(lambda: self.ui_controller.display_dice(player_nr=self.player_ID,
+                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
                                                                               dice=self.players[self.player_ID].hand,
-                                                                              highlight=0))
+                                                                              highlight=0)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx > 0:
-                        invoke_in_main_thread(lambda: self.ui_controller.display_anonymous_dice(player_nr=idx,
-                                                                                                dice_count=player.get_hand_size()))
+                        invoke_in_main_thread(self.ui_controller.display_anonymous_dice, player_nr=idx,
+                                                                                                dice_count=player.get_hand_size())
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
@@ -767,9 +766,9 @@ class Game:
                 if self.current_player == self.player_ID:
                     print(
                         f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
-                    invoke_in_main_thread(lambda: self.ui_controller.display_dice(player_nr=self.player_ID,
+                    invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
                                                                                   dice=self.players[
-                                                                                      self.player_ID].hand))
+                                                                                      self.player_ID].hand)
 
                 print(f'[TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.indicate_turn(player=self.current_player))
