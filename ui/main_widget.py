@@ -29,6 +29,7 @@ dice_images_highlighted = ["assets/images/dice-none.png",
                            "assets/images/dice-6-highlighted-g.png"]
 
 dice_image_unknown = "assets/images/dice-q.png"
+dice_image_blank = "assets/images/dice-blank.png"
 dice_images_rolling = ["assets/images/dice-rolling-1.gif", "assets/images/dice-rolling-2.gif",
                        "assets/images/dice-rolling-3.gif"]
 
@@ -38,6 +39,7 @@ class MainWidget(QWidget, UIController):
     def __init__(self, difficulty: int, n_opponents: int):
         """
         This widget is everything in the window, except for the menu bar and status bar.
+
         :param difficulty: an integer value for the difficulty (0: random, 1: model)
         :param n_opponents: integer representing how many opponents there are
         """
@@ -214,6 +216,7 @@ class MainWidget(QWidget, UIController):
         """
         Action to be done when the "bet" button is pressed (i.e. get values from spinboxes and send them to the game)
         Prints bet to stdout, and also sends it into the input queue
+
         :return:
         """
         print(int(self.select_number_spin_box.value()))
@@ -226,6 +229,7 @@ class MainWidget(QWidget, UIController):
         """
         Action to be done when the "call bluff" button is pressed (send signal to the game)
         Prints action to stdout, and also sends it into the input queue
+
         :return:
         """
         print("1")
@@ -258,61 +262,47 @@ class MainWidget(QWidget, UIController):
             else:
                 print(f"enemy {player_nr} cup group not found")
 
-    def display_dice(self, player_nr: int, dice: [int], highlight: int = 0):
+    def display_dice(self, player_nr: int, dice: [int], state: int = 0, highlight: int = 0):
         """
         Displays what dice a player has
+
         :param player_nr: which player to display the dice for
-        :param dice: list of dice numbers that the player is holding
-        :param highlight: dice type (1-6) to highlight; 0 for no highlight
+        :param dice: list of dice numbers that the player is holding; can also be an integer, if the dice are anonymous or rolling
+        :param state: only needed if dice is an int, this tells whether the dice are anonymous (0) or rolling (1)
+        :param highlight: only needed if dice is a list, this tells which dice type (1-6) to highlight; 0 for no highlight
         :return:
         """
         player_cup_layout = QHBoxLayout()
-        for die in dice:
-            die_image = QPixmap(
-                dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else dice_images[die])
-            die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
-                                         mode=QtCore.Qt.SmoothTransformation)
-            die_img_label = QLabel()
-            die_img_label.setPixmap(die_image)
-            die_img_label.setScaledContents(False)
-            player_cup_layout.addWidget(die_img_label)
+        if isinstance(dice, list):
+            dice_list = dice
+        elif isinstance(dice, int):
+            dice_list = range(0, dice)
+        else:
+            dice_list = []
+            print(f"Unknown parameter dice={dice} passed to display_dice")
+        for die in dice_list:
+            if state == 1:  # rolling
+                dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
+                dice_rolling_movie.setScaledSize(QSize(50, 50))
+                die_img_label = QLabel()
+                die_img_label.setMovie(dice_rolling_movie)
+                dice_rolling_movie.start()
+            else:
+                if isinstance(dice, list):  # dice visible, maybe with highlights
+                    die_image = QPixmap(
+                        dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else dice_images[
+                            die])
+                elif state == 0:  # anonymous
+                    die_image = QPixmap(dice_image_unknown)
+                else:
+                    die_image = QPixmap(dice_image_blank)
+                    print(f"Wrong arguments given to display_dice: {dice}")
+                die_image = die_image.scaled(50, 50, aspectMode=QtCore.Qt.KeepAspectRatio,
+                                             mode=QtCore.Qt.SmoothTransformation)
+                die_img_label = QLabel()
+                die_img_label.setPixmap(die_image)
+                die_img_label.setScaledContents(False)
 
-        self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
-
-    def display_rolling_dice(self, player_nr: int, dice_count: int):
-        """
-        Display rolling dice for player
-        :param player_nr: which player to display the dice for
-        :param dice_count: how many rolling dice to show
-        :return:
-        """
-
-        player_cup_layout = QHBoxLayout()
-        for die in range(dice_count):
-            dice_rolling_movie = QMovie(random.choice(dice_images_rolling))
-            dice_rolling_movie.setScaledSize(QSize(50, 50))
-            die_img_label = QLabel()
-            die_img_label.setMovie(dice_rolling_movie)
-            dice_rolling_movie.start()
-            player_cup_layout.addWidget(die_img_label)
-
-        self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
-
-    def display_anonymous_dice(self, player_nr: int, dice_count: int):
-        """
-        Display how many dice the enemy has, without showing what they are
-        :param player_nr: which enemy to display the dice for
-        :param dice_count: how many anonymous dice to display
-        :return:
-        """
-        player_cup_layout = QHBoxLayout()
-        for die in range(dice_count):
-            die_image = QPixmap(dice_image_unknown)
-            die_image = die_image.scaled(50, 50, QtCore.Qt.KeepAspectRatio)
-            die_img_label = QLabel()
-            die_img_label.setPixmap(die_image)
-            die_img_label.resize(50, 50)
-            die_img_label.setScaledContents(False)
             player_cup_layout.addWidget(die_img_label)
 
         self.put_layout_in_cup(player_nr=player_nr, layout=player_cup_layout)
@@ -320,6 +310,7 @@ class MainWidget(QWidget, UIController):
     def display_action_enemy(self, enemy_nr: int, action: int, target: int = 0):
         """
         Display which action an enemy is currently executing
+
         :param enemy_nr: which enemy to display the action for
         :param action: id of the action: 0 - thinking, 1 - doubting, 2 - waiting
         :param target: (optional)  who the action is directed towards (e.g. who they are doubting)
@@ -365,6 +356,7 @@ class MainWidget(QWidget, UIController):
     def display_bet_enemy(self, enemy_nr: int, number: int, dice: int):
         """
         Displays what the enemy has bet
+
         :param enemy_nr: which enemy has bet
         :param number: how many dice the enemy has bet
         :param dice: what dice (1-6) the enemy has bet
@@ -394,6 +386,7 @@ class MainWidget(QWidget, UIController):
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         """
         Set the limits for the spinboxes
+
         :param number_min: min limit for number of dice
         :param number_max: max limit for type of dice
         :param dice_min: min limit for type of dice
@@ -406,6 +399,7 @@ class MainWidget(QWidget, UIController):
     def set_bluff_controls_enabled(self, enabled: bool, target: int = 0):
         """
         Enables or disables the call bluff/trust buttons
+
         :param enabled: whether the controls are enabled or not
         :param target: who to doubt/trust
         :return:
@@ -421,6 +415,7 @@ class MainWidget(QWidget, UIController):
     def set_bet_controls_enabled(self, enabled: bool, previous_bet: str = ""):
         """
         Enables or disables the bet button and spinboxes
+
         :param enabled: whether the controls are enabled or not
         :param previous_bet: bet which must be beaten
         :return:
@@ -435,6 +430,7 @@ class MainWidget(QWidget, UIController):
     def indicate_turn(self, player: int):
         """
         This indicates whose turn it is, in the label at the top of the window.
+
         :param player: int  with value 0 for human player, >0 for opponents
         :return:
         """

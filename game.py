@@ -105,13 +105,15 @@ class Game:
         for idx, p in enumerate(self.players):
             if idx != self.player_ID:
                 invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
-                                                                                      action=3)
+                                      action=3)
 
-                invoke_in_main_thread(self.ui_controller.display_rolling_dice, player_nr=idx,
-                                                                                      dice_count=p.get_hand_size())
+                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+                                      dice=p.get_hand_size(),
+                                      state=1)
             else:
-                invoke_in_main_thread(self.ui_controller.display_rolling_dice, player_nr=self.player_ID,
-                                                                                      dice_count=p.get_hand_size())
+                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
+                                      dice=p.get_hand_size(),
+                                      state=1)
 
         # Sleep for 2 seconds, animation will play
         time.sleep(random.uniform(2.5, 3.5))  # agent 'rolling dice'
@@ -255,7 +257,7 @@ class Game:
         Calls for the ui and ask the player if it should call a bluff
         :return: Boolean whether the player decides it should call a bluff.
         """
-        y = random.uniform(2.5,4)
+        y = random.uniform(2.5, 4)
         self.increase_models_time(y)  # increase model time with approx human 'thinking' time
 
         invoke_in_main_thread(fn=self.ui_controller.set_bluff_controls_enabled, enabled=True,
@@ -316,7 +318,8 @@ class Game:
 
                     invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=True,
                                           target=self.previous_player)
-                    invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID, dice=self.players[0].hand)
+                    invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
+                                          dice=self.players[0].hand)
                     print(f"Your hand is {self.players[idx].hand}. Do you believe {bid_count} x {bid_roll} is on the "
                           f"table? 1=yes, 0=no: ")
                     believe_ui = int(self.input_queue.get(block=True))
@@ -386,7 +389,7 @@ class Game:
         # Reveal all dice in ui and wait for a bit
         for idx, player in enumerate(self.players):
             invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=player.hand,
-                                                                          highlight=bid_roll)
+                                  highlight=bid_roll)
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
         time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
@@ -404,14 +407,13 @@ class Game:
         for i in lose_dice_players:
             self.players[i].remove_die()
 
-
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
             print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
             if idx != self.player_ID:
-                invoke_in_main_thread(self.ui_controller.display_anonymous_dice, player_nr=idx,
-                                                                                        dice_count=self.players[
-                                                                                            idx].get_hand_size())
+                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+                                      dice=self.players[idx].get_hand_size(),
+                                      state=0)
 
         print()
 
@@ -593,7 +595,6 @@ class Game:
                     self.players[
                         self.current_player].reasoning_string += 'Aiming to bluff on one of the dice values bet on by next player\n'
 
-
                 chunk = None
                 tries = 0
                 while chunk is None and tries < 3:  # model has three tries to remember the bet of a player, otherwise models remember too little with the increased time
@@ -713,7 +714,6 @@ class Game:
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
-
             # print(f"[DEBUG] Current Player: {self.current_player} - Current Bid: {self.current_bid} - Current
             # State: {rev_states[self.state]} - Dice in game: {self.n_total_dice}")
 
@@ -734,13 +734,14 @@ class Game:
                       f'Total number of dice remaining = {self.n_total_dice} \n')
 
                 invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
-                                                                              dice=self.players[self.player_ID].hand,
-                                                                              highlight=0)
+                                      dice=self.players[self.player_ID].hand,
+                                      highlight=0)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx > 0:
-                        invoke_in_main_thread(self.ui_controller.display_anonymous_dice, player_nr=idx,
-                                                                                                dice_count=player.get_hand_size())
+                        invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+                                              dice=player.get_hand_size(),
+                                              state=0)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
@@ -767,8 +768,8 @@ class Game:
                     print(
                         f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
                     invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
-                                                                                  dice=self.players[
-                                                                                      self.player_ID].hand)
+                                          dice=self.players[
+                                              self.player_ID].hand)
 
                 print(f'[TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.indicate_turn(player=self.current_player))
