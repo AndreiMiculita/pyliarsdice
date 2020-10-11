@@ -118,6 +118,7 @@ class BigTextTabWidget(QWidget):
         if isinstance(self.text_file, StringIO):
             self.big_text_view = QLabel()
             self.big_text_view.setTextFormat(Qt.RichText)
+            self.big_text_view.setAlignment(Qt.AlignTop|Qt.AlignLeft)
         elif isinstance(self.text_file, str) and self.text_file.endswith("html"):
             self.big_text_view = QWebEngineView()
         else:
@@ -138,7 +139,7 @@ class BigTextTabWidget(QWidget):
                 self.big_text_view.setHtml(text_file_handle.read())
 
         vertical_main_layout.addWidget(back_button)
-        vertical_main_layout.addWidget(self.big_text_view)
+        vertical_main_layout.addWidget(self.big_text_view, alignment=Qt.AlignTop|Qt.AlignLeft)
         self.setLayout(vertical_main_layout)
 
     def update_text(self, text_file):
