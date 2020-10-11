@@ -390,8 +390,8 @@ class Game:
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
         invoke_in_main_thread(self.ui_controller.show_info,
-                              string=f"The bid was: {bid_count} x {bid_roll}."
-                                     f"\nOn the table in total, there was: {count} x {bid_roll}")
+                              string=f"The bid was: {bid_count} x {bid_roll}.<br>"
+                                     f"On the table: {count} x {bid_roll}.")
 
         time.sleep(4)
 
@@ -405,10 +405,6 @@ class Game:
             # self.players[self.current_player].remove_die()
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
-
-
-
-
 
         if len(lose_dice_players) <= 1:
             invoke_in_main_thread(self.ui_controller.show_info,
@@ -548,7 +544,8 @@ class Game:
                 higher = True
             else:
                 print('Bid impossible or not high enough, try again!')
-                invoke_in_main_thread(self.ui_controller.show_info, string=f"You need to overbid {self.current_bid.count} × {self.current_bid.roll}!")
+                invoke_in_main_thread(self.ui_controller.show_info, string=
+                f"<b style='color:#FF0000'>You need to overbid {self.current_bid.count} × {self.current_bid.roll}!</b>")
         invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=False,
                               previous_bet=f"{self.current_bid.count} × {self.current_bid.roll}")
 
@@ -742,9 +739,9 @@ class Game:
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
+                self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
-                self.all_roll()
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                       f'Total number of dice remaining = {self.n_total_dice} \n')
