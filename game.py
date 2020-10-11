@@ -33,6 +33,14 @@ rev_states = {
     4: 'doubting_phase'
 }
 
+playercolors = ['none',
+    '#ff0000',
+    '#0080ff',
+    '#e6e600',
+    '#6600cc'
+
+]
+
 
 ##############################################################
 ######                HELPER FUNCTIONS                  ######
@@ -781,6 +789,12 @@ class Game:
                             idx].reasoning_string += f'----------[Model Reasoning]  NEW ROUND ---------------\n'
                         self.players[idx].reasoning_string += f'This text shows the reasoning by Player {idx}\n'
                         self.players[idx].reasoning_string += f'My hand is {self.players[idx].hand}\n'
+                        for j in range(3):
+                            self.reasoning_file.write(f"<p style='color:{playercolors[idx]}'> ----------[Model Reasoning]  NEW ROUND ---------------</p>")
+                            self.reasoning_file.write(
+                                f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
+                            self.reasoning_file.write(
+                                f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,

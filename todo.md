@@ -13,6 +13,9 @@
 |Add reasoning files for cognitive model                                                                           |  done   |
 |look into processing power of rolling animations (maybe cut the dice and keep only rolling GIF)                   |  done   |
 |Add exclamation mark and  checkmark to buttons                                                                    |  done   |
+|Make the buttons more of a square instead of long stretches (if possible), scale icon accordingly                                                                   |  done   |
 |Credit images (of dice and gifs etc)                                                                              |         |
 |Update how to play                                                                                                |         |
 |Convert reasoning string to StringIO                                                                              |         |
+|Update view when clicking continue (bar still shows after clicking)                                                                           |         |
+|Make reasoning file scrollable                                                                         |         |
