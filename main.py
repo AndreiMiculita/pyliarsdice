@@ -132,14 +132,16 @@ class BigTextTabWidget(QWidget):
         back_button = QPushButton("Back")
         back_button.clicked.connect(self.back_signal.back.emit)
 
+        vertical_main_layout.addWidget(back_button)
+
         if isinstance(self.text_file, StringIO):
             self.big_text_view.setText(self.text_file.read())
+            vertical_main_layout.addWidget(self.big_text_view, alignment=Qt.AlignTop|Qt.AlignLeft)
         else:
             with open(self.text_file, "r") as text_file_handle:
                 self.big_text_view.setHtml(text_file_handle.read())
+            vertical_main_layout.addWidget(self.big_text_view)
 
-        vertical_main_layout.addWidget(back_button)
-        vertical_main_layout.addWidget(self.big_text_view, alignment=Qt.AlignTop|Qt.AlignLeft)
         self.setLayout(vertical_main_layout)
 
     def update_text(self, text_file):
@@ -166,7 +168,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.how_to_play_action = QAction('How to play', self)
         self.reasoning_action = QAction('Show reasoning', self)
-        self.reasoning_file = StringIO()
+        self.reasoning_file = StringIO("Start a game to see the enemies' reasoning.")
         self.how_to_play_widget = BigTextTabWidget(text_file=howto_text)
         self.reasoning_widget = BigTextTabWidget(text_file=self.reasoning_file)
         self.select_enemies_spinbox = QSpinBox()

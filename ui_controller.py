@@ -16,10 +16,16 @@ class UIController:
     def set_bet_limits(self, number_min: int, number_max: int, dice_min: int, dice_max: int):
         return NotImplemented
 
+    def set_bet_controls_enabled(self, enabled: bool, previous_bet: str):
+        return NotImplemented
+
     def set_bluff_controls_enabled(self, enabled: bool, target: int):
         return NotImplemented
 
-    def set_bet_controls_enabled(self, enabled: bool, previous_bet: str):
+    def set_continue_controls_enabled(self, enabled: bool):
+        return NotImplemented
+
+    def set_continue_timeout_progress(self, enabled: bool):
         return NotImplemented
 
     def show_info(self, string: str):

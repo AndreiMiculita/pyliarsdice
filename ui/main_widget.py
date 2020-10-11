@@ -9,7 +9,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import QSize
 from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
-    QPushButton, QMessageBox, QStackedWidget, QFrame
+    QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar
 
 from game import Game
 from ui_controller import UIController
@@ -63,6 +63,8 @@ class MainWidget(QWidget, UIController):
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
         self.trust_button = QPushButton('BELIEVE BID (V)')
         self.bet_button = QPushButton('BET (B)')
+        self.continue_timeout_progress = QProgressBar()
+        self.continue_button = QPushButton('CONTINUE')
         self.all_enemies_group = QFrame()  # Use findChild to address individual components for each enemy
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
@@ -211,7 +213,7 @@ class MainWidget(QWidget, UIController):
 
         # This is a group that contains the buttons for betting and calling a bluff
         # The buttons are linked to the functions below this function
-        actions_layout = QVBoxLayout()
+        doubt_or_believe_layout = QVBoxLayout()
 
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
@@ -223,13 +225,29 @@ class MainWidget(QWidget, UIController):
         self.trust_button.setIcon(self.check_icon)
         self.trust_button.clicked.connect(self.trust)
 
-        actions_layout.addWidget(self.trust_button)
-        actions_layout.addWidget(self.call_bluff_button)
+        doubt_or_believe_layout.addWidget(self.trust_button)
+        doubt_or_believe_layout.addWidget(self.call_bluff_button)
 
-        self.doubt_or_believe_group.setLayout(actions_layout)
+        self.doubt_or_believe_group.setLayout(doubt_or_believe_layout)
+
+        continue_group = QGroupBox("Click or wait to continue")
+        continue_layout = QVBoxLayout()
+
+        self.continue_timeout_progress.setValue(0)
+        self.continue_timeout_progress.setTextVisible(False)
+
+        self.continue_button.setStatusTip("Click to continue.")
+        # self.call_bluff_button.setIcon(self.excl_icon)
+        self.continue_button.clicked.connect(self.continue_game)
+
+        continue_layout.addWidget(self.continue_timeout_progress)
+        continue_layout.addWidget(self.continue_button)
+
+        continue_group.setLayout(continue_layout)
 
         self.player_action_group.addWidget(player_bet_group)
         self.player_action_group.addWidget(self.doubt_or_believe_group)
+        self.player_action_group.addWidget(continue_group)
 
         # Put all the groups into a vertical layout
         vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2,
@@ -271,6 +289,15 @@ class MainWidget(QWidget, UIController):
         """
         print("0")
         self.q.put("0")
+
+    def continue_game(self):
+        """
+        Action to be done when the "continue" button is pressed (send signal to the game)
+        Prints action to stdout, and also sends it into the input queue
+        :return:
+        """
+        print("continue")
+        self.q.put("continue")
 
     def put_layout_in_cup(self, player_nr, layout: QHBoxLayout):
         if player_nr == 0:
@@ -432,6 +459,21 @@ class MainWidget(QWidget, UIController):
         self.select_number_spin_box.setRange(number_min, number_max)
         self.select_dice_spin_box.setRange(dice_min, dice_max)
 
+    def set_bet_controls_enabled(self, enabled: bool, previous_bet: str = ""):
+        """
+        Enables or disables the bet button and spinboxes
+
+        :param enabled: whether the controls are enabled or not
+        :param previous_bet: bet which must be beaten
+        :return:
+        """
+        self.select_number_spin_box.setEnabled(enabled)
+        self.select_dice_spin_box.setEnabled(enabled)
+        self.bet_button.setEnabled(enabled)
+        self.bet_button.setStatusTip(
+            f"Bet the selected value and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
+        self.player_action_group.setCurrentIndex(0)
+
     def set_bluff_controls_enabled(self, enabled: bool, target: int = 0):
         """
         Enables or disables the call bluff/trust buttons
@@ -448,20 +490,20 @@ class MainWidget(QWidget, UIController):
 
         self.player_action_group.setCurrentIndex(1)
 
-    def set_bet_controls_enabled(self, enabled: bool, previous_bet: str = ""):
+    def set_continue_controls_enabled(self, enabled: bool):
         """
-        Enables or disables the bet button and spinboxes
+        Enables or disables the continue button
 
         :param enabled: whether the controls are enabled or not
-        :param previous_bet: bet which must be beaten
         :return:
         """
-        self.select_number_spin_box.setEnabled(enabled)
-        self.select_dice_spin_box.setEnabled(enabled)
-        self.bet_button.setEnabled(enabled)
-        self.bet_button.setStatusTip(
-            f"Bet the selected value and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
-        self.player_action_group.setCurrentIndex(0)
+
+        self.continue_timeout_progress.setEnabled(enabled)
+        self.continue_button.setEnabled(enabled)
+        self.player_action_group.setCurrentIndex(2)
+
+    def set_continue_timeout_progress(self, value: int):
+        self.continue_timeout_progress.setValue(value)
 
     def show_info(self, string: str):
         """

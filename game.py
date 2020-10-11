@@ -63,8 +63,10 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2, reasoning_file: StringIO = os.devnull):
+    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2,
+                 reasoning_file: StringIO = os.devnull):
         self.reasoning_file = reasoning_file
+        self.reasoning_file.truncate(0)
         self.reasoning_file.seek(0)
         self.ui_controller = ui_controller
         self.input_queue = input_queue
@@ -309,8 +311,6 @@ class Game:
                 if idx != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Player {idx}'s turn.")
 
-
-
                 believe = ""
                 if self.players[idx].strategy == 'human':
                     y = random.uniform(2.5, 4)
@@ -390,14 +390,27 @@ class Game:
             invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=player.hand,
                                   highlight=bid_roll)
             time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
-        time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
         invoke_in_main_thread(self.ui_controller.show_info,
                               string=f"The bid was: {bid_count} x {bid_roll}.<br>"
                                      f"On the table: {count} x {bid_roll}.")
 
-        time.sleep(4)
+        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=True)
+        timeout_time = 0.4 * self.n_total_dice  # Lower this to make it faster
+        loader_step = 5  # How much% the loader should move each tick
+        # Wait for the player to click to continue
+        import queue  # to recognize the exception
+        for i in range(0, 101, loader_step):  # Start and stop must be 0 and 101
+            try:
+                continue_ = self.input_queue.get(block=True, timeout=float(timeout_time)*float(loader_step)/float(100))
+                if continue_ == -1:
+                    quit(0)
+                break
+            except queue.Empty:
+                invoke_in_main_thread(self.ui_controller.set_continue_timeout_progress, i)
+
+        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=False)
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
@@ -416,9 +429,9 @@ class Game:
                                          f"They will lose a die.")
         else:
             lose_dice_players.sort()
-            invoke_in_main_thread(self.ui_controller.show_info, string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
+            invoke_in_main_thread(self.ui_controller.show_info,
+                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
         time.sleep(4)
-
 
         for i in lose_dice_players:
             self.players[i].remove_die()
