@@ -2,16 +2,17 @@
 | Task                                                                                                             |  State  |
 |:-----------------------------------------------------------------------------------------------------------------|:-------:|
 |Create Reasoning text file for every ACT-R agent (concatenate strings of text). Make available as option to show  |  done   |
-|Highlight dice correctly in final dice count (now todo: add for human player).                                    |   done  |
-|Also add button or click to continue for user after game is finished, such that it has time to count              |         |
+|Highlight dice correctly in final dice count (now todo: add for human player).                                    |  done   |
+|Also add button or click to continue for user after game is finished, such that it has time to count              | testpls |
 |Enemy bet not always shown (fixed I think)                                                                        |  done   |
-|Feedback on disallowed actions, show what is not allowed (and maybe what would be)                                |         |
+|Feedback on disallowed actions, show what is not allowed (and maybe what would be)                                |  done   |
 |Highlighting human dice                                                                                           |  done   |
-|Increase time with nr of chunks                                                                                   |         |
-|Feedback / click to continue in final count                                                                       |         |
-|Add text space in the middle of the screen, showing the count of final round and who were correct (and lose a die)|         |
+|Increase time with nr of chunks                                                                                   |  done   |
+|Feedback / click to continue in final count                                                                       | testpls |
+|Add text space in the middle of the screen, showing the count of final round and who were correct (and lose a die)|  done   |
 |Add reasoning files for cognitive model                                                                           |  done   |
 |look into processing power of rolling animations (maybe cut the dice and keep only rolling GIF)                   |  done   |
-|Add exclamation mark and  checkmark to buttons                                                                    |        |
-|Credit images (of dice and gifs etc)                                                                                |        |
-|Update how to play                                                                                                 |        |
+|Add exclamation mark and  checkmark to buttons                                                                    |         |
+|Credit images (of dice and gifs etc)                                                                              |         |
+|Update how to play                                                                                                |         |
+|Convert reasoning string to StringIO                                                                              |         |

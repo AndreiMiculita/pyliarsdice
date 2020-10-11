@@ -106,14 +106,10 @@ class Game:
             if idx != self.player_ID:
                 invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=idx,
                                       action=3)
-
-                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
-                                      dice=p.get_hand_size(),
-                                      state=1)
-            else:
-                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
-                                      dice=p.get_hand_size(),
-                                      state=1)
+            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+                                  dice=p.get_hand_size(),
+                                  state=1)
+        invoke_in_main_thread(self.ui_controller.show_info, string="All players are rolling dice.")
 
         # Sleep for 2 seconds, animation will play
         time.sleep(random.uniform(2.5, 3.5))  # agent 'rolling dice'
@@ -288,6 +284,7 @@ class Game:
         lose_dice_players = []  # save such that players dice are gone after hands are shown
 
         print('[RESOLVING DOUBT] Every remaining player has to state whether they believe the bid or not')
+        invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt.")
         handstring = ''
         for idx in range(self.n_players):
             count += self.players[idx].get_roll_count(bid_roll)
@@ -306,7 +303,7 @@ class Game:
             if idx != self.current_player and idx != self.previous_player:  # only apply to other players than
                 # current and previous turn
                 if idx != self.player_ID:
-                    invoke_in_main_thread(self.ui_controller.indicate_turn, player=idx)
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Player {idx}'s turn.")
 
                     # print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
                     # time.sleep(y)  # agent 'thinking'
@@ -345,7 +342,6 @@ class Game:
                         believe = True
                     else:
                         believe = False
-
 
                 elif self.players[idx].strategy == 'model':
                     x = len(self.players[idx].model.dm)  # counts number of chunks in memory
@@ -394,6 +390,11 @@ class Game:
         time.sleep(0.2 * self.n_total_dice)  # Wait for 2nd question
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
+        invoke_in_main_thread(self.ui_controller.show_info,
+                              string=f"Bid: {bid_count} x {bid_roll}. "
+                                     f"Real: {count} x {bid_roll}")
+
+        time.sleep(4)
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
@@ -403,6 +404,9 @@ class Game:
             self.players[self.current_player].remove_die()
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
+
+        invoke_in_main_thread(self.ui_controller.show_info, string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
+        time.sleep(4)
 
         for i in lose_dice_players:
             self.players[i].remove_die()
@@ -533,6 +537,7 @@ class Game:
                 higher = True
             else:
                 print('Bid impossible or not high enough, try again!')
+                invoke_in_main_thread(self.ui_controller.show_info, string=f"You need to overbid {self.current_bid.count} × {self.current_bid.roll}!")
         invoke_in_main_thread(self.ui_controller.set_bet_controls_enabled, enabled=False,
                               previous_bet=f"{self.current_bid.count} × {self.current_bid.roll}")
 
@@ -727,7 +732,7 @@ class Game:
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
                 print(f'[FIRST TURN]: Player {self.current_player}')
-                invoke_in_main_thread(self.ui_controller.indicate_turn, player=self.current_player)
+                invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
                 self.all_roll()
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
@@ -772,7 +777,7 @@ class Game:
                                               self.player_ID].hand)
 
                 print(f'[TURN]: Player {self.current_player}')
-                invoke_in_main_thread(self.ui_controller.indicate_turn(player=self.current_player))
+                invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
 
                 # if self.players[self.current_player].strategy == 'model':
                 #     print(f'Number of chunks in dm: {len(self.players[self.current_player].model.dm)}')

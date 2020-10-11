@@ -7,12 +7,6 @@ class UIController:
     def display_dice(self, player_nr: int, dice: [int], highlight: int):
         return NotImplemented
 
-    def display_rolling_dice(self, player_nr: int, dice_count: int):
-        return NotImplemented
-
-    def display_anonymous_dice(self, player_nr: int, dice_count: int):
-        return NotImplemented
-
     def display_action_enemy(self, enemy_nr: int, action: int, target: int):
         return NotImplemented
 
@@ -28,7 +22,7 @@ class UIController:
     def set_bet_controls_enabled(self, enabled: bool, previous_bet: str):
         return NotImplemented
 
-    def indicate_turn(self, player: int):
+    def show_info(self, string: str):
         return NotImplemented
 
     def display_winner_and_close(self, player: int):

@@ -6,7 +6,7 @@ from typing import Union
 
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
-from PySide2.QtGui import QMovie, QPixmap
+from PySide2.QtGui import QMovie, QPixmap, Qt
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame
 
@@ -50,7 +50,7 @@ class MainWidget(QWidget, UIController):
         """
         super(MainWidget, self).__init__()
         self.player_action_group = QStackedWidget()
-        self.turn_label = QLabel(text="")
+        self.info_label = QLabel(text="")
         self.difficulty_label = QLabel(
             text="Playing against cognitive model(s)." if difficulty == 1 else "Playing against random model(s).")
         self.doubt_or_believe_group = QGroupBox(title='Your Action',
@@ -102,8 +102,8 @@ class MainWidget(QWidget, UIController):
         top_group = QFrame()
 
         top_group_layout = QHBoxLayout()
-        top_group_layout.addWidget(self.turn_label)
-        top_group_layout.addWidget(self.difficulty_label)
+        top_group_layout.addWidget(self.info_label, alignment=Qt.AlignLeft)
+        top_group_layout.addWidget(self.difficulty_label, alignment=Qt.AlignRight)
 
         top_group.setLayout(top_group_layout)
 
@@ -220,9 +220,9 @@ class MainWidget(QWidget, UIController):
         self.player_action_group.addWidget(self.doubt_or_believe_group)
 
         # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(top_group, 0, 0, 1,
+        vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2,
                                        2 * self.n_opponents)
-        vertical_main_layout.addWidget(self.all_enemies_group, 1, 0, 2,
+        vertical_main_layout.addWidget(top_group, 2, 0, 1,
                                        2 * self.n_opponents)
         vertical_main_layout.addWidget(self.player_cup_group, 3, self.n_opponents - 1, 1, 2)
         vertical_main_layout.addWidget(self.player_action_group, 4, self.n_opponents - 1, 1, 2)
@@ -451,17 +451,14 @@ class MainWidget(QWidget, UIController):
             f"Bet the selected amount and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
         self.player_action_group.setCurrentIndex(0)
 
-    def indicate_turn(self, player: int):
+    def show_info(self, string: str):
         """
         This indicates whose turn it is, in the label at the top of the window.
 
-        :param player: int  with value 0 for human player, >0 for opponents
+        :param string: int  with value 0 for human player, >0 for opponents
         :return:
         """
-        if player == 0:
-            self.turn_label.setText("Your turn")
-        else:
-            self.turn_label.setText(f"Opponent {player}'s turn")
+        self.info_label.setText(string)
 
     def display_winner_and_close(self, player: int):
         reply = QMessageBox.question(self, 'End of game',
@@ -470,5 +467,7 @@ class MainWidget(QWidget, UIController):
 
         if reply == QMessageBox.Yes:
             self.close()
+            self.parentWidget().slideInIdx(0)
         else:
             self.close()
+            self.parentWidget().slideInIdx(0)
