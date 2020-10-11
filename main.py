@@ -181,7 +181,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction(self.how_to_play_action)
         help_menu.addAction(about_action)
 
-        self.resize(450, 550)
+        self.resize(450, 690)
         self.center()
         self.setWindowTitle("Liar's Dice")
         self.setWindowIcon(QIcon("assets/images/dice_icon.png"))

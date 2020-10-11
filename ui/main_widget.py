@@ -38,8 +38,9 @@ dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
                              f"assets/images/dice-rolling-2.{preferred_format}",
                              f"assets/images/dice-rolling-3.{preferred_format}"]
 
-check_icon = "assets/images/checkmark.png"
-excl_icon = "assets/images/exclamation_image.png"
+check_icon_path = "assets/images/checkmark.png"
+excl_icon_path = "assets/images/exclamation_image.png"
+
 
 class MainWidget(QWidget, UIController):
 
@@ -53,8 +54,9 @@ class MainWidget(QWidget, UIController):
         super(MainWidget, self).__init__()
         self.player_action_group = QStackedWidget()
         self.info_label = QLabel(text="")
+        self.info_label.setTextFormat(Qt.RichText)
         self.difficulty_label = QLabel(
-            text="Playing against cognitive model(s)." if difficulty == 1 else "Playing against random model(s).")
+            text="Playing against cognitive model(s).<br>" if difficulty == 1 else "Playing against random model(s).<br>")
         self.doubt_or_believe_group = QGroupBox(title='Your Action',
                                                 objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
@@ -67,7 +69,10 @@ class MainWidget(QWidget, UIController):
         self.n_opponents = n_opponents
         self.set_bluff_controls_enabled(False)
         self.set_bet_controls_enabled(False)
-        self.init_ui()
+
+        self.check_icon = QIcon(check_icon_path)
+        self.excl_icon = QIcon(excl_icon_path)
+
         self.dice_images = [QPixmap(d) for d in dice_image_paths]
         self.dice_images_highlighted = [QMovie(d) for d in dice_images_highlighted_paths]
         self.dice_images_rolling = [QMovie(d) for d in dice_images_rolling_paths]
@@ -79,6 +84,8 @@ class MainWidget(QWidget, UIController):
         self.waiting_image = QMovie(f"assets/images/waiting.{preferred_format}")
         self.rolling_image = QMovie(f"assets/images/rolling_dice.{preferred_format}")
         self.believing_image = QMovie(f"assets/images/checkmark.{preferred_format}")
+
+        self.init_ui()
 
         for enemy_nr in range(1, n_opponents + 1):
             self.display_bet_enemy(enemy_nr=enemy_nr, number="", dice=0)
@@ -207,12 +214,12 @@ class MainWidget(QWidget, UIController):
 
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
-        self.call_bluff_button.setIcon(QIcon(excl_icon))
+        self.call_bluff_button.setIcon(self.excl_icon)
         self.call_bluff_button.clicked.connect(self.call_bluff)
 
         self.trust_button.setShortcut("V")
         self.trust_button.setStatusTip("Believe the opponent.")
-        self.trust_button.setIcon(QIcon(check_icon))
+        self.trust_button.setIcon(self.check_icon)
         self.trust_button.clicked.connect(self.trust)
 
         actions_layout.addWidget(self.trust_button)
@@ -462,7 +469,7 @@ class MainWidget(QWidget, UIController):
         :param string: int  with value 0 for human player, >0 for opponents
         :return:
         """
-        self.info_label.setText(string)
+        self.info_label.setText(string if "<br>" in string else string + "<br>")  # Quick hack to always have 2 lines
 
     def display_winner_and_close(self, players: list):
         if len(players) <= 1:
