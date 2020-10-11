@@ -6,7 +6,7 @@ from typing import Union
 
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
-from PySide2.QtGui import QMovie, QPixmap, Qt
+from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame
 
@@ -38,6 +38,8 @@ dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
                              f"assets/images/dice-rolling-2.{preferred_format}",
                              f"assets/images/dice-rolling-3.{preferred_format}"]
 
+check_icon = "assets/images/checkmark.png"
+excl_icon = "assets/images/exclamation_image.png"
 
 class MainWidget(QWidget, UIController):
 
@@ -191,7 +193,7 @@ class MainWidget(QWidget, UIController):
         player_bet_selection_layout.addLayout(select_dice_layout)
 
         self.bet_button.setShortcut("B")
-        self.bet_button.setStatusTip('Bet the selected amount and dice.')
+        self.bet_button.setStatusTip('Bet the selected value and dice.')
         self.bet_button.clicked.connect(self.bet)
 
         player_bet_layout.addLayout(player_bet_selection_layout)
@@ -205,10 +207,12 @@ class MainWidget(QWidget, UIController):
 
         self.call_bluff_button.setShortcut("C")
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
+        self.call_bluff_button.setIcon(QIcon(excl_icon))
         self.call_bluff_button.clicked.connect(self.call_bluff)
 
         self.trust_button.setShortcut("V")
         self.trust_button.setStatusTip("Believe the opponent.")
+        self.trust_button.setIcon(QIcon(check_icon))
         self.trust_button.clicked.connect(self.trust)
 
         actions_layout.addWidget(self.trust_button)
@@ -448,7 +452,7 @@ class MainWidget(QWidget, UIController):
         self.select_dice_spin_box.setEnabled(enabled)
         self.bet_button.setEnabled(enabled)
         self.bet_button.setStatusTip(
-            f"Bet the selected amount and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
+            f"Bet the selected value and dice. You must overbid {previous_bet}!" if enabled else f"Cannot bet at the moment.")
         self.player_action_group.setCurrentIndex(0)
 
     def show_info(self, string: str):
@@ -460,9 +464,21 @@ class MainWidget(QWidget, UIController):
         """
         self.info_label.setText(string)
 
-    def display_winner_and_close(self, player: int):
-        reply = QMessageBox.question(self, 'End of game',
-                                     f"Player {player} won! Close the game?", QMessageBox.Yes |
+    def display_winner_and_close(self, players: list):
+        if len(players) <= 1:
+            winner = str(players[0])
+            end_string = f"Player {winner} has played away all its dice!"
+        else:
+            winners = str(players)[1:-1]
+            end_string = f"Players {winners} have played away all their dice!"
+
+        if 0 in players:
+            end_string = end_string + '\nYou won! Close the game?'
+        else:
+            end_string = end_string + '\nYou lost! Close the game?'
+
+        reply = QMessageBox.question(self, 'End of the game',
+                                     end_string, QMessageBox.Yes |
                                      QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:

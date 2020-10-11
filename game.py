@@ -305,8 +305,7 @@ class Game:
                 if idx != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Player {idx}'s turn.")
 
-                    # print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
-                    # time.sleep(y)  # agent 'thinking'
+
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
@@ -391,22 +390,34 @@ class Game:
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
         invoke_in_main_thread(self.ui_controller.show_info,
-                              string=f"Bid: {bid_count} x {bid_roll}. "
-                                     f"Real: {count} x {bid_roll}")
+                              string=f"The bid was: {bid_count} x {bid_roll}."
+                                     f"\nOn the table in total, there was: {count} x {bid_roll}")
 
         time.sleep(4)
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
-            self.players[self.previous_player].remove_die()
+            lose_dice_players.append(self.previous_player)
+            # self.players[self.previous_player].remove_die()
         else:
             # Player doubts and it's right - player loses a die
-            self.players[self.current_player].remove_die()
+            lose_dice_players.append(self.current_player)
+            # self.players[self.current_player].remove_die()
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
 
-        invoke_in_main_thread(self.ui_controller.show_info, string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
+
+
+
+
+        if len(lose_dice_players) <= 1:
+            invoke_in_main_thread(self.ui_controller.show_info,
+                                  string=f"Player {', '.join(map(str, lose_dice_players))} was correct and will lose a die.")
+        else:
+            lose_dice_players.sort()
+            invoke_in_main_thread(self.ui_controller.show_info, string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
         time.sleep(4)
+
 
         for i in lose_dice_players:
             self.players[i].remove_die()
@@ -836,11 +847,11 @@ class Game:
                 over = True
                 if len(winner) <= 1:
                     print(f"Player {winner[0]} has played away all its dice and won the game!.")
-                    invoke_in_main_thread(self.ui_controller.display_winner_and_close, player=winner[0])
+                    invoke_in_main_thread(self.ui_controller.display_winner_and_close, players=winner)
                 else:
                     winners = str(winner)[1:-1]
                     print(f"Players {winners} have played away all their dice and won the game!.")
-                    invoke_in_main_thread(self.ui_controller.display_winner_and_close, player=winners)
+                    invoke_in_main_thread(self.ui_controller.display_winner_and_close, players=winner)
                 continue
 
         print(f'Chunks retrieved during game: {self.chunk_retrieval_count}')

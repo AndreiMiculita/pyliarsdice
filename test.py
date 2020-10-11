@@ -111,6 +111,7 @@ def test2():
         y = np.log(x * 2) + random.uniform(2, 2.5)
         print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
 
+    print(np.sort([2,3,1]))
 
 if __name__ == '__main__':
-    test()
+    test2()
