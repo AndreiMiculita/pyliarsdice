@@ -1,6 +1,7 @@
 import random
 import threading
 import time
+from io import StringIO
 from multiprocessing import Queue
 from typing import Union
 
@@ -44,7 +45,7 @@ excl_icon_path = "assets/images/exclamation_image.png"
 
 class MainWidget(QWidget, UIController):
 
-    def __init__(self, difficulty: int, n_opponents: int):
+    def __init__(self, difficulty: int, n_opponents: int, reasoning_file: StringIO):
         """
         This widget is everything in the window, except for the menu bar and status bar.
 
@@ -95,7 +96,7 @@ class MainWidget(QWidget, UIController):
 
         # Difficulty is 0, 1 in UI but 1, 2 in Game object, so add 1
         self.game = Game(ui_controller=self, n_players=n_opponents + 1, n_starting_dice=5, difficulty=difficulty + 1,
-                         input_queue=self.q)
+                         input_queue=self.q, reasoning_file=reasoning_file)
 
         self.game_thread = threading.Thread(target=self.game.play)
 

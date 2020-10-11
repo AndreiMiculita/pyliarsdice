@@ -1,5 +1,7 @@
+import os
 import random
 import time
+from io import StringIO
 from multiprocessing import Queue
 
 import numpy as np
@@ -61,7 +63,8 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2):
+    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2, reasoning_file: StringIO = os.devnull):
+        self.reasoning_file = reasoning_file
         self.ui_controller = ui_controller
         self.input_queue = input_queue
         self.difficulty = difficulty  # difficulty 1 -> random strategy, difficulty 2 -> ACT-R model
@@ -627,7 +630,7 @@ class Game:
                     self.players[self.current_player].reasoning_string += f'Retrieved a chunk containing that {bluff_player} has bet on {roll} this round\n'
                     self.players[self.current_player].reasoning_string += f'Bluffing on {roll}, since Player {bluff_player} has bet on {roll} before\n'
                 else:  # no chunk was retrieved / retrieval failure
-                    print('\nfailed')
+                    print('\nChunk retrieval failed')
                     self.chunk_retrieval_failure_count += 1
                     self.players[self.current_player].reasoning_string += f'No chunk was retrieved\n'
                     self.players[
