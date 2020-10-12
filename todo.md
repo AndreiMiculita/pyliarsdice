@@ -17,5 +17,6 @@
 |Credit images (of dice and gifs etc)                                                                              |         |
 |Update how to play                                                                                                |         |
 |Convert reasoning string to StringIO                                                                              |         |
-|Update view when clicking continue (bar still shows after clicking)                                                                           |         |
-|Make reasoning file scrollable                                                                         |         |
+|Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')                                                                        |         |
+|Make reasoning file scrollable                                                                         |   done      |
+|Fix that you can go back from game (if you click reasoning tab from how to play or vice versa)                    |       |
