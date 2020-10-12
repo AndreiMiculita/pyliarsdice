@@ -47,7 +47,8 @@ class StartScreenWidget(QWidget):
         """
         super(StartScreenWidget, self).__init__()
         self.select_enemies_spinbox = select_enemies_spinbox
-        self.difficulties = ["Play against Random Opponent(s) [Easy mode]", "Play against Cognitive Model Opponent(s) [Fun mode]"]
+        self.difficulties = ["Play against Random Opponent(s) [Easy mode]",
+                             "Play against Cognitive Model Opponent(s) [Fun mode]"]
         self.start_game_signals = [CommunicateRandom(), CommunicateCogMod()]
         self.show_logo = show_logo
 
@@ -115,14 +116,8 @@ class BigTextTabWidget(QWidget):
         super(BigTextTabWidget, self).__init__()
         self.text_file = text_file
         self.back_signal = GoBack()
-        if isinstance(self.text_file, StringIO):
-            self.big_text_view = QLabel()
-            self.big_text_view.setTextFormat(Qt.RichText)
-            self.big_text_view.setAlignment(Qt.AlignTop|Qt.AlignLeft)
-        elif isinstance(self.text_file, str) and self.text_file.endswith("html"):
-            self.big_text_view = QWebEngineView()
-        else:
-            print("Unknown parameter passed to BigTextTabWidget.")
+        self.big_text_view = QWebEngineView()
+        print("Unknown parameter passed to BigTextTabWidget.")
         self.init_ui()
 
     def init_ui(self):
@@ -134,29 +129,26 @@ class BigTextTabWidget(QWidget):
 
         vertical_main_layout.addWidget(back_button)
 
-        if isinstance(self.text_file, StringIO):
-            self.big_text_view.setText(self.text_file.read())
-            vertical_main_layout.addWidget(self.big_text_view, alignment=Qt.AlignTop|Qt.AlignLeft)
-        else:
-            with open(self.text_file, "r") as text_file_handle:
-                self.big_text_view.setHtml(text_file_handle.read())
-            vertical_main_layout.addWidget(self.big_text_view)
+        self.update_text(self.text_file)
+
+        vertical_main_layout.addWidget(self.big_text_view)
 
         self.setLayout(vertical_main_layout)
 
     def update_text(self, text_file):
+        """
+        Update the text in the reasoning tab
+        Everything in the parameter will be put between two body tags
+        :param text_file:
+        :return:
+        """
         if isinstance(self.text_file, StringIO):
-            if isinstance(self.big_text_view, QLabel):
-                print("reasoning", self.text_file.getvalue())
-                self.big_text_view.setText(text_file.getvalue())
-            else:
-                print("Can't update QWebEngineView with non-html text")
+            self.big_text_view.setHtml(
+                f"<!DOCTYPE html><html><head> </head><body style='background-color:#004400; color:white; font-family:sans-serif;'> {text_file.getvalue()}</body>")
         else:
-            if isinstance(self.big_text_view, QWebEngineView):
-                with open(text_file, "r") as how_to_file_handle:
-                    self.big_text_view.setHtml(how_to_file_handle.read())
-            else:
-                print("Can't update QLabel with html text")
+            with open(text_file, "r") as how_to_file_handle:
+                self.big_text_view.setHtml(how_to_file_handle.read())
+        self.big_text_view.page().runJavaScript("window.scrollTo(0,document.body.scrollHeight);")  # scroll to bottom
 
 
 class MainWindow(QMainWindow):
@@ -258,7 +250,8 @@ class MainWindow(QMainWindow):
 
     def restart_aux(self, idx: int):
 
-        self.game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()), reasoning_file=self.reasoning_file)
+        self.game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()),
+                                      reasoning_file=self.reasoning_file)
         self.central_widget.addWidget(self.game_widget)
         self.central_widget.slideInWgt(self.game_widget)
         self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
