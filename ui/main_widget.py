@@ -11,6 +11,7 @@ from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar
 
+
 from game import Game
 from ui_controller import UIController
 
@@ -133,8 +134,10 @@ class MainWidget(QWidget, UIController):
         all_enemies_layout = QHBoxLayout()
 
         for i in range(0, self.n_opponents):
-            frame_title = f"Player {i + 1}"
-            enemy_group = QGroupBox(frame_title)  # Player 0 is human user
+            enemy_group = QGroupBox(f" Player {i + 1} ")  # Player 0 is human user
+            color_title = "QGroupBox { border: 3px solid" + playercolors[i+1] +";}"
+
+            enemy_group.setStyleSheet(color_title)
             enemy_layout = QGridLayout()
 
             # Enemy cup
