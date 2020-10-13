@@ -30,7 +30,7 @@ playercolors = ['none',
     '#ff0000',
     '#0080ff',
     '#e6e600',
-    '#6600cc'
+    '#1BFE00'
 ]
 
 
