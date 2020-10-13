@@ -805,6 +805,7 @@ class Game:
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
+                self.reasoning_file.write(f"<p'> --------------------------------------------------------- NEW ROUND -------------------------------------------------------------</p>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
