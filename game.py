@@ -38,7 +38,6 @@ playercolors = ['none',
     '#0080ff',
     '#e6e600',
     '#6600cc'
-
 ]
 
 

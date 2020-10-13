@@ -19,4 +19,6 @@
 |Convert reasoning string to StringIO                                                                              |         |
 |Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')                                                                        |         |
 |Make reasoning file scrollable                                                                         |   done      |
+| Change 'player 0' to 'You' in UI                                                                       |    |
 |Fix that you can go back from game (if you click reasoning tab from how to play or vice versa)                    |       |
+|Color the opponents (i.e. title or groupbox) according to the color in playercolors (such that it corresponds with reasoning text)                |       |

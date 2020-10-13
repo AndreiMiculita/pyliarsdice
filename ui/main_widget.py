@@ -25,6 +25,14 @@ dice_image_paths = ["assets/images/dice-none.png",
                     "assets/images/dice-5.png",
                     "assets/images/dice-6.png"]
 
+playercolors = ['none',
+    '#ff0000',
+    '#0080ff',
+    '#e6e600',
+    '#6600cc'
+]
+
+
 dice_images_highlighted_paths = ["assets/images/dice-none.png",
                                  f"assets/images/dice-1-hl-anim.{preferred_format}",
                                  f"assets/images/dice-2-hl-anim.{preferred_format}",
@@ -125,7 +133,8 @@ class MainWidget(QWidget, UIController):
         all_enemies_layout = QHBoxLayout()
 
         for i in range(0, self.n_opponents):
-            enemy_group = QGroupBox(f"Player {i + 1}")  # Player 0 is human user
+            frame_title = f"Player {i + 1}"
+            enemy_group = QGroupBox(frame_title)  # Player 0 is human user
             enemy_layout = QGridLayout()
 
             # Enemy cup
