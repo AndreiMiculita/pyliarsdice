@@ -16,7 +16,7 @@
 |Make the buttons more of a square instead of long stretches (if possible), scale icon accordingly                                                                   |  done   |
 |Credit images (of dice and gifs etc)                                                                              |         |
 |Update how to play                                                                                                |         |
-|Convert reasoning string to StringIO                                                                              |         |
+|Convert reasoning string to StringIO                                                                              |   done      |
 |Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')                                                                        |         |
 |Make reasoning file scrollable                                                                         |   done      |
 | Change 'player 0' to 'You' in UI                                                                       |    |
