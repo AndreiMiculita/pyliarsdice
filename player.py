@@ -13,7 +13,6 @@ class Player:
         """
         self.n_dice = n_starting_dice
         self.hand = []
-        self.reasoning_string = ''
 
         # for _ in range(n_starting_dice):
         #     self.hand.append(Die())

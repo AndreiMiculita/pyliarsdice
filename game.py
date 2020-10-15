@@ -184,10 +184,6 @@ class Game:
                 # TODO: think about how to set the threshold
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round(believe_threshold[0], 3)}')
-                self.players[
-                    player_index].reasoning_string += f'Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:\n'
-                self.players[
-                    player_index].reasoning_string += f'Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}\n'
                 self.reasoning_file.write(f"<p style='color:{playercolors[player_index]}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
                 self.reasoning_file.write(f"<p style='color:{playercolors[player_index]}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
 
@@ -211,11 +207,6 @@ class Game:
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
                                                      1)  # compare probability to non-static threshold,
                 # TODO: think about how to set the threshold
-                self.players[
-                    player_index].reasoning_string += f'Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:\n'
-                self.players[
-                    player_index].reasoning_string += f'Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}\n'
-
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[player_index]}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
                 self.reasoning_file.write(
@@ -263,14 +254,10 @@ class Game:
 
             doubt = self.determine_model_doubt(self.current_player)
             if doubt:
-                self.players[
-                    self.current_player].reasoning_string += f'I do not believe {self.current_bid.count} x {self.current_bid.roll} is on the table\n'
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[self.current_player]}'>I do not believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
 
             else:
-                self.players[
-                    self.current_player].reasoning_string += f'I believe {self.current_bid.count} x {self.current_bid.roll} is on the table\n'
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[self.current_player]}'>I believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
         return doubt
@@ -499,7 +486,7 @@ class Game:
                     except ValueError:
                         number += 1
 
-                self.players[i].reasoning_string += f'Storing chunk to remember that Player {self.current_player} has made a bid on dice value {self.current_bid.roll}\n'
+
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[i]}'>Storing chunk to remember that Player {self.current_player} has made a bid on dice value {self.current_bid.roll}</p>")
 
@@ -517,7 +504,7 @@ class Game:
                                   action=0)
             count, roll = self.model_bid()
             if self.players[self.current_player].strategy == 'model':
-                self.players[self.current_player].reasoning_string += f'I am bidding: {count} x {roll} is on the table\n'
+
                 self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'>I am bidding: {count} x {roll} is on the table</p>")
         self.current_bid = Bid(count, roll)
 
@@ -641,15 +628,11 @@ class Game:
                     # higher chance, since he has to assess the bid.
                     bluff_player = self.previous_player
                     # print('[DEBUG] bluffing on prev player')
-                    self.players[
-                        self.current_player].reasoning_string += 'Aiming to bluff on one of the dice values bid on by previous player\n'
                     self.reasoning_file.write(
                         f"<p style='color:{playercolors[self.current_player]}'>Aiming to bluff on one of the dice values bid on by previous player</p>")
                 else:
                     bluff_player = (self.current_player + 1) % self.n_players
                     # print('[DEBUG] bluffing on next player')
-                    self.players[
-                        self.current_player].reasoning_string += 'Aiming to bluff on one of the dice values bid on by next player\n'
                     self.reasoning_file.write(
                         f"<p style='color:{playercolors[self.current_player]}'>Aiming to bluff on one of the dice values bid on by next player</p>")
 
@@ -660,17 +643,14 @@ class Game:
                     chunk, latency = self.players[self.current_player].model.retrieve(
                         retrieve_chunk)  # retrieve a chunk from declarative memory
                     tries += 1
-
-                self.players[
-                    self.current_player].reasoning_string += f'Trying to memorize a chunk containing a value Player {bluff_player} has bid on\n'
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[self.current_player]}'>Trying to memorize a chunk containing a value Player {bluff_player} has bid on</p>")
 
                 if chunk is not None:  # a chunk was retrieved
                     self.chunk_retrieval_count += 1
                     roll = chunk.slots['dice_value']  #
-                    self.players[self.current_player].reasoning_string += f'Retrieved a chunk containing that Player {bluff_player} has bid on {roll} this round\n'
-                    self.players[self.current_player].reasoning_string += f'Bluffing on {roll}, since Player {bluff_player} has bid on {roll} before\n'
+
+
 
                     self.reasoning_file.write(
                         f"<p style='color:{playercolors[self.current_player]}'>Retrieved a chunk containing that Player {bluff_player} has bid on {roll} this round</p>")
@@ -680,9 +660,6 @@ class Game:
                 else:  # no chunk was retrieved / retrieval failure
                     print('\nChunk retrieval failed')
                     self.chunk_retrieval_failure_count += 1
-                    self.players[self.current_player].reasoning_string += f'No chunk was retrieved\n'
-                    self.players[
-                        self.current_player].reasoning_string += f'Can not remember a value Player {bluff_player} has bid on before, bluffing on random value\n'
 
                     self.reasoning_file.write(
                         f"<p style='color:{playercolors[self.current_player]}'>No chunk was retrieved</p>")
@@ -693,8 +670,7 @@ class Game:
                     roll = random.randint(1, 6)  # bluffing happens on a random die value
 
                 if roll == 1:  # bluff will be on joker dice
-                    self.players[
-                        self.current_player].reasoning_string += f'Bluffing on joker dice\n'
+
                     self.reasoning_file.write(
                         f"<p style='color:{playercolors[self.current_player]}'>Bluffing on joker dice</p>")
 
@@ -735,8 +711,7 @@ class Game:
                 # hand (if multiple, chooses randomly)
 
                 roll = bid_value
-                self.players[
-                    self.current_player].reasoning_string += f'My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}\n'
+
                 self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'>My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}</p>")
 
                 if roll == 1:  # bidding on the joker dice
@@ -760,8 +735,6 @@ class Game:
                         else:
                             count = self.current_bid.count + 1  # else: increment count, and bid on the value
 
-                self.players[
-                    self.current_player].reasoning_string += f'Determined bid is {count} x {roll}\n'
                 self.reasoning_file.write(
                     f"<p style='color:{playercolors[self.current_player]}'>Determined bid is {count} x {roll}</p>")
 
@@ -782,6 +755,12 @@ class Game:
         over = False
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
+        self.reasoning_file.write(f"<div style='position:fixed;left: 50%; transform: translateX(-50%);'>")
+        for i in range(1, self.n_players):
+            self.reasoning_file.write(f"<div style='text-align:center;width:70px;display:inline-block;"
+                                      f"float:left;border-radius:7px;margin:3px;background-color:{playercolors[i]}'>"
+                                      f"Player {i}</div>")
+        self.reasoning_file.write(f"</div>")
 
         while not over:
             self.n_total_dice = 0
@@ -805,7 +784,7 @@ class Game:
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
-                self.reasoning_file.write(f"<p style='text-align:center'>NEW ROUND</p>")
+                self.reasoning_file.write(f"<div style='text-align:center;padding-top:50px;'>NEW ROUND</div>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
@@ -825,14 +804,9 @@ class Game:
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
-                        self.players[
-                            idx].reasoning_string += f'----------[Model Reasoning]  NEW ROUND ---------------\n'
-                        self.players[idx].reasoning_string += f'This text shows the reasoning by Player {idx}\n'
-                        self.players[idx].reasoning_string += f'My hand is {self.players[idx].hand}\n'
-
                         self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")
-                        self.reasoning_file.write(
-                            f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
+                        # self.reasoning_file.write(
+                        #     f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
                         self.reasoning_file.write(
                             f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
 
@@ -854,8 +828,7 @@ class Game:
                     print(
                         f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
                     invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
-                                          dice=self.players[
-                                              self.player_ID].hand)
+                                          dice=self.players[self.player_ID].hand)
 
                 print(f'[TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
@@ -879,8 +852,6 @@ class Game:
                                               target=self.previous_player)
 
                     self.resolve_doubt()
-                    if self.players[1].strategy == 'model':
-                        print(f'-------Player 1 reasoning ---- \n {self.players[1].reasoning_string} -----------------')
                     print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
                     print(f'Chunk retrieve failures during round: {self.chunk_retrieval_failure_count}')
                     self.state = states['start']
