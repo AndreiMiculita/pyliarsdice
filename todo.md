@@ -13,12 +13,12 @@
 |Add reasoning files for cognitive model                                                                           |  done   |
 |look into processing power of rolling animations (maybe cut the dice and keep only rolling GIF)                   |  done   |
 |Add exclamation mark and  checkmark to buttons                                                                    |  done   |
-|Make the buttons more of a square instead of long stretches (if possible), scale icon accordingly                                                                   |  done   |
+|Make the buttons more of a square instead of long stretches (if possible), scale icon accordingly                 |  done   |
 |Credit images (of dice and gifs etc)                                                                              |         |
 |Update how to play                                                                                                |         |
-|Convert reasoning string to StringIO                                                                              |   done      |
-|Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')                                                                        |         |
-|Make reasoning file scrollable                                                                         |   done      |
-| Change 'player 0' to 'You' in UI                                                                       |    |
-|Fix that you can go back from game (if you click reasoning tab from how to play or vice versa)                    |       |
-|Color the opponents (i.e. title or groupbox) according to the color in playercolors (such that it corresponds with reasoning text)                |   done    |
+|Convert reasoning string to StringIO                                                                              |  done   |
+|Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')      |  done   |
+|Make reasoning file scrollable                                                                                    |  done   |
+|Change 'player 0' to 'You' in UI                                                                                  |  done   |
+|Fix that you can go back from game (if you click reasoning tab from how to play or vice versa)                    |         |
+|Color the opponents (i.e. title or groupbox) according to the color in playercolors (such that it corresponds with reasoning text) |   done    |

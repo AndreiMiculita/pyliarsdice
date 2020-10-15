@@ -237,7 +237,7 @@ class MainWidget(QWidget, UIController):
 
         self.doubt_or_believe_group.setLayout(doubt_or_believe_layout)
 
-        continue_group = QGroupBox("Click or wait to continue")
+        continue_group = QGroupBox("Wait to continue")
         continue_layout = QVBoxLayout()
 
         self.continue_timeout_progress.setValue(0)
@@ -248,7 +248,7 @@ class MainWidget(QWidget, UIController):
         self.continue_button.clicked.connect(self.continue_game)
 
         continue_layout.addWidget(self.continue_timeout_progress)
-        continue_layout.addWidget(self.continue_button)
+        # continue_layout.addWidget(self.continue_button)
 
         continue_group.setLayout(continue_layout)
 
@@ -518,6 +518,8 @@ class MainWidget(QWidget, UIController):
         self.player_action_group.setCurrentIndex(2)
 
     def set_continue_timeout_progress(self, value: int):
+        self.continue_timeout_progress.setTextVisible(True)
+        self.continue_timeout_progress.setFormat("Starting next round...")
         self.continue_timeout_progress.setValue(value)
 
     def show_info(self, string: str):
