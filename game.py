@@ -805,7 +805,7 @@ class Game:
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
-                self.reasoning_file.write(f"<p'> --------------------------------------------------------- NEW ROUND -------------------------------------------------------------</p>")
+                self.reasoning_file.write(f"<p style='text-align:center'>NEW ROUND</p>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
@@ -830,7 +830,7 @@ class Game:
                         self.players[idx].reasoning_string += f'This text shows the reasoning by Player {idx}\n'
                         self.players[idx].reasoning_string += f'My hand is {self.players[idx].hand}\n'
 
-                        self.reasoning_file.write(f"<p style='color:{playercolors[idx]}'> ----------[Model Reasoning]  NEW ROUND ---------------</p>")
+                        self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")
                         self.reasoning_file.write(
                             f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
                         self.reasoning_file.write(

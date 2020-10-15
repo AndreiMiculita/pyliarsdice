@@ -12,7 +12,7 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLab
     QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar
 
 
-from game import Game
+from game import Game, playercolors
 from ui_controller import UIController
 
 preferred_format = "webp" if "webp" in [s.data().decode() for s in QMovie.supportedFormats()] else "gif"
@@ -25,14 +25,6 @@ dice_image_paths = ["assets/images/dice-none.png",
                     "assets/images/dice-4.png",
                     "assets/images/dice-5.png",
                     "assets/images/dice-6.png"]
-
-playercolors = ['none',
-    '#ff0000',
-    '#0080ff',
-    '#e6e600',
-    '#1BFE00'
-]
-
 
 dice_images_highlighted_paths = ["assets/images/dice-none.png",
                                  f"assets/images/dice-1-hl-anim.{preferred_format}",
@@ -74,7 +66,8 @@ class MainWidget(QWidget, UIController):
         self.bet_button = QPushButton('BET (B)')
         self.continue_timeout_progress = QProgressBar()
         self.continue_button = QPushButton('CONTINUE')
-        self.all_enemies_group = QFrame()  # Use findChild to address individual components for each enemy
+        self.all_enemies_group = QFrame(objectName="all_enemies")  # Use findChild to address individual components for each enemy
+        self.all_enemies_group.setStyleSheet(f"QFrame#all_enemies:{{padding:0;margin:0;border-style:none;}}")
         self.select_dice_spin_box = QSpinBox()
         self.select_number_spin_box = QSpinBox()
         self.player_cup_group = QGroupBox("Your Cup")
@@ -134,10 +127,12 @@ class MainWidget(QWidget, UIController):
         all_enemies_layout = QHBoxLayout()
 
         for i in range(0, self.n_opponents):
-            enemy_group = QGroupBox(f" Player {i + 1} ")  # Player 0 is human user
-            color_title = "QGroupBox { border: 3px solid" + playercolors[i+1] +";}"
+            enemy_group = QGroupBox(title=f" Player {i + 1}", objectName=f"enemy_group{i+1}")  # Player 0 is human user
+            enemy_group.setStyleSheet(f"QGroupBox#enemy_group{i+1}:title {{ "
+                                      f"padding: 0 5px;"
+                                      f"background-color: {playercolors[i + 1]};"
+                                      f"border-radius: 7px;}}")
 
-            enemy_group.setStyleSheet(color_title)
             enemy_layout = QGridLayout()
 
             # Enemy cup
@@ -262,12 +257,20 @@ class MainWidget(QWidget, UIController):
         self.player_action_group.addWidget(continue_group)
 
         # Put all the groups into a vertical layout
-        vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2,
-                                       2 * self.n_opponents)
-        vertical_main_layout.addWidget(top_group, 2, 0, 1,
-                                       2 * self.n_opponents)
-        vertical_main_layout.addWidget(self.player_cup_group, 3, self.n_opponents - 1, 1, 2)
-        vertical_main_layout.addWidget(self.player_action_group, 4, self.n_opponents - 1, 1, 2)
+        vertical_main_layout.addWidget(self.all_enemies_group, 0, 0, 2, 2 * self.n_opponents)
+        vertical_main_layout.addWidget(top_group, 2, 0, 1, 2 * self.n_opponents)
+
+        player_group = QGroupBox(objectName=f"player_group")  # Player 0 is human user
+        player_group.setStyleSheet(f"QGroupBox#player_group {{border:1px solid #004400;}}")
+        player_group.setFlat(True)
+        player_layout = QVBoxLayout()
+
+        player_layout.addWidget(self.player_cup_group)
+        player_layout.addWidget(self.player_action_group)
+
+        player_group.setLayout(player_layout)
+
+        vertical_main_layout.addWidget(player_group, 3, self.n_opponents - 1, 2, 2)
         self.setLayout(vertical_main_layout)
 
     def bet(self):
