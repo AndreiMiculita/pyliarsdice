@@ -817,7 +817,7 @@ class Game:
                             f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
-                    self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'> Player {self.current_player} can bid first:</p>")
+                    self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
@@ -839,7 +839,7 @@ class Game:
 
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'> Player {self.current_player}'s turn:</p>")
+                        f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
