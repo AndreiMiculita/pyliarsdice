@@ -107,8 +107,8 @@ def test():
 
 
 def test2():
-    for x in range(1, 10):
-        y = np.log(x * 2) + random.uniform(2, 2.5)
+    for x in range(1, 100):
+        y = np.log(x * 2) + random.uniform(1, 1.5)
         print(f'Number of chunks in memory = {x}, Waiting time = {round(y, 2)}s ')
 
     print(np.sort([2,3,1]))

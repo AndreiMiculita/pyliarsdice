@@ -434,7 +434,7 @@ class Game:
         if len(lose_dice_players) <= 1:
             invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
-                                         f"They will lose a die.")
+                                         f"He will lose a die.")
         else:
             lose_dice_players.sort()
             invoke_in_main_thread(self.ui_controller.show_info,
@@ -804,13 +804,14 @@ class Game:
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
-                        self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")
+                        # self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")   # no longer necessary to print
                         # self.reasoning_file.write(
                         #     f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
                         self.reasoning_file.write(
                             f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
+                    self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'> Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
@@ -829,6 +830,10 @@ class Game:
                         f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
                     invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
                                           dice=self.players[self.player_ID].hand)
+
+                if self.current_player != self.player_ID:
+                    self.reasoning_file.write(
+                        f"<p style='color:{playercolors[self.current_player]}'> Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
                 invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
@@ -863,6 +868,7 @@ class Game:
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
+
 
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
