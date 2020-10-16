@@ -14,8 +14,8 @@
 |look into processing power of rolling animations (maybe cut the dice and keep only rolling GIF)                   |  done   |
 |Add exclamation mark and  checkmark to buttons                                                                    |  done   |
 |Make the buttons more of a square instead of long stretches (if possible), scale icon accordingly                 |  done   |
-|Credit images (of dice and gifs etc)                                                                              |         |
-|Update how to play                                                                                                |         |
+|Credit images (of dice and gifs etc)                                                                              |  done   |
+|Update how to play                                                                                                |  done   |
 |Convert reasoning string to StringIO                                                                              |  done   |
 |Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')      |  done   |
 |Make reasoning file scrollable                                                                                    |  done   |

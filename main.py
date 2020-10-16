@@ -17,6 +17,19 @@ from ui.sliding_stacked_widget import SlidingStackedWidget
 howto_text = "assets/howto.html"
 stylesheet = "assets/style.qss"
 
+about_text = f"Liar's Dice implemented in Python, with Cognitive Model opponents.<br>" \
+             f"Developed for the Cognitive Modelling: Complex Behavior course at the University of "\
+             f"Groningen.<br>"\
+             f"Model: Oscar de Vries<br>"\
+             f"View: Andrei Miculita<br>"\
+             f"Controller: Tomasso Parisotto<br>"\
+             f"GitHub: <a href='https://github.com/AndreiMiculita/pyliarsdice'>link</a><br>" \
+             f"Image asset sources:<br>" \
+             f"<a href='https://game-icons.net/tags/dice.html'>Dice images</a><br>" \
+             f"<a href='https://tenor.com/view/waiting-bored-skeleton-gif-13733904'>Waiting skeleton</a><br>" \
+             f"<a href='https://loading.io'>Thinking loader</a><br>"\
+             f"<a href='https://commons.wikimedia.org/wiki/File:Exclamation-mark_animated.gif'>Doubting exclamation</a><br>"
+
 # Minimum and maximum limit to number of opponents
 opponent_limits = (1, 4)
 
@@ -199,7 +212,7 @@ class MainWindow(QMainWindow):
 
         about_action = QAction('About', self)
         about_action.setStatusTip("About Liar's Dice.")
-        about_action.triggered.connect(self.show_about)
+        about_action.triggered.connect(lambda: self.show_msg(title="About", text=about_text))
 
         self.statusBar()
 
@@ -255,6 +268,7 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(self.game_widget)
         self.central_widget.slideInWgt(self.game_widget)
         self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
+        self.center()
 
     def closeEvent(self, event):
         """
@@ -302,22 +316,16 @@ class MainWindow(QMainWindow):
         self.central_widget.slideInIdx(self.prv_ind)
 
     @staticmethod
-    def show_about():
+    def show_msg(title, text):
         """
         Show some info about the game
         :return:
         """
-        about_box = QMessageBox()
-        about_box.setWindowTitle("About")
-        about_box.setTextFormat(Qt.RichText)
-        about_box.setText(f"Liar's Dice implemented in Python, with Cognitive Model opponents.<br>"
-                          f"Developed for the Cognitive Modelling: Complex Behavior course at the University of "
-                          f"Groningen.<br>"
-                          f"Model: Oscar de Vries<br>"
-                          f"View: Andrei Miculita<br>"
-                          f"Controller: Tomasso Parisotto<br>"
-                          f"GitHub: <a href='https://github.com/AndreiMiculita/pyliarsdice'>link</a>")
-        about_box.exec_()
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle(title)
+        msg_box.setTextFormat(Qt.RichText)
+        msg_box.setText(text)
+        msg_box.exec_()
 
 
 def main():
