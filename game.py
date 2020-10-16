@@ -3,6 +3,7 @@ import random
 import time
 from io import StringIO
 from multiprocessing import Queue
+import copy
 
 import numpy as np
 from scipy.stats import binom
@@ -434,13 +435,30 @@ class Game:
             # player can start again
 
         if len(lose_dice_players) <= 1:
-            invoke_in_main_thread(self.ui_controller.show_info,
+            if lose_dice_players[0] == 0:
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                      string=f"You were correct.<br>"
+                                             f"You lose a die.")
+            else:
+                invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
                                          f"He will lose a die.")
         else:
             lose_dice_players.sort()
-            invoke_in_main_thread(self.ui_controller.show_info,
-                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
+            if 0 in lose_dice_players:
+                temp_lose_dice_players = copy.deepcopy(lose_dice_players)
+                temp_lose_dice_players.pop(0)
+                print(temp_lose_dice_players)
+                print(lose_dice_players)
+
+
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                      string=f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you were correct. <br>"
+                                             f"{'He' if len(temp_lose_dice_players) == 1 else 'They'} and you will lose a die.")
+            else:
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct.>br?"
+                                         f" They will lose a die.")
         time.sleep(4)
 
         for i in lose_dice_players:
