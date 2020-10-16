@@ -3,6 +3,7 @@ import random
 import time
 from io import StringIO
 from multiprocessing import Queue
+import copy
 
 import numpy as np
 from scipy.stats import binom
@@ -434,13 +435,30 @@ class Game:
             # player can start again
 
         if len(lose_dice_players) <= 1:
-            invoke_in_main_thread(self.ui_controller.show_info,
+            if lose_dice_players[0] == 0:
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                      string=f"You were correct.<br>"
+                                             f"You lose a die.")
+            else:
+                invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
-                                         f"They will lose a die.")
+                                         f"He will lose a die.")
         else:
             lose_dice_players.sort()
-            invoke_in_main_thread(self.ui_controller.show_info,
-                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct and will lose a die.")
+            if 0 in lose_dice_players:
+                temp_lose_dice_players = copy.deepcopy(lose_dice_players)
+                temp_lose_dice_players.pop(0)
+                print(temp_lose_dice_players)
+                print(lose_dice_players)
+
+
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                      string=f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you were correct. <br>"
+                                             f"{'He' if len(temp_lose_dice_players) == 1 else 'They'} and you will lose a die.")
+            else:
+                invoke_in_main_thread(self.ui_controller.show_info,
+                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct.>br?"
+                                         f" They will lose a die.")
         time.sleep(4)
 
         for i in lose_dice_players:
@@ -810,13 +828,14 @@ class Game:
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
-                        self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")
+                        # self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")   # no longer necessary to print
                         # self.reasoning_file.write(
                         #     f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
                         self.reasoning_file.write(
                             f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
+                    self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
@@ -835,6 +854,10 @@ class Game:
                         f'My hand is {self.players[self.player_ID].hand} \nTotal number of dice remaining = {self.n_total_dice}')
                     invoke_in_main_thread(self.ui_controller.display_dice, player_nr=self.player_ID,
                                           dice=self.players[self.player_ID].hand)
+
+                if self.current_player != self.player_ID:
+                    self.reasoning_file.write(
+                        f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
@@ -872,6 +895,7 @@ class Game:
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
+
 
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
