@@ -41,7 +41,7 @@ dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
                              f"assets/images/dice-rolling-3.{preferred_format}"]
 
 check_icon_path = "assets/images/checkmark.png"
-excl_icon_path = "assets/images/exclamation_image.png"
+excl_icon_path = "assets/images/exclamation.png"
 
 
 class MainWidget(QWidget, UIController):

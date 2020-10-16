@@ -28,7 +28,8 @@ about_text = f"Liar's Dice implemented in Python, with Cognitive Model opponents
              f"<a href='https://game-icons.net/tags/dice.html'>Dice images</a><br>" \
              f"<a href='https://tenor.com/view/waiting-bored-skeleton-gif-13733904'>Waiting skeleton</a><br>" \
              f"<a href='https://loading.io'>Thinking loader</a><br>"\
-             f"<a href='https://commons.wikimedia.org/wiki/File:Exclamation-mark_animated.gif'>Doubting exclamation</a><br>"
+             f"<a href='https://commons.wikimedia.org/wiki/File:Exclamation-mark_animated.gif'>Doubting exclamation</a><br>" \
+             f"<a href='https://iconarchive.com/show/farm-fresh-icons-by-fatcow.html'>Believe/call bluff buttons</a><br>"
 
 # Minimum and maximum limit to number of opponents
 opponent_limits = (1, 4)
