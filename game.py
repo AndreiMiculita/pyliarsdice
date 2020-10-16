@@ -318,6 +318,8 @@ class Game:
                 # current and previous turn
                 if idx != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Player {idx}'s turn.")
+                else:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Your turn.")
 
                 believe = ""
                 if self.players[idx].strategy == 'human':
@@ -787,7 +789,10 @@ class Game:
                 self.reasoning_file.write(f"<div style='text-align:center;padding-top:50px;'>NEW ROUND</div>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
-                invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
+                if self.current_player != self.player_ID:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
+                else:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                       f'Total number of dice remaining = {self.n_total_dice} \n')
@@ -836,7 +841,10 @@ class Game:
                         f"<p style='color:{playercolors[self.current_player]}'> Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
-                invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
+                if self.current_player != self.player_ID:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
+                else:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 # if self.players[self.current_player].strategy == 'model':
                 #     print(f'Number of chunks in dm: {len(self.players[self.current_player].model.dm)}')
