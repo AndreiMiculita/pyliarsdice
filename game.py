@@ -659,7 +659,7 @@ class Game:
                 chunk = None
                 tries = 0
                 while chunk is None and tries < self.n_players-1:  # model has a number of tries to remember the bet of a player according to the number of players, otherwise models remember too little with the increased time
-                    retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": bluff_player})
+                    retrieve_chunk = Chunk(name="memorize_bid_value", slots={"type": "bid_memory", "player": bluff_player})
                     chunk, latency = self.players[self.current_player].model.retrieve(
                         retrieve_chunk)  # retrieve a chunk from declarative memory
                     tries += 1
