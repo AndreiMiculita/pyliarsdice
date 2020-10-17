@@ -11,7 +11,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView
 
 from io import StringIO
-from ui.main_widget import MainWidget
+from ui.main_widget import MainWidget, playercolors
 from ui.sliding_stacked_widget import SlidingStackedWidget
 
 howto_text = "assets/howto.html"
@@ -67,8 +67,6 @@ class StartScreenWidget(QWidget):
                              "Play against Cognitive Model Opponent(s) [Fun mode]"]
         self.start_game_signals = [CommunicateRandom(), CommunicateCogMod()]
         self.show_logo = show_logo
-
-        self.prv_ind = 0
 
         self.init_ui()
 
@@ -133,7 +131,6 @@ class BigTextTabWidget(QWidget):
         self.text_file = text_file
         self.back_signal = GoBack()
         self.big_text_view = QWebEngineView()
-        print("Unknown parameter passed to BigTextTabWidget.")
         self.init_ui()
 
     def init_ui(self):
@@ -160,7 +157,16 @@ class BigTextTabWidget(QWidget):
         """
         if isinstance(self.text_file, StringIO):
             self.big_text_view.setHtml(
-                f"<!DOCTYPE html><html><head> </head><body style='background-color:#004400; color:white; font-family:sans-serif;'> {text_file.getvalue()}</body>")
+                f"<!DOCTYPE html><html><head>"
+                f"<style>"
+                f".t1{{color:{playercolors[1]};}}"
+                f".t2{{color:{playercolors[2]};}}"
+                f".t3{{color:{playercolors[3]};}}"
+                f".t4{{color:{playercolors[4]};}}" 
+                f"</style> </head><body style='"
+                f"background-color:#004400;"
+                f"color:white;"
+                f"font-family:sans-serif;'> {text_file.getvalue()}</body>")
         else:
             with open(text_file, "r") as how_to_file_handle:
                 self.big_text_view.setHtml(how_to_file_handle.read())
@@ -174,8 +180,6 @@ class MainWindow(QMainWindow):
         The main window. Everything takes place inside it.
         """
         super(MainWindow, self).__init__()
-        self.how_to_play_action = QAction('How to play', self)
-        self.reasoning_action = QAction('Show reasoning', self)
         self.reasoning_file = StringIO("Start a game to see the enemies' reasoning.")
         self.how_to_play_widget = BigTextTabWidget(text_file=howto_text)
         self.reasoning_widget = BigTextTabWidget(text_file=self.reasoning_file)
@@ -189,7 +193,7 @@ class MainWindow(QMainWindow):
         Initialize the central widget, along with the menubar and status bar.
         :return:
         """
-        self.central_widget.addWidget(self.restart(show_logo=True))
+        self.restart()
         self.how_to_play_widget.back_signal.back.connect(
             lambda: self.central_widget.slideInIdx(self.central_widget.currentIndex() - 1))
 
@@ -198,22 +202,25 @@ class MainWindow(QMainWindow):
         new_game_action = QAction('New Game', self)
         new_game_action.setShortcut(QKeySequence.New)
         new_game_action.setStatusTip('Start a new game.')
-        new_game_action.triggered.connect(lambda: self.central_widget.slideInIdx(0))
+        new_game_action.triggered.connect(self.restart)
 
         exit_action = QAction('Exit', self)
         exit_action.setShortcut(QKeySequence.Close)
         exit_action.setStatusTip('Exit application.')
         exit_action.triggered.connect(self.close)
 
-        self.how_to_play_action.setStatusTip('View game instructions.')
-        self.how_to_play_action.setShortcut(QKeySequence.HelpContents)
-        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
+        how_to_play_action = QAction('How to play', self)
+        how_to_play_action.setStatusTip('View game instructions.')
+        how_to_play_action.setShortcut(QKeySequence.HelpContents)
+        how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
 
-        self.reasoning_action.setStatusTip('View model reasoning.')
-        self.reasoning_action.setShortcut("F2")
-        self.reasoning_action.triggered.connect(lambda: self.show_reasoning())
+        reasoning_action = QAction('Show reasoning', self)
+        reasoning_action.setStatusTip('View model reasoning.')
+        reasoning_action.setShortcut("F2")
+        reasoning_action.triggered.connect(lambda: self.show_reasoning())
 
         about_action = QAction('About', self)
+        about_action.setShortcut("F3")
         about_action.setStatusTip("About Liar's Dice.")
         about_action.triggered.connect(lambda: self.show_msg(title="About", text=about_text))
 
@@ -224,8 +231,8 @@ class MainWindow(QMainWindow):
         file_menu.addAction(new_game_action)
         file_menu.addAction(exit_action)
         help_menu = menubar.addMenu('&Help')
-        help_menu.addAction(self.how_to_play_action)
-        help_menu.addAction(self.reasoning_action)
+        help_menu.addAction(how_to_play_action)
+        help_menu.addAction(reasoning_action)
         help_menu.addAction(about_action)
 
         self.resize(450, 690)
@@ -247,30 +254,29 @@ class MainWindow(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def restart(self, show_logo):
+    def restart(self):
         """
         Start a new game
         :return:
         """
 
+        if self.central_widget.count() == 0:
+            start_screen_widget = StartScreenWidget(select_enemies_spinbox=self.select_enemies_spinbox)
+            start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.start_game_and_switch(difficulty=0))
+            start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.start_game_and_switch(difficulty=1))
+            self.central_widget.addWidget(start_screen_widget)
+
         if self.game_widget is not None:
             self.central_widget.removeWidget(self.game_widget)
+            self.game_widget = None
+        if self.central_widget.currentIndex() != 0:
+            self.central_widget.slideInIdx(0)
 
-        start_screen_widget = StartScreenWidget(select_enemies_spinbox=self.select_enemies_spinbox, show_logo=show_logo)
-
-        start_screen_widget.start_game_signals[0].start_new_random_game.connect(lambda: self.restart_aux(idx=0))
-        start_screen_widget.start_game_signals[1].start_new_game.connect(lambda: self.restart_aux(idx=1))
-        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
-
-        return start_screen_widget
-
-    def restart_aux(self, idx: int):
-
-        self.game_widget = MainWidget(difficulty=idx, n_opponents=int(self.select_enemies_spinbox.value()),
+    def start_game_and_switch(self, difficulty: int):
+        self.game_widget = MainWidget(difficulty=difficulty, n_opponents=int(self.select_enemies_spinbox.value()),
                                       reasoning_file=self.reasoning_file)
-        self.central_widget.addWidget(self.game_widget)
-        self.central_widget.slideInWgt(self.game_widget)
-        self.how_to_play_action.triggered.connect(lambda: self.show_how_to_play())
+        self.central_widget.insertWidget(1, self.game_widget)
+        self.central_widget.slideInIdx(1)
         self.center()
 
     def closeEvent(self, event):
@@ -296,8 +302,7 @@ class MainWindow(QMainWindow):
         Show a window explaining how to play the game
         :return:
         """
-        self.prv_ind = self.central_widget.currentIndex()
-        self.how_to_play_widget.back_signal.back.connect(self.go_back())
+        self.how_to_play_widget.back_signal.back.connect(self.go_back)
         # Add it if it doesn't exist
         if self.central_widget.indexOf(self.how_to_play_widget) == -1:
             self.central_widget.addWidget(self.how_to_play_widget)
@@ -305,7 +310,6 @@ class MainWindow(QMainWindow):
         self.central_widget.slideInWgt(self.how_to_play_widget)
 
     def show_reasoning(self):
-        self.prv_ind = self.central_widget.currentIndex()
         self.reasoning_widget.back_signal.back.connect(self.go_back)
 
         self.reasoning_widget.update_text(self.reasoning_file)
@@ -316,7 +320,10 @@ class MainWindow(QMainWindow):
         self.central_widget.slideInWgt(self.reasoning_widget)
 
     def go_back(self):
-        self.central_widget.slideInIdx(self.prv_ind)
+        if self.game_widget is not None:
+            self.central_widget.slideInIdx(1)
+        else:
+            self.central_widget.slideInIdx(0)
 
     @staticmethod
     def show_msg(title, text):

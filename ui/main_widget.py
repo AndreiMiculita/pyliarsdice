@@ -12,8 +12,15 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLab
     QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar
 
 
-from game import Game, playercolors
+from game import Game
 from ui_controller import UIController
+
+playercolors = ['none',
+    '#CC3363',
+    '#6A80C8',
+    '#5ED71D',
+    '#F0976A'
+]
 
 preferred_format = "webp" if "webp" in [s.data().decode() for s in QMovie.supportedFormats()] else "gif"
 print("preferred_format", preferred_format)

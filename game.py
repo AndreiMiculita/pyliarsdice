@@ -35,10 +35,10 @@ rev_states = {
 }
 
 playercolors = ['none',
-    '#ff0000',
-    '#0080ff',
-    '#e6e600',
-    '#1BFE00'
+    '#CC3363',
+    '#6A80C8',
+    '#5ED71D',
+    '#F0976A'
 ]
 
 
@@ -185,8 +185,8 @@ class Game:
                 # TODO: think about how to set the threshold
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round(believe_threshold[0], 3)}')
-                self.reasoning_file.write(f"<p style='color:{playercolors[player_index]}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
-                self.reasoning_file.write(f"<p style='color:{playercolors[player_index]}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
+                self.reasoning_file.write(f"<p class='t{player_index}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
+                self.reasoning_file.write(f"<p class='t{player_index}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
 
                 if probability_of_bid >= believe_threshold[0]:
                     doubt = False
@@ -209,9 +209,9 @@ class Game:
                                                      1)  # compare probability to non-static threshold,
                 # TODO: think about how to set the threshold
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[player_index]}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
+                    f"<p class='t{player_index}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[player_index]}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
+                    f"<p class='t{player_index}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
 
                 # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
                 # 3)}, believe threshold is {round( believe_threshold[0], 3)}')
@@ -256,11 +256,11 @@ class Game:
             doubt = self.determine_model_doubt(self.current_player)
             if doubt:
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[self.current_player]}'>I do not believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
+                    f"<p class='t{self.current_player}'>I do not believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
 
             else:
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[self.current_player]}'>I believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
+                    f"<p class='t{self.current_player}'>I believe {self.current_bid.count} x {self.current_bid.roll} is on the table</p>")
         return doubt
 
     def ui_doubt(self):
@@ -508,7 +508,7 @@ class Game:
 
 
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[i]}'>Storing chunk to remember that Player {self.current_player} has made a bid on dice value {self.current_bid.roll}</p>")
+                    f"<p class='t{i}'>Storing chunk to remember that Player {self.current_player} has made a bid on dice value {self.current_bid.roll}</p>")
 
 
     def bidding(self):
@@ -525,7 +525,7 @@ class Game:
             count, roll = self.model_bid()
             if self.players[self.current_player].strategy == 'model':
 
-                self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'>I am bidding: {count} x {roll} is on the table</p>")
+                self.reasoning_file.write(f"<p class='t{self.current_player}'>I am bidding: {count} x {roll} is on the table</p>")
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -649,12 +649,12 @@ class Game:
                     bluff_player = self.previous_player
                     # print('[DEBUG] bluffing on prev player')
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Aiming to bluff on one of the dice values bid on by previous player</p>")
+                        f"<p class='t{self.current_player}'>Aiming to bluff on one of the dice values bid on by previous player</p>")
                 else:
                     bluff_player = (self.current_player + 1) % self.n_players
                     # print('[DEBUG] bluffing on next player')
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Aiming to bluff on one of the dice values bid on by next player</p>")
+                        f"<p class='t{self.current_player}'>Aiming to bluff on one of the dice values bid on by next player</p>")
 
                 chunk = None
                 tries = 0
@@ -664,7 +664,7 @@ class Game:
                         retrieve_chunk)  # retrieve a chunk from declarative memory
                     tries += 1
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[self.current_player]}'>Trying to memorize a chunk containing a value Player {bluff_player} has bid on</p>")
+                    f"<p class='t{self.current_player}'>Trying to memorize a chunk containing a value Player {bluff_player} has bid on</p>")
 
                 if chunk is not None:  # a chunk was retrieved
                     self.chunk_retrieval_count += 1
@@ -673,18 +673,18 @@ class Game:
 
 
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Retrieved a chunk containing that Player {bluff_player} has bid on {roll} this round</p>")
+                        f"<p class='t{self.current_player}'>Retrieved a chunk containing that Player {bluff_player} has bid on {roll} this round</p>")
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Bluffing on {roll}, since Player {bluff_player} has bid on {roll} before</p>")
+                        f"<p class='t{self.current_player}'>Bluffing on {roll}, since Player {bluff_player} has bid on {roll} before</p>")
 
                 else:  # no chunk was retrieved / retrieval failure
                     print('\nChunk retrieval failed')
                     self.chunk_retrieval_failure_count += 1
 
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>No chunk was retrieved</p>")
+                        f"<p class='t{self.current_player}'>No chunk was retrieved</p>")
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Can not remember a value Player {bluff_player} has bid on before, bluffing on random value</p>")
+                        f"<p class='t{self.current_player}'>Can not remember a value Player {bluff_player} has bid on before, bluffing on random value</p>")
 
                     # print('[DEBUG] no chunk was retrieved / retrieval failure')
                     roll = random.randint(1, 6)  # bluffing happens on a random die value
@@ -692,7 +692,7 @@ class Game:
                 if roll == 1:  # bluff will be on joker dice
 
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'>Bluffing on joker dice</p>")
+                        f"<p class='t{self.current_player}'>Bluffing on joker dice</p>")
 
                     if self.current_bid.roll == 1:  # current bid is on joker dice, so + 1 suffices
                         count = self.current_bid.count + 1
@@ -732,7 +732,7 @@ class Game:
 
                 roll = bid_value
 
-                self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'>My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}</p>")
+                self.reasoning_file.write(f"<p class='t{self.current_player}'>My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}</p>")
 
                 if roll == 1:  # bidding on the joker dice
                     if self.current_bid.roll == 1:  # current bid is on joker dice, so + 1 suffices
@@ -756,7 +756,7 @@ class Game:
                             count = self.current_bid.count + 1  # else: increment count, and bid on the value
 
                 self.reasoning_file.write(
-                    f"<p style='color:{playercolors[self.current_player]}'>Determined bid is {count} x {roll}</p>")
+                    f"<p class='t{self.current_player}'>Determined bid is {count} x {roll}</p>")
 
         return count, roll
 
@@ -828,14 +828,11 @@ class Game:
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
-                        # self.reasoning_file.write(f"<p style='color:{playercolors[idx]}; text-align:center'>[Model Reasoning]  NEW ROUND</p>")   # no longer necessary to print
-                        # self.reasoning_file.write(
-                        #     f"<p style='color:{playercolors[idx]}'> This color text shows the reasoning by Player {idx}</p>")
                         self.reasoning_file.write(
-                            f"<p style='color:{playercolors[idx]}'> My hand is {self.players[idx].hand}</p>")
+                            f"<p class='t{idx}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
-                    self.reasoning_file.write(f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player} can bid first:</p>")
+                    self.reasoning_file.write(f"<p class='t{self.current_player}'><br>Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
@@ -857,7 +854,7 @@ class Game:
 
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(
-                        f"<p style='color:{playercolors[self.current_player]}'><br>Player {self.current_player}'s turn:</p>")
+                        f"<p class='t{self.current_player}'><br>Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
