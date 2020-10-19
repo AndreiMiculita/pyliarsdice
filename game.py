@@ -442,7 +442,7 @@ class Game:
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
-                                         f"He will lose a die.")
+                                         f"Player {', '.join(map(str, lose_dice_players))} will lose a die.")
         else:
             lose_dice_players.sort()
             if 0 in lose_dice_players:
@@ -454,7 +454,7 @@ class Game:
 
                 invoke_in_main_thread(self.ui_controller.show_info,
                                       string=f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you were correct. <br>"
-                                             f"{'He' if len(temp_lose_dice_players) == 1 else 'They'} and you will lose a die.")
+                                             f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you will lose a die.")
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Players {', '.join(map(str, lose_dice_players))} were correct.>br?"

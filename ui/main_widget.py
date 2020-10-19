@@ -1,6 +1,7 @@
 import random
 import threading
 import time
+import copy
 from io import StringIO
 from multiprocessing import Queue
 from typing import Union
@@ -541,10 +542,21 @@ class MainWidget(QWidget, UIController):
     def display_winner_and_close(self, players: list):
         if len(players) <= 1:
             winner = str(players[0])
-            end_string = f"Player {winner} has played away all its dice!"
+            if 0 in players:
+                end_string = f'You have played away all your dice!'
+            else:
+                end_string = f"Player {winner} has played away all its dice!"
+
         else:
-            winners = str(players)[1:-1]
-            end_string = f"Players {winners} have played away all their dice!"
+            if 0 in players:
+                winners = players.pop(0)
+                winners = str(winners)[1:-1]
+                end_string = f"Players {winners} and you have played away all their dice!"
+            else:
+                winners = str(players)[1:-1]
+                end_string = f"Players {winners} and you have played away all their dice!"
+
+
 
         if 0 in players:
             end_string = end_string + '\nYou won! Close the game?'
