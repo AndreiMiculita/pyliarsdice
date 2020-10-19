@@ -442,7 +442,7 @@ class Game:
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
-                                         f"He will lose a die.")
+                                         f"Player {', '.join(map(str, lose_dice_players))} will lose a die.")
         else:
             lose_dice_players.sort()
             if 0 in lose_dice_players:
@@ -454,7 +454,7 @@ class Game:
 
                 invoke_in_main_thread(self.ui_controller.show_info,
                                       string=f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you were correct. <br>"
-                                             f"{'He' if len(temp_lose_dice_players) == 1 else 'They'} and you will lose a die.")
+                                             f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you will lose a die.")
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Players {', '.join(map(str, lose_dice_players))} were correct.>br?"
@@ -659,7 +659,7 @@ class Game:
                 chunk = None
                 tries = 0
                 while chunk is None and tries < self.n_players-1:  # model has a number of tries to remember the bet of a player according to the number of players, otherwise models remember too little with the increased time
-                    retrieve_chunk = Chunk(name="partial-test", slots={"type": "bid_memory", "player": bluff_player})
+                    retrieve_chunk = Chunk(name="memorize_bid_value", slots={"type": "bid_memory", "player": bluff_player})
                     chunk, latency = self.players[self.current_player].model.retrieve(
                         retrieve_chunk)  # retrieve a chunk from declarative memory
                     tries += 1
