@@ -166,7 +166,10 @@ class BigTextTabWidget(QWidget):
                 f"</style> </head><body style='"
                 f"background-color:#004400;"
                 f"color:white;"
-                f"font-family:sans-serif;'> {text_file.getvalue()}</body>")
+                f"font-family:sans-serif;"
+                f"max-width: 500px;"
+                f"margin: auto;'></head>"
+                f"<body> {text_file.getvalue()}</body></html>")
         else:
             with open(text_file, "r") as how_to_file_handle:
                 self.big_text_view.setHtml(how_to_file_handle.read())

@@ -7,10 +7,9 @@ from typing import Union
 
 from PySide2 import QtCore
 from PySide2.QtCore import QSize
-from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon
+from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon, QKeySequence
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
-    QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar
-
+    QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar, QShortcut
 
 from game import Game
 from ui_controller import UIController
@@ -216,9 +215,13 @@ class MainWidget(QWidget, UIController):
         player_bet_selection_layout.addWidget(player_times_label)
         player_bet_selection_layout.addLayout(select_dice_layout)
 
-        self.bet_button.setShortcut("B")
+        # self.bet_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_B))
         self.bet_button.setStatusTip('Bet the selected value and dice.')
         self.bet_button.clicked.connect(self.bet)
+        b_seq = QKeySequence(Qt.Key_B)
+        b = QShortcut(b_seq, self.bet_button)
+        b.activated.connect(self.bet_button.click)
+        b.activatedAmbiguously.connect(self.bet_button.click)
 
         player_bet_layout.addLayout(player_bet_selection_layout)
         player_bet_layout.addWidget(self.bet_button)
@@ -229,15 +232,23 @@ class MainWidget(QWidget, UIController):
         # The buttons are linked to the functions below this function
         doubt_or_believe_layout = QVBoxLayout()
 
-        self.call_bluff_button.setShortcut("C")
+        # self.call_bluff_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_C))
         self.call_bluff_button.setStatusTip("Call the opponent's bluff.")
         self.call_bluff_button.setIcon(self.excl_icon)
         self.call_bluff_button.clicked.connect(self.call_bluff)
+        c_seq = QKeySequence(Qt.Key_C)
+        c = QShortcut(c_seq, self.call_bluff_button)
+        c.activated.connect(self.call_bluff_button.click)
+        c.activatedAmbiguously.connect(self.call_bluff_button.click)
 
-        self.trust_button.setShortcut("V")
+        # self.trust_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_V))
         self.trust_button.setStatusTip("Believe the opponent.")
         self.trust_button.setIcon(self.check_icon)
         self.trust_button.clicked.connect(self.trust)
+        v_seq = QKeySequence(Qt.Key_V)
+        v = QShortcut(v_seq, self.trust_button)
+        v.activated.connect(self.trust_button.click)
+        v.activatedAmbiguously.connect(self.trust_button.click)
 
         doubt_or_believe_layout.addWidget(self.trust_button)
         doubt_or_believe_layout.addWidget(self.call_bluff_button)
