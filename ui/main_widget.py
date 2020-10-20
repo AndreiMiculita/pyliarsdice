@@ -123,6 +123,8 @@ class MainWidget(QWidget, UIController):
         top_group = QFrame()
 
         top_group_layout = QHBoxLayout()
+
+        self.difficulty_label.setStyleSheet("QLabel {font-style:italic;}")
         top_group_layout.addWidget(self.info_label, alignment=Qt.AlignLeft)
         top_group_layout.addWidget(self.difficulty_label, alignment=Qt.AlignRight)
 

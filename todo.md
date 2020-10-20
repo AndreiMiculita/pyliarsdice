@@ -26,5 +26,5 @@
 |The reasoning tab now cuts lines weird (for me). Maybe make it wider                                           | |
 |'B' hotkey not working (for me at least)                                 | |
 |Fix weird signs in the howtoplay                                | |
-|The info text in the game is now the same font as 'playing against cognitive models'. Would be nice to have one in another font. (or put the info in a box?)                             | |
+|The info text in the game is now the same font as 'playing against cognitive models'. Would be nice to have one in another font. (or put the info in a box?)                             | done |
 |I was thinking, maybe during the end of a round when the dice are counted, it would be nice to show which players were correct/wrong by changing their border colors temporarily to red/green                        | |
