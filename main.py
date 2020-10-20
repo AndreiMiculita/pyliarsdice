@@ -167,7 +167,7 @@ class BigTextTabWidget(QWidget):
                 f"background-color:#004400;"
                 f"color:white;"
                 f"font-family:sans-serif;"
-                f"max-width: 500px;"
+                f"max-width: 400px;"
                 f"margin: auto;'></head>"
                 f"<body> {text_file.getvalue()}</body></html>")
         else:
