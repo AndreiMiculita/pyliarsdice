@@ -31,5 +31,8 @@ class UIController:
     def show_info(self, string: str):
         return NotImplemented
 
+    def display_betters(self, correct_betters: [int] = None):
+        return NotImplemented
+
     def display_winner_and_close(self, player: int):
         return NotImplemented

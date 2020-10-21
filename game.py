@@ -457,7 +457,7 @@ class Game:
                                              f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you will lose a die.")
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
-                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct.>br?"
+                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct.<br>"
                                          f" They will lose a die.")
         time.sleep(4)
 

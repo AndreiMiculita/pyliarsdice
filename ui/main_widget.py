@@ -569,8 +569,6 @@ class MainWidget(QWidget, UIController):
                 winners = str(players)[1:-1]
                 end_string = f"Players {winners} and you have played away all their dice!"
 
-
-
         if 0 in players:
             end_string = end_string + '\nYou won! Close the game?'
         else:
@@ -586,3 +584,24 @@ class MainWidget(QWidget, UIController):
         else:
             self.close()
             self.parentWidget().slideInIdx(0)
+
+    def display_betters(self, correct_betters: [int] = None):
+        """
+        Display correct betters with green borders, wrong betters with red.
+        Wrong betters means everyone who is not correct.
+        Call with no arguments to remove the borders.
+
+        :param correct_betters: the list of correct betters
+        :return:
+        """
+        print("playet")
+        for player_nr in range(self.n_opponents + 1):
+            print("playet", player_nr)
+            player_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_group{player_nr}") if player_nr != 0 else self.findChild(QGroupBox, f"player_group")
+            if player_group is not None:
+                if correct_betters is not None:
+                    player_group.setStyleSheet(f"QGroupBox#enemy_group{player_nr} {{ border: 1px solid {'green' if player_nr in correct_betters else 'red'};}}")
+                else:
+                    player_group.setStyleSheet(f"")
+
+
