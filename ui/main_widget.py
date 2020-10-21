@@ -42,6 +42,7 @@ dice_images_highlighted_paths = ["assets/images/dice-none.png",
                                  f"assets/images/dice-6-hl-anim.{preferred_format}"]
 
 dice_image_unknown_path = "assets/images/dice-q.png"
+dice_image_unknown_fading_path = f"assets/images/dice-q-fade.gif"
 dice_image_blank_path = "assets/images/dice-blank.png"
 dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
                              f"assets/images/dice-rolling-2.{preferred_format}",
@@ -89,6 +90,7 @@ class MainWidget(QWidget, UIController):
         self.dice_images_highlighted = [QMovie(d) for d in dice_images_highlighted_paths]
         self.dice_images_rolling = [QMovie(d) for d in dice_images_rolling_paths]
         self.dice_image_unknown = QPixmap(dice_image_unknown_path)
+        self.dice_image_unknown_fading = QMovie(dice_image_unknown_fading_path)
         self.dice_image_blank = QPixmap(dice_image_blank_path)
         # use https://loading.io/
         self.thinking_image = QMovie(f"assets/images/loader.{preferred_format}")
@@ -380,7 +382,7 @@ class MainWidget(QWidget, UIController):
 
         :param player_nr: which player to display the dice for
         :param dice: list of dice numbers that the player is holding; can also be an integer, if the dice are anonymous or rolling
-        :param state: only needed if dice is an int, this tells whether the dice are anonymous (0) or rolling (1)
+        :param state: only needed if dice is an int, this tells whether the dice are anonymous (0) or rolling (1) or one is fading (2)
         :param highlight: only needed if dice is a list, this tells which dice type (1-6) to highlight; 0 for no highlight
         :return:
         """
@@ -392,19 +394,24 @@ class MainWidget(QWidget, UIController):
         else:
             dice_list = []
             print(f"Unknown parameter dice={dice} passed to display_dice")
-        for die in dice_list:
-            if state == 1:  # rolling
+        for idx, die in enumerate(dice_list):
+            if isinstance(dice, list):  # dice visible, maybe with highlights
+                die_img_label = self.get_label_with_img(
+                    self.dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else
+                    self.dice_images[die])
+            elif state == 0:  # anonymous
+                die_img_label = self.get_label_with_img(self.dice_image_unknown)
+            elif state == 1:  # rolling
                 die_img_label = self.get_label_with_img(random.choice(self.dice_images_rolling))
-            else:
-                if isinstance(dice, list):  # dice visible, maybe with highlights
-                    die_img_label = self.get_label_with_img(
-                        self.dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else
-                        self.dice_images[die])
-                elif state == 0:  # anonymous
+            elif state == 2:  # fade one away
+                print("state is 2")
+                if idx < len(dice_list) - 1:
                     die_img_label = self.get_label_with_img(self.dice_image_unknown)
                 else:
-                    die_img_label = self.get_label_with_img(self.dice_image_blank)
-                    print(f"Wrong arguments given to display_dice: {dice}")
+                    die_img_label = self.get_label_with_img(self.dice_image_unknown_fading)
+            else:
+                die_img_label = self.get_label_with_img(self.dice_image_blank)
+                print(f"Wrong arguments given to display_dice: {dice}")
 
             player_cup_layout.addWidget(die_img_label)
 

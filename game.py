@@ -459,10 +459,12 @@ class Game:
                 invoke_in_main_thread(self.ui_controller.show_info,
                                   string=f"Players {', '.join(map(str, lose_dice_players))} were correct.<br>"
                                          f" They will lose a die.")
-        time.sleep(4)
 
         for i in lose_dice_players:
+            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=i, dice=self.players[i].get_hand_size(), state=2)
             self.players[i].remove_die()
+
+        time.sleep(4)
 
         print('[INFO] Number of dice remaining per player: ', end='')
         for idx in range(self.n_players):
