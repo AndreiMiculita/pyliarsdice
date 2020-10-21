@@ -71,7 +71,7 @@ class MainWidget(QWidget, UIController):
                                                 objectName="ActionsGroup")  # objectName required for CSS
         self.call_bluff_button = QPushButton('CALL BLUFF (C)')
         self.trust_button = QPushButton('BELIEVE BID (V)')
-        self.bet_button = QPushButton('BET (B)')
+        self.bet_button = QPushButton('BET')
         self.continue_timeout_progress = QProgressBar()
         self.continue_button = QPushButton('CONTINUE')
         self.all_enemies_group = QFrame(objectName="all_enemies")  # Use findChild to address individual components for each enemy

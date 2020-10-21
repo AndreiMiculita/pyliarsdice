@@ -407,21 +407,7 @@ class Game:
                               string=f"The bid was: {bid_count} x {bid_roll}.<br>"
                                      f"On the table: {count} x {bid_roll}.")
 
-        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=True)
-        timeout_time = 0.4 * self.n_total_dice  # Lower this to make it faster
-        loader_step = 5  # How much% the loader should move each tick
-        # Wait for the player to click to continue
-        import queue  # to recognize the exception
-        for i in range(0, 101, loader_step):  # Start and stop must be 0 and 101
-            try:
-                continue_ = self.input_queue.get(block=True, timeout=float(timeout_time)*float(loader_step)/float(100))
-                if continue_ == -1:
-                    quit(0)
-                break
-            except queue.Empty:
-                invoke_in_main_thread(self.ui_controller.set_continue_timeout_progress, i)
-
-        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=False)
+        # self.wait_for_continue()
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
@@ -767,6 +753,27 @@ class Game:
             if idx != self.player_ID:
                 invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=idx,
                                       number="", dice=0)
+
+    def wait_for_continue(self):
+        """
+        Wait for the player to continue, after a doubt has been resolved
+        :return: once the player has given some input, or a timeout expires
+        """
+        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=True)
+        timeout_time = 0.4 * self.n_total_dice  # Lower this to make it faster
+        loader_step = 5  # How much% the loader should move each tick
+        # Wait for the player to click to continue
+        import queue  # to recognize the exception
+        for i in range(0, 101, loader_step):  # Start and stop must be 0 and 101
+            try:
+                continue_ = self.input_queue.get(block=True, timeout=float(timeout_time)*float(loader_step)/float(100))
+                if continue_ == -1:
+                    quit(0)
+                break
+            except queue.Empty:
+                invoke_in_main_thread(self.ui_controller.set_continue_timeout_progress, i)
+
+        invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=False)
 
     ########################################################################
     ######           MAIN LOOP THAT RUNS STATE MACHINE                ######
