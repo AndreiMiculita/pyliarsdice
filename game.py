@@ -400,14 +400,16 @@ class Game:
         for idx, player in enumerate(self.players):
             invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=player.hand,
                                   highlight=bid_roll)
-            time.sleep(0.1 * len(player.hand))  # Wait for 2nd question
+            time.sleep(0.1 * len(player.hand))
 
         print(f'The bid was {bid_count} x {bid_roll}. On the table in total, there was {count} x {bid_roll}')
         invoke_in_main_thread(self.ui_controller.show_info,
                               string=f"The bid was: {bid_count} x {bid_roll}.<br>"
                                      f"On the table: {count} x {bid_roll}.")
 
-        # self.wait_for_continue()
+        timeout_time = 0.2 * self.n_total_dice  # Lower this to make it faster
+        time.sleep(timeout_time)
+        # self.wait_for_continue(timeout_time)
 
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
@@ -754,13 +756,12 @@ class Game:
                 invoke_in_main_thread(self.ui_controller.display_bet_enemy, enemy_nr=idx,
                                       number="", dice=0)
 
-    def wait_for_continue(self):
+    def wait_for_continue(self, timeout_time: float):
         """
         Wait for the player to continue, after a doubt has been resolved
         :return: once the player has given some input, or a timeout expires
         """
         invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=True)
-        timeout_time = 0.4 * self.n_total_dice  # Lower this to make it faster
         loader_step = 5  # How much% the loader should move each tick
         # Wait for the player to click to continue
         import queue  # to recognize the exception
