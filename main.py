@@ -173,6 +173,7 @@ class BigTextTabWidget(QWidget):
                 f".roundtitle{{text-align:center;position:sticky;top:35px;background-color:white;color:black;" 
                 f"border-radius:7px;}}" 
                 f".turntitle{{text-align:center;position:sticky;top:65px;color:white;border-radius:7px;}}"
+                f".tn0{{background-color:white;color:black;}}"
                 f".tn1{{background-color:{playercolors[1]};}}"
                 f".tn2{{background-color:{playercolors[2]};}}"
                 f".tn3{{background-color:{playercolors[3]};}}"

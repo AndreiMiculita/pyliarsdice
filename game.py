@@ -857,11 +857,11 @@ class Game:
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(
-                        f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s first turn:</p>")
+                        f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s turn (first):</p>")
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
                 else:
                     self.reasoning_file.write(
-                        f"<p class='turntitle tn{self.current_player}'>Your first turn:</p>")
+                        f"<p class='turntitle tn{self.current_player}'>Your turn (first):</p>")
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 if self.current_player != self.player_ID:
