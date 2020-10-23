@@ -820,7 +820,7 @@ class Game:
                     self.round += 1
                     self.reasoning_file.write(f"</div>")
 
-                self.reasoning_file.write(f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>NEW ROUND - Round {self.round}</div>")
+                self.reasoning_file.write(f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>Round {self.round}</div>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:

@@ -20,7 +20,7 @@
 |Remove click to continue button (and maybe add something on the process bar such as 'Next round starting..')      |  done   |
 |Make reasoning file scrollable                                                                                    |  done   |
 |Change 'player 0' to 'You' in UI                                                                                  |  done   |
-|Remove process bar and 'starting next round' when the next round has started (e.g. change to 'waiting'). Now it's weird since it still says waiting for next round, while opponents are already bidding            |    |
+|Remove process bar and 'starting next round' when the next round has started (e.g. change to 'waiting'). Now it's weird since it still says waiting for next round, while opponents are already bidding            |   done |
 |Fix that you can go back from game (if you click reasoning tab from how to play or vice versa)                    |  done   |
 |Color the opponents (i.e. title or groupbox) according to the color in playercolors (such that it corresponds with reasoning text) |   done    |
 |The reasoning tab now cuts lines weird (for me). Maybe make it wider                                              |  done   |
@@ -28,3 +28,4 @@
 |Fix weird signs in the howtoplay                                                                                  |  done   |
 |The info text in the game is now the same font as 'playing against cognitive models'. Would be nice to have one in another font. (or put the info in a box?)                        | done |
 |I was thinking, maybe during the end of a round when the dice are counted, it would be nice to show which players were correct/wrong by changing their border colors temporarily to red/green                        |  done   |
+|While dice are removed (fading animation), give the players who do not lose a die also '?' in their dice (instead of values). In other words, all players have '?' on their dice after the final count, but just the correct players lose a die|     |
