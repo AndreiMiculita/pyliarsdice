@@ -159,6 +159,10 @@ class Game:
         """
         if self.current_player == self.player_ID:
             doubt = self.ui_doubt()
+            if doubt:
+                self.reasoning_file.write(f"<p>You do not believe the bid</p>")
+            else:
+                self.reasoning_file.write(f"<p>You believe the bid</p>")
         else:
             doubt = self.model_doubt()
 
@@ -371,8 +375,12 @@ class Game:
 
                     if self.determine_model_doubt(idx):
                         believe = False  # if doubt is true -> believe = False (and vice versa)
+                        self.reasoning_file.write(
+                            f"<p class='t{idx}'>I do not believe the bid</p>")
                     else:
                         believe = True
+                        self.reasoning_file.write(
+                            f"<p class='t{idx}'>I believe the bid</p>")
 
                 if believe:
                     invoke_in_main_thread(fn=self.ui_controller.display_action_enemy,
@@ -513,13 +521,14 @@ class Game:
         if self.current_player == self.player_ID:
             self.increase_models_time(random.uniform(2.5,4))  # increasing model times with a random, since human players might take very long or short to affect models
             count, roll = self.ui_bid()
+            self.reasoning_file.write(f"<p>You have bid {count} x {roll}</p>")
         else:
             invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                   action=0)
             count, roll = self.model_bid()
             if self.players[self.current_player].strategy == 'model':
-
                 self.reasoning_file.write(f"<p class='t{self.current_player}'>I am bidding: {count} x {roll} is on the table</p>")
+
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
@@ -851,6 +860,8 @@ class Game:
                         f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s first turn:</p>")
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
                 else:
+                    self.reasoning_file.write(
+                        f"<p class='turntitle tn{self.current_player}'>Your first turn:</p>")
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 if self.current_player != self.player_ID:
@@ -877,7 +888,9 @@ class Game:
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(
                         f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s turn:</p>")
-
+                else:
+                    self.reasoning_file.write(
+                        f"<p class='turntitle tn{self.current_player}'>Your turn:</p>")
                 print(f'[TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
