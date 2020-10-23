@@ -449,19 +449,22 @@ class Game:
                                   string=f"Players {', '.join(map(str, lose_dice_players))} were correct.<br>"
                                          f" They will lose a die.")
 
+        for idx in range(self.n_players):
+            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=self.players[idx].get_hand_size(),
+                                  state=2 if idx in lose_dice_players else 0)
+
         for i in lose_dice_players:
-            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=i, dice=self.players[i].get_hand_size(), state=2)
             self.players[i].remove_die()
 
         time.sleep(4)
 
-        print('[INFO] Number of dice remaining per player: ', end='')
-        for idx in range(self.n_players):
-            print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
-            if idx != self.player_ID:
-                invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
-                                      dice=self.players[idx].get_hand_size(),
-                                      state=0)
+        # print('[INFO] Number of dice remaining per player: ', end='')
+        # for idx in range(self.n_players):
+        #     print(f' Player {idx}: {self.players[idx].get_hand_size()}  ||  ', end='')
+        #     if idx != self.player_ID:
+        #         invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+        #                               dice=self.players[idx].get_hand_size(),
+        #                               state=0)
 
         print()
 
@@ -847,7 +850,7 @@ class Game:
                             f"<p class='t{idx}'> My hand is {self.players[idx].hand}</p>")
 
                 if self.current_player != self.player_ID:
-                    self.reasoning_file.write(f"<p class='t{self.current_player}'><br>Player {self.current_player} can bid first:</p>")
+                    self.reasoning_file.write(f"<p class='t{self.current_player}'>Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
@@ -869,7 +872,7 @@ class Game:
 
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(
-                        f"<p class='t{self.current_player}'><br>Player {self.current_player}'s turn:</p>")
+                        f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s turn:</p>")
 
                 print(f'[TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
