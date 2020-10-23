@@ -86,6 +86,7 @@ class Game:
         self.turn = random.randint(0, n_players - 1)
         self.current_player = self.turn
         self.previous_player = 0
+        self.round = 1
         self.state = states['start']
 
         # First player is chosen at random
@@ -815,7 +816,12 @@ class Game:
                 self.current_bid = Bid(1, 0)
                 self.update_turn(reset=True)
                 print('----------------- NEW ROUND ----------------------')
-                self.reasoning_file.write(f"<div style='text-align:center;padding-top:50px;'>NEW ROUND</div>")
+                if self.n_total_dice == self.n_players * 5:
+                    self.round = 1
+                else:
+                    self.round += 1
+
+                self.reasoning_file.write(f"<div style='text-align:center;padding-top:50px;'>NEW ROUND - Round {self.round}</div>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
