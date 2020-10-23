@@ -9,6 +9,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView
+from bs4 import BeautifulSoup
 
 from io import StringIO
 from ui.main_widget import MainWidget, playercolors
@@ -156,7 +157,8 @@ class BigTextTabWidget(QWidget):
         :return:
         """
         if isinstance(self.text_file, StringIO):
-            self.big_text_view.setHtml(
+            # this will close all open tags, it's really smart
+            nice_html = BeautifulSoup(
                 f"<!DOCTYPE html><html><head>"
                 f"<style>"
                 f".t1{{color:{playercolors[1]};}}"
@@ -169,10 +171,13 @@ class BigTextTabWidget(QWidget):
                 f"font-family:sans-serif;"
                 f"max-width: 400px;"
                 f"margin: auto;'></head>"
-                f"<body> {text_file.getvalue()}</body></html>")
+                f"<body> {text_file.getvalue()}</body></html>", 'lxml').prettify()
+            self.big_text_view.setHtml(nice_html)
         else:
-            with open(text_file, "r") as how_to_file_handle:
-                self.big_text_view.setHtml(how_to_file_handle.read())
+            with open(text_file, "r") as file_handle:
+                # this will close all open tags, it's really smart
+                nice_html = BeautifulSoup(file_handle.read(), 'lxml').prettify()
+                self.big_text_view.setHtml(nice_html)
         self.big_text_view.page().runJavaScript("window.scrollTo(0,document.body.scrollHeight);")  # scroll to bottom
 
 
