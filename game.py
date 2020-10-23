@@ -825,11 +825,7 @@ class Game:
 
                 self.reasoning_file.write(f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>Round {self.round}</div>")
                 self.all_roll()
-                print(f'[FIRST TURN]: Player {self.current_player}')
-                if self.current_player != self.player_ID:
-                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
-                else:
-                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
+
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                       f'Total number of dice remaining = {self.n_total_dice} \n')
@@ -848,6 +844,14 @@ class Game:
                     if idx != self.player_ID and self.players[idx].strategy == 'model':
                         self.reasoning_file.write(
                             f"<p class='t{idx}'> My hand is {self.players[idx].hand}</p>")
+
+                print(f'[FIRST TURN]: Player {self.current_player}')
+                if self.current_player != self.player_ID:
+                    self.reasoning_file.write(
+                        f"<p class='turntitle tn{self.current_player}'>Player {self.current_player}'s first turn:</p>")
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
+                else:
+                    invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 if self.current_player != self.player_ID:
                     self.reasoning_file.write(f"<p class='t{self.current_player}'>Player {self.current_player} can bid first:</p>")
@@ -897,6 +901,8 @@ class Game:
                                               enemy_nr=self.current_player,
                                               action=1,
                                               target=self.previous_player)
+                    self.reasoning_file.write(
+                        f"<p><i>Resolving Doubt</i></p>")
 
                     self.resolve_doubt()
                     print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
