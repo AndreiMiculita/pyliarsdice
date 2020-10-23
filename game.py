@@ -786,11 +786,9 @@ class Game:
         over = False
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
-        self.reasoning_file.write(f"<div style='position:fixed;left: 50%; transform: translateX(-50%);'>")
+        self.reasoning_file.write(f"<div class='topbox'>")
         for i in range(1, self.n_players):
-            self.reasoning_file.write(f"<div style='text-align:center;width:70px;display:inline-block;"
-                                      f"float:left;border-radius:7px;margin:3px;background-color:{playercolors[i]};"
-                                      f"box-shadow:0px 0px 10px rgba(0,0,0,0.5);'>"
+            self.reasoning_file.write(f"<div class='playerbox' style='background-color:{playercolors[i]};'>"
                                       f"Player {i}</div>")
         self.reasoning_file.write(f"</div>")
 
@@ -820,8 +818,9 @@ class Game:
                     self.round = 1
                 else:
                     self.round += 1
+                    self.reasoning_file.write(f"</div>")
 
-                self.reasoning_file.write(f"<div style='text-align:center;padding-top:50px;'>NEW ROUND - Round {self.round}</div>")
+                self.reasoning_file.write(f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>NEW ROUND - Round {self.round}</div>")
                 self.all_roll()
                 print(f'[FIRST TURN]: Player {self.current_player}')
                 if self.current_player != self.player_ID:
