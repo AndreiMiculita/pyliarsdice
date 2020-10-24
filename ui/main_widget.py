@@ -158,10 +158,10 @@ class MainWidget(QWidget, UIController):
 
             # Here we display the amount of dice the enemy has bet
             enemy_number_label = QLabel(text="", objectName=f"enemy_number{i + 1}")
-            enemy_number_label.resize(enemy_number_label.sizeHint())
+            enemy_number_label.setProperty("cssClass", "biglabel")
 
             enemy_times_label = QLabel(text="", objectName=f"enemy_x{i + 1}")
-            enemy_times_label.resize(enemy_times_label.sizeHint())
+            enemy_times_label.setProperty("cssClass", "biglabel")
 
             # Here we display the type of dice the enemy has bet
             enemy_dice_label = QLabel(text="", objectName=f"enemy_dice{i + 1}")
@@ -198,21 +198,25 @@ class MainWidget(QWidget, UIController):
         # Here the player can select the number of dice to bet
         select_number_layout = QVBoxLayout()
         select_number_label = QLabel("Number")
-        self.select_number_spin_box.setRange(1, 6)
-        self.select_number_spin_box.setFixedHeight(30)
-        self.select_number_spin_box.setFixedWidth(70)
+        self.select_number_spin_box.setRange(1, 10)
+        self.select_number_spin_box.setAlignment(Qt.AlignRight)
+        self.select_number_spin_box.setProperty("cssClass", "biglabel")
+        self.select_number_spin_box.setFixedHeight(45)
+        self.select_number_spin_box.setFixedWidth(60)
         select_number_layout.addWidget(select_number_label)
         select_number_layout.addWidget(self.select_number_spin_box)
 
         player_times_label = QLabel("×")
-        player_times_label.resize(player_times_label.sizeHint())
+        player_times_label.setProperty("cssClass", "biglabel")
 
         # Here the player can select the type of dice to bet
         select_dice_layout = QVBoxLayout()
         select_dice_label = QLabel("Dice")
         self.select_dice_spin_box.setRange(1, 6)
-        self.select_dice_spin_box.setFixedHeight(30)
-        self.select_dice_spin_box.setFixedWidth(70)
+        self.select_dice_spin_box.setAlignment(Qt.AlignRight)
+        self.select_dice_spin_box.setProperty("cssClass", "biglabel")
+        self.select_dice_spin_box.setFixedHeight(45)
+        self.select_dice_spin_box.setFixedWidth(60)
         select_dice_layout.addWidget(select_dice_label)
         select_dice_layout.addWidget(self.select_dice_spin_box)
 
@@ -404,7 +408,6 @@ class MainWidget(QWidget, UIController):
             elif state == 1:  # rolling
                 die_img_label = self.get_label_with_img(random.choice(self.dice_images_rolling))
             elif state == 2:  # fade one away
-                print("state is 2")
                 if idx < len(dice_list) - 1:
                     die_img_label = self.get_label_with_img(self.dice_image_unknown)
                 else:

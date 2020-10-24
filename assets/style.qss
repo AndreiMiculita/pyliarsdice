@@ -18,6 +18,9 @@ QScrollArea {
 *[cssClass="gameTitle"] {
     font: italic 18pt;
 }
+*[cssClass="biglabel"] {
+    font: bold 18pt;
+}
 QLabel {
     color: white;
     background-color: transparent;
