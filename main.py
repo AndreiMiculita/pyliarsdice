@@ -95,9 +95,10 @@ class StartScreenWidget(QWidget):
 
         # This could be anything, I think
 
-        self.select_enemies_spinbox.setFixedHeight(30)
-        self.select_enemies_spinbox.setFixedWidth(70)
+        self.select_enemies_spinbox.setFixedHeight(45)
+        self.select_enemies_spinbox.setFixedWidth(60)
         self.select_enemies_spinbox.setRange(*opponent_limits)
+        self.select_enemies_spinbox.setProperty("cssClass", "biglabel")
 
         # self.select_enemies_spinbox.setMaximumWidth(50)
 

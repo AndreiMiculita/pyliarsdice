@@ -30,3 +30,4 @@
 |I was thinking, maybe during the end of a round when the dice are counted, it would be nice to show which players were correct/wrong by changing their border colors temporarily to red/green                        |  done   |
 |While dice are removed (fading animation), give the players who do not lose a die also '?' in their dice (instead of values). In other words, all players have '?' on their dice after the final count, but just the correct players lose a die|  done  |
 |Add information of human player in reasoning file, such that its easier to understand + add believe/not believe in reasoning file during resolve doubt                                                                 |  |
+|Add (simple) reasoning for random opponents in reasoning file| |
