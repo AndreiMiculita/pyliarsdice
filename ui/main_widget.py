@@ -23,7 +23,7 @@ playercolors = ['none',
 ]
 
 preferred_format = "webp" if "webp" in [s.data().decode() for s in QMovie.supportedFormats()] else "gif"
-print("preferred_format", preferred_format)
+# print("preferred_format", preferred_format)
 
 dice_image_paths = ["assets/images/dice-none.png",
                     "assets/images/dice-1.png",

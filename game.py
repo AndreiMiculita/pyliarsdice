@@ -243,8 +243,10 @@ class Game:
             believe_percentage = 0.8
             if random.randint(1, 1000) <= 1000 * believe_percentage:
                 doubt = False  # Placeholder
+                self.reasoning_file.write(f"<p class='t{self.current_player}'>I believe the bid (80% probability)</p>")
             else:
                 doubt = True
+                self.reasoning_file.write(f"<p class='t{self.current_player}'>I do not believe the bid (20% probability)</p>")
 
         elif self.players[self.current_player].strategy == 'model':
 
@@ -351,6 +353,10 @@ class Game:
                         if believe == -1:
                             quit(0)
                     invoke_in_main_thread(self.ui_controller.set_bluff_controls_enabled, enabled=False)
+                    if believe == 1:
+                        self.reasoning_file.write(f"<p'>You believe the bid</p>")
+                    else:
+                        self.reasoning_file.write(f"<p'>You do not believe the bid</p>")
 
                 elif self.players[idx].strategy == 'random':
                     y = random.uniform(2.5, 4)
@@ -359,8 +365,12 @@ class Game:
 
                     if random.randint(1, 100) >= 50:
                         believe = True
+                        self.reasoning_file.write(
+                            f"<p class='t{idx}'>I believe the bid (50% probability in resolve)</p>")
                     else:
                         believe = False
+                        self.reasoning_file.write(
+                            f"<p class='t{idx}'>I do not believe the bid (50% probability in resolve)</p>")
 
                 elif self.players[idx].strategy == 'model':
                     x = len(self.players[idx].model.dm)  # counts number of chunks in memory
@@ -445,8 +455,8 @@ class Game:
             if 0 in lose_dice_players:
                 temp_lose_dice_players = copy.deepcopy(lose_dice_players)
                 temp_lose_dice_players.pop(0)
-                print(temp_lose_dice_players)
-                print(lose_dice_players)
+                # print(temp_lose_dice_players)
+                # print(lose_dice_players)
 
 
                 invoke_in_main_thread(self.ui_controller.show_info,
@@ -476,9 +486,9 @@ class Game:
 
         print()
 
-        for idx in range(self.n_players):
-            if self.players[idx].strategy == 'model':
-                print(f'Player {idx} has {len(self.players[idx].model.dm)} chunks stored')
+        # for idx in range(self.n_players):
+        #     if self.players[idx].strategy == 'model':
+        #         print(f'Player {idx} has {len(self.players[idx].model.dm)} chunks stored')
 
     ###############################################################
     ######                    BIDDING PHASE                  ######
@@ -526,7 +536,7 @@ class Game:
             invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                   action=0)
             count, roll = self.model_bid()
-            if self.players[self.current_player].strategy == 'model':
+            if self.players[self.current_player].strategy == 'model' or self.players[self.current_player].strategy == 'random':
                 self.reasoning_file.write(f"<p class='t{self.current_player}'>I am bidding: {count} x {roll} is on the table</p>")
 
         self.current_bid = Bid(count, roll)
@@ -681,7 +691,7 @@ class Game:
                         f"<p class='t{self.current_player}'>Bluffing on {roll}, since Player {bluff_player} has bid on {roll} before</p>")
 
                 else:  # no chunk was retrieved / retrieval failure
-                    print('\nChunk retrieval failed')
+                    # print('\nChunk retrieval failed')
                     self.chunk_retrieval_failure_count += 1
 
                     self.reasoning_file.write(
@@ -850,7 +860,7 @@ class Game:
                                               state=0)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
-                    if idx != self.player_ID and self.players[idx].strategy == 'model':
+                    if idx != self.player_ID and (self.players[idx].strategy == 'model' or self.players[idx].strategy == 'random'):
                         self.reasoning_file.write(
                             f"<p class='t{idx}'> My hand is {self.players[idx].hand}</p>")
 
@@ -918,8 +928,8 @@ class Game:
                         f"<p><i>Resolving Doubt</i></p>")
 
                     self.resolve_doubt()
-                    print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
-                    print(f'Chunk retrieve failures during round: {self.chunk_retrieval_failure_count}')
+                    # print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
+                    # print(f'Chunk retrieve failures during round: {self.chunk_retrieval_failure_count}')
                     self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
