@@ -1,4 +1,4 @@
-class UIController:
+class CommunicationInterface:
     """
     This is a base class which must be inherited by the main widget.
     Basically an interface to avoid cyclical imports.

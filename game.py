@@ -13,7 +13,7 @@ from bid import Bid
 from dmchunk import Chunk
 from model import Model
 from player import Player
-from ui_controller import UIController
+from communication_interface import CommunicationInterface
 
 N_PLAYERS = 4
 N_STARTING_DICE = 5
@@ -71,7 +71,7 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, ui_controller: UIController, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2,
+    def __init__(self, ui_controller: CommunicationInterface, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2,
                  reasoning_file: StringIO = os.devnull):
         self.reasoning_file = reasoning_file
         self.reasoning_file.truncate(0)
