@@ -35,11 +35,11 @@ rev_states = {
 }
 
 playercolors = ['none',
-    '#CC3363',
-    '#6A80C8',
-    '#5ED71D',
-    '#F0976A'
-]
+                '#CC3363',
+                '#6A80C8',
+                '#5ED71D',
+                '#F0976A'
+                ]
 
 
 ##############################################################
@@ -187,11 +187,12 @@ class Game:
                 # given value is in the unknown dice, 1/3 prob since joker dice also add to total
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
                                                      1)  # compare probability to non-static threshold,
-                # TODO: think about how to set the threshold
-                # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
-                # 3)}, believe threshold is {round(believe_threshold[0], 3)}')
-                self.reasoning_file.write(f"<p class='t{player_index}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
-                self.reasoning_file.write(f"<p class='t{player_index}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
+                # TODO: think about how to set the threshold, this could be another difficulty -> more random threshold
+
+                self.reasoning_file.write(
+                    f"<p class='t{player_index}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
+                self.reasoning_file.write(
+                    f"<p class='t{player_index}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
 
                 if probability_of_bid >= believe_threshold[0]:
                     doubt = False
@@ -203,7 +204,6 @@ class Game:
                 self.current_bid.roll)  # counts instances of the value of the dice in the bid (only joker dice)
 
             if dice_count >= self.current_bid.count:  # the number of dice is already in the model's cup
-                # print('[DEBUG] Bid count present in Models cup')
                 doubt = False
             else:
                 difference = self.current_bid.count - dice_count
@@ -212,14 +212,12 @@ class Game:
                 # joker dice is in the unknown dice, prob = 1/6
                 believe_threshold = np.random.normal(1 / 4, 1 / 12,
                                                      1)  # compare probability to non-static threshold,
-                # TODO: think about how to set the threshold
+                # TODO: think about how to set the threshold, this could be another difficulty -> more random threshold
                 self.reasoning_file.write(
                     f"<p class='t{player_index}'>Determining probability of {self.current_bid.count} x {self.current_bid.roll} and comparing to believe threshold:</p>")
                 self.reasoning_file.write(
                     f"<p class='t{player_index}'>Probability of bid is {round(probability_of_bid, 3)}, believe threshold is {round(believe_threshold[0], 3)}</p>")
 
-                # print(f'[DEBUG] Probability of bid is {round(probability_of_bid,
-                # 3)}, believe threshold is {round( believe_threshold[0], 3)}')
                 if probability_of_bid >= believe_threshold[0]:
                     doubt = False
                 else:
@@ -246,7 +244,8 @@ class Game:
                 self.reasoning_file.write(f"<p class='t{self.current_player}'>I believe the bid (80% probability)</p>")
             else:
                 doubt = True
-                self.reasoning_file.write(f"<p class='t{self.current_player}'>I do not believe the bid (20% probability)</p>")
+                self.reasoning_file.write(
+                    f"<p class='t{self.current_player}'>I do not believe the bid (20% probability)</p>")
 
         elif self.players[self.current_player].strategy == 'model':
 
@@ -433,11 +432,9 @@ class Game:
         if count >= bid_count:  #
             # Player doubts but the number of dice in the bid is actually there - previous player loses a die
             lose_dice_players.append(self.previous_player)
-            # self.players[self.previous_player].remove_die()
         else:
             # Player doubts and it's right - player loses a die
             lose_dice_players.append(self.current_player)
-            # self.players[self.current_player].remove_die()
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
 
@@ -448,27 +445,25 @@ class Game:
                                              f"You lose a die.")
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
-                                  string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
-                                         f"Player {', '.join(map(str, lose_dice_players))} will lose a die.")
+                                      string=f"Player {', '.join(map(str, lose_dice_players))} was correct.<br>"
+                                             f"Player {', '.join(map(str, lose_dice_players))} will lose a die.")
         else:
             lose_dice_players.sort()
             if 0 in lose_dice_players:
                 temp_lose_dice_players = copy.deepcopy(lose_dice_players)
                 temp_lose_dice_players.pop(0)
-                # print(temp_lose_dice_players)
-                # print(lose_dice_players)
-
 
                 invoke_in_main_thread(self.ui_controller.show_info,
                                       string=f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you were correct. <br>"
                                              f"{'Player' if len(temp_lose_dice_players) == 1 else 'Players'} {', '.join(map(str, temp_lose_dice_players))} and you will lose a die.")
             else:
                 invoke_in_main_thread(self.ui_controller.show_info,
-                                  string=f"Players {', '.join(map(str, lose_dice_players))} were correct.<br>"
-                                         f" They will lose a die.")
+                                      string=f"Players {', '.join(map(str, lose_dice_players))} were correct.<br>"
+                                             f" They will lose a die.")
 
         for idx in range(self.n_players):
-            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=self.players[idx].get_hand_size(),
+            invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx,
+                                  dice=self.players[idx].get_hand_size(),
                                   state=2 if idx in lose_dice_players else 0)
 
         for i in lose_dice_players:
@@ -486,15 +481,11 @@ class Game:
 
         print()
 
-        # for idx in range(self.n_players):
-        #     if self.players[idx].strategy == 'model':
-        #         print(f'Player {idx} has {len(self.players[idx].model.dm)} chunks stored')
-
     ###############################################################
     ######                    BIDDING PHASE                  ######
     ###############################################################
 
-    def models_remember_bid(self):
+    def models_remember_bid(self):  # chunk storage of bids for ACT-R models
         for i in range(self.n_players):
             if i != self.current_player and self.players[i].strategy == 'model':
 
@@ -509,19 +500,12 @@ class Game:
                                           "dice_value": self.current_bid.roll})  # remember the value a player has bid on
                         self.players[i].model.add_encounter(ch)  # remember the bid of a player
 
-                        # replaced by actual thinking time
-                        # time_to_add = + round(random.uniform(1, 4),
-                        #                       2)  # add time according to length of a turn, might need adjustment
-                        # self.players[i].model.time += round(time_to_add, 2)
-
                         added = True
                     except ValueError:
                         number += 1
 
-
                 self.reasoning_file.write(
                     f"<p class='t{i}'>Storing chunk to remember that Player {self.current_player} has made a bid on dice value {self.current_bid.roll}</p>")
-
 
     def bidding(self):
         """
@@ -529,15 +513,18 @@ class Game:
         Redirection to model for opponents and GUI for human player.
         """
         if self.current_player == self.player_ID:
-            self.increase_models_time(random.uniform(2.5,4))  # increasing model times with a random, since human players might take very long or short to affect models
+            self.increase_models_time(random.uniform(2.5,
+                                                     4))  # increasing model times with a random, since human players might take very long or short to affect models
             count, roll = self.ui_bid()
             self.reasoning_file.write(f"<p>You have bid {count} x {roll}</p>")
         else:
             invoke_in_main_thread(self.ui_controller.display_action_enemy, enemy_nr=self.current_player,
                                   action=0)
             count, roll = self.model_bid()
-            if self.players[self.current_player].strategy == 'model' or self.players[self.current_player].strategy == 'random':
-                self.reasoning_file.write(f"<p class='t{self.current_player}'>I am bidding: {count} x {roll} is on the table</p>")
+            if self.players[self.current_player].strategy == 'model' or self.players[
+                self.current_player].strategy == 'random':
+                self.reasoning_file.write(
+                    f"<p class='t{self.current_player}'>I am bidding: {count} x {roll} is on the table</p>")
 
         self.current_bid = Bid(count, roll)
 
@@ -656,23 +643,21 @@ class Game:
 
         elif self.players[self.current_player].strategy == 'model':
             if random.randint(1, 100) <= self.model_bluff_chance:  # chance to bluff
-                if random.randint(1,
-                                  100) >= 66:  # determine which player the model will bluff on, next player has a
+                if random.randint(1, 100) >= 66:  # determine which player the model will bluff on, next player has a
                     # higher chance, since he has to assess the bid.
                     bluff_player = self.previous_player
-                    # print('[DEBUG] bluffing on prev player')
                     self.reasoning_file.write(
                         f"<p class='t{self.current_player}'>Aiming to bluff on one of the dice values bid on by previous player</p>")
                 else:
                     bluff_player = (self.current_player + 1) % self.n_players
-                    # print('[DEBUG] bluffing on next player')
                     self.reasoning_file.write(
                         f"<p class='t{self.current_player}'>Aiming to bluff on one of the dice values bid on by next player</p>")
 
                 chunk = None
                 tries = 0
-                while chunk is None and tries < self.n_players-1:  # model has a number of tries to remember the bet of a player according to the number of players, otherwise models remember too little with the increased time
-                    retrieve_chunk = Chunk(name="memorize_bid_value", slots={"type": "bid_memory", "player": bluff_player})
+                while chunk is None and tries < self.n_players - 1:  # model has a number of tries to remember the bet of a player according to the number of players, otherwise models remember too little with the increased time
+                    retrieve_chunk = Chunk(name="memorize_bid_value",
+                                           slots={"type": "bid_memory", "player": bluff_player})
                     chunk, latency = self.players[self.current_player].model.retrieve(
                         retrieve_chunk)  # retrieve a chunk from declarative memory
                     tries += 1
@@ -682,8 +667,6 @@ class Game:
                 if chunk is not None:  # a chunk was retrieved
                     self.chunk_retrieval_count += 1
                     roll = chunk.slots['dice_value']  #
-
-
 
                     self.reasoning_file.write(
                         f"<p class='t{self.current_player}'>Retrieved a chunk containing that Player {bluff_player} has bid on {roll} this round</p>")
@@ -731,9 +714,6 @@ class Game:
                 most_com_value = most_common(self.players[self.current_player].hand)
                 n_of_most = self.players[self.current_player].hand.count(most_com_value)
 
-                # print(f'num in hand:{self.players[self.current_player].hand.count(self.players[
-                # self.current_player].hand[0])}')
-
                 highest_value = [self.players[self.current_player].hand[m] for m in
                                  range(len(self.players[self.current_player].hand))
                                  if self.players[self.current_player].hand.count(
@@ -745,7 +725,8 @@ class Game:
 
                 roll = bid_value
 
-                self.reasoning_file.write(f"<p class='t{self.current_player}'>My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}</p>")
+                self.reasoning_file.write(
+                    f"<p class='t{self.current_player}'>My hand is {self.players[self.current_player].hand}, bidding on one of the most common dice values in hand, which is {roll}</p>")
 
                 if roll == 1:  # bidding on the joker dice
                     if self.current_bid.roll == 1:  # current bid is on joker dice, so + 1 suffices
@@ -790,7 +771,8 @@ class Game:
         import queue  # to recognize the exception
         for i in range(0, 101, loader_step):  # Start and stop must be 0 and 101
             try:
-                continue_ = self.input_queue.get(block=True, timeout=float(timeout_time)*float(loader_step)/float(100))
+                continue_ = self.input_queue.get(block=True,
+                                                 timeout=float(timeout_time) * float(loader_step) / float(100))
                 if continue_ == -1:
                     quit(0)
                 break
@@ -806,6 +788,7 @@ class Game:
     # Run the state machine
     def play(self):
         over = False
+        #Print game information
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
         self.reasoning_file.write(f"<div class='topbox'>")
@@ -814,7 +797,7 @@ class Game:
                                       f"Player {i}</div>")
         self.reasoning_file.write(f"</div>")
 
-        while not over:
+        while not over:  # main while loop
             self.n_total_dice = 0
             winner = []
             for p_idx in range(self.n_players):  # Counts dice, which also determines winner
@@ -824,8 +807,6 @@ class Game:
                     self.state = states['end']
                 self.n_total_dice += n_dice_pl
 
-            # print(f"[DEBUG] Current Player: {self.current_player} - Current Bid: {self.current_bid} - Current
-            # State: {rev_states[self.state]} - Dice in game: {self.n_total_dice}")
 
             # Games starts and everybody rolls.
             # Nobody should doubt on the first turn.
@@ -842,9 +823,9 @@ class Game:
                     self.round += 1
                     self.reasoning_file.write(f"</div>")
 
-                self.reasoning_file.write(f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>Round {self.round}</div>")
+                self.reasoning_file.write(
+                    f"<div class='roundbox' style='margin-top:50px;'><div class='roundtitle'>Round {self.round}</div>")
                 self.all_roll()
-
 
                 print(f'All players rolled the dice! My hand is {self.players[0].hand} \n'
                       f'Total number of dice remaining = {self.n_total_dice} \n')
@@ -860,7 +841,8 @@ class Game:
                                               state=0)
 
                 for idx, player in enumerate(self.players):  # Counts dice, which also determines winner
-                    if idx != self.player_ID and (self.players[idx].strategy == 'model' or self.players[idx].strategy == 'random'):
+                    if idx != self.player_ID and (
+                            self.players[idx].strategy == 'model' or self.players[idx].strategy == 'random'):
                         self.reasoning_file.write(
                             f"<p class='t{idx}'> My hand is {self.players[idx].hand}</p>")
 
@@ -875,14 +857,15 @@ class Game:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
                 if self.current_player != self.player_ID:
-                    self.reasoning_file.write(f"<p class='t{self.current_player}'>Player {self.current_player} can bid first:</p>")
+                    self.reasoning_file.write(
+                        f"<p class='t{self.current_player}'>Player {self.current_player} can bid first:</p>")
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
                                           action=0)
 
                     y = random.uniform(2.5, 4)
-                    time.sleep(y)  # agent 'thinking'  (First turn means never any chunks stored, so random time addition can be both for models and random opponents)
-
+                    time.sleep(
+                        y)  # agent 'thinking'  (First turn means never any chunks stored, so random time addition can be both for models and random opponents)
 
                 self.state = states['bidding_phase']
                 continue
@@ -901,14 +884,15 @@ class Game:
                 else:
                     self.reasoning_file.write(
                         f"<p class='turntitle tn{self.current_player}'>Your turn:</p>")
+
                 print(f'[TURN]: Player {self.current_player}')
+
                 if self.current_player != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Player {self.current_player}'s turn.")
                 else:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
-                # if self.players[self.current_player].strategy == 'model':
-                #     print(f'Number of chunks in dm: {len(self.players[self.current_player].model.dm)}')
+
                 if self.current_player != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
@@ -928,8 +912,7 @@ class Game:
                         f"<p><i>Resolving Doubt</i></p>")
 
                     self.resolve_doubt()
-                    # print(f'Chunks retrieved during round: {self.chunk_retrieval_count}')
-                    # print(f'Chunk retrieve failures during round: {self.chunk_retrieval_failure_count}')
+
                     self.state = states['start']
                     # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
@@ -939,7 +922,6 @@ class Game:
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
-
 
                 self.bidding()
                 print(f'Player {self.current_player} has bid {self.current_bid.count} x {self.current_bid.roll}')
@@ -972,7 +954,7 @@ class Game:
                     invoke_in_main_thread(self.ui_controller.display_winner_and_close, players=winner)
                 continue
 
-        print(f'Chunks retrieved during game: {self.chunk_retrieval_count}')
-        print(f'Chunk retrieve failures during game: {self.chunk_retrieval_failure_count}')
+        # print(f'Chunks retrieved during game: {self.chunk_retrieval_count}')
+        # print(f'Chunk retrieve failures during game: {self.chunk_retrieval_failure_count}')
         print('Game Finished!')
         quit(0)
