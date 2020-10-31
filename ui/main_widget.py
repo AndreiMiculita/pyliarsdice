@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLab
     QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar, QShortcut
 
 from game import Game
-from ui_controller import UIController
+from communication_interface import CommunicationInterface
 
 playercolors = ['none',
     '#CC3363',
@@ -52,7 +52,7 @@ check_icon_path = "assets/images/checkmark.png"
 excl_icon_path = "assets/images/exclamation.png"
 
 
-class MainWidget(QWidget, UIController):
+class MainWidget(QWidget, CommunicationInterface):
 
     def __init__(self, difficulty: int, n_opponents: int, reasoning_file: StringIO):
         """
