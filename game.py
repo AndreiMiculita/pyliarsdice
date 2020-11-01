@@ -25,13 +25,15 @@ states = {
     'first_turn': 2,
     'bidding_phase': 3,
     'doubting_phase': 4,
+    'resolve_doubt': 5
 }
 rev_states = {
     0: 'end',
     1: 'start',
     2: 'first_turn',
     3: 'bidding_phase',
-    4: 'doubting_phase'
+    4: 'doubting_phase',
+    5: 'resolve_doubt'
 }
 
 playercolors = ['none',
@@ -788,7 +790,7 @@ class Game:
     # Run the state machine
     def play(self):
         over = False
-        #Print game information
+        # Print game information
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
         self.reasoning_file.write(f"<div class='topbox'>")
@@ -908,17 +910,17 @@ class Game:
                                               enemy_nr=self.current_player,
                                               action=1,
                                               target=self.previous_player)
-                    self.reasoning_file.write(
-                        f"<p><i>Resolving Doubt</i></p>")
 
-                    self.resolve_doubt()
+                    self.state = states['resolve_doubt']
 
-                    self.state = states['start']
-                    # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
                     self.state = states['bidding_phase']
                     print(f'Player {self.current_player} believes the bid -> ', end='')
                 continue
+            if self.state == states['resolve_doubt']:  # resolve_doubt sends state into 'end' if a player's hand is empty.
+                self.reasoning_file.write(f"<p><i>Resolving Doubt</i></p>")
+                self.resolve_doubt()
+                self.state = states['start']
 
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
