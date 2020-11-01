@@ -649,7 +649,7 @@ class Game:
         if self.players[self.current_player].strategy == 'random':
 
             if self.current_bid.roll == 1:
-                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                if random.randint(1, 1000) <= 167:  # random chance to bid on 1's
                     roll = 1
                     count = self.current_bid.count + 1
                 else:
@@ -658,7 +658,7 @@ class Game:
 
             else:  # current bid is not on joker dice
 
-                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                if random.randint(1, 1000) <= 167:  # random chance to bid on 1's
                     if self.current_bid.count % 2 == 1:
                         count = int((self.current_bid.count + 1) / 2)  # joker bid must be double the count
                     else:
