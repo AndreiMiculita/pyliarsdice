@@ -1,7 +1,6 @@
 import random
 import threading
 import time
-import copy
 from io import StringIO
 from multiprocessing import Queue
 from typing import Union
@@ -12,15 +11,15 @@ from PySide2.QtGui import QMovie, QPixmap, Qt, QIcon, QKeySequence
 from PySide2.QtWidgets import QWidget, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QSpinBox, \
     QPushButton, QMessageBox, QStackedWidget, QFrame, QProgressBar, QShortcut
 
-from game import Game
 from communication_interface import CommunicationInterface
+from game import Game
 
-playercolors = ['none',
-    '#CC3363',
-    '#6A80C8',
-    '#5ED71D',
-    '#F0976A'
-]
+player_colors = ['none',
+                 '#CC3363',
+                 '#6A80C8',
+                 '#5ED71D',
+                 '#F0976A'
+                 ]
 
 preferred_format = "webp" if "webp" in [s.data().decode() for s in QMovie.supportedFormats()] else "gif"
 # print("preferred_format", preferred_format)
@@ -50,6 +49,28 @@ dice_images_rolling_paths = [f"assets/images/dice-rolling-1.{preferred_format}",
 
 check_icon_path = "assets/images/checkmark.png"
 excl_icon_path = "assets/images/exclamation.png"
+
+
+def get_label_with_img(image: Union[QMovie, QPixmap], size: (int, int) = (50, 50)):
+    """
+    Utility function that uses QPixmap for non-animated and QMovie for animated
+
+    :param image: the image to display (as QMovie or QPixmap)
+    :param size: size of the image to display
+    :return:
+    """
+    img_label = QLabel()
+    if isinstance(image, QMovie):
+        image.setScaledSize(QSize(*size))
+        img_label.setMovie(image)
+        image.start()
+    elif isinstance(image, QPixmap):
+        image = image.scaled(*size, aspectMode=QtCore.Qt.KeepAspectRatio,
+                             mode=QtCore.Qt.SmoothTransformation)
+        img_label.setPixmap(image)
+        img_label.setScaledContents(False)
+
+    return img_label
 
 
 class MainWidget(QWidget, CommunicationInterface):
@@ -141,7 +162,7 @@ class MainWidget(QWidget, CommunicationInterface):
             enemy_group = QGroupBox(title=f" Player {i + 1}", objectName=f"enemy_group{i+1}")  # Player 0 is human user
             enemy_group.setStyleSheet(f"QGroupBox#enemy_group{i+1}:title {{ "
                                       f"padding: 0 5px;"
-                                      f"background-color: {playercolors[i + 1]};"
+                                      f"background-color: {player_colors[i + 1]};"
                                       f"border-radius: 7px;}}")
 
             enemy_layout = QGridLayout()
@@ -359,27 +380,6 @@ class MainWidget(QWidget, CommunicationInterface):
             else:
                 print(f"enemy {player_nr} cup group not found")
 
-    def get_label_with_img(self, image: Union[QMovie, QPixmap], size: (int, int) = (50, 50)):
-        """
-        Utility function that uses QPixmap for non-animated and QMovie for animated
-        
-        :param image: the image to display (as QMovie or QPixmap)
-        :param size: size of the image to display
-        :return: 
-        """
-        img_label = QLabel()
-        if isinstance(image, QMovie):
-            image.setScaledSize(QSize(*size))
-            img_label.setMovie(image)
-            image.start()
-        elif isinstance(image, QPixmap):
-            image = image.scaled(*size, aspectMode=QtCore.Qt.KeepAspectRatio,
-                                 mode=QtCore.Qt.SmoothTransformation)
-            img_label.setPixmap(image)
-            img_label.setScaledContents(False)
-
-        return img_label
-
     def display_dice(self, player_nr: int, dice: [int], state: int = 0, highlight: int = 0):
         """
         Displays what dice a player has
@@ -400,20 +400,20 @@ class MainWidget(QWidget, CommunicationInterface):
             print(f"Unknown parameter dice={dice} passed to display_dice")
         for idx, die in enumerate(dice_list):
             if isinstance(dice, list):  # dice visible, maybe with highlights
-                die_img_label = self.get_label_with_img(
+                die_img_label = get_label_with_img(
                     self.dice_images_highlighted[die] if (die == highlight or die == 1) and highlight != 0 else
                     self.dice_images[die])
             elif state == 0:  # anonymous
-                die_img_label = self.get_label_with_img(self.dice_image_unknown)
+                die_img_label = get_label_with_img(self.dice_image_unknown)
             elif state == 1:  # rolling
-                die_img_label = self.get_label_with_img(random.choice(self.dice_images_rolling))
+                die_img_label = get_label_with_img(random.choice(self.dice_images_rolling))
             elif state == 2:  # fade one away
                 if idx < len(dice_list) - 1:
-                    die_img_label = self.get_label_with_img(self.dice_image_unknown)
+                    die_img_label = get_label_with_img(self.dice_image_unknown)
                 else:
-                    die_img_label = self.get_label_with_img(self.dice_image_unknown_fading)
+                    die_img_label = get_label_with_img(self.dice_image_unknown_fading)
             else:
-                die_img_label = self.get_label_with_img(self.dice_image_blank)
+                die_img_label = get_label_with_img(self.dice_image_blank)
                 print(f"Wrong arguments given to display_dice: {dice}")
 
             player_cup_layout.addWidget(die_img_label)
@@ -449,7 +449,7 @@ class MainWidget(QWidget, CommunicationInterface):
         else:
             pass
 
-        enemy_action_image_label = self.get_label_with_img(enemy_action_image, (70, 70))
+        enemy_action_image_label = get_label_with_img(enemy_action_image, (70, 70))
         enemy_action_layout.addWidget(enemy_action_label)
         enemy_action_layout.addWidget(enemy_action_image_label)
         enemy_action_group = self.all_enemies_group.findChild(QGroupBox, f"enemy_action_group{enemy_nr}")

@@ -1,6 +1,5 @@
 import random
 
-from dmchunk import Chunk
 from model import Model
 
 
@@ -8,7 +7,7 @@ class Player:
     def __init__(self, n_starting_dice, difficulty):
         """
         Defines an object Player in a game of Liar's Dice.\n
-        :param n_dice: Number of dice the player is initialized with.
+        :param n_starting_dice: Number of dice the player is initialized with.
         """
         self.n_dice = n_starting_dice
         self.hand = []
@@ -23,7 +22,6 @@ class Player:
             self.hand.append(random.randint(1, 6))
         self.hand.sort()
 
-
     def get_hand_size(self):
         return len(self.hand)
 
@@ -34,7 +32,6 @@ class Player:
         """
         self.n_dice -= 1
         return self.hand.pop()
-
 
     def roll_hand(self):
         """

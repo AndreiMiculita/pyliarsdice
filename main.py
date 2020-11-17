@@ -1,18 +1,16 @@
 # Allow access to command-line arguments
 import sys
-import threading
-
-# Import the core and GUI elements of Qt
+from io import StringIO
 from typing import Union
 
+# Import the core and GUI elements of Qt
 from PySide2.QtCore import *
 from PySide2.QtGui import *
-from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView
+from PySide2.QtWidgets import *
 from bs4 import BeautifulSoup
 
-from io import StringIO
-from ui.main_widget import MainWidget, playercolors
+from ui.main_widget import MainWidget, player_colors
 from ui.sliding_stacked_widget import SlidingStackedWidget
 
 howto_text = "assets/howto.html"
@@ -162,10 +160,10 @@ class BigTextTabWidget(QWidget):
             nice_html = BeautifulSoup(
                 f"<!DOCTYPE html><html><head>"
                 f"<style>"
-                f".t1{{color:{playercolors[1]};}}"
-                f".t2{{color:{playercolors[2]};}}"
-                f".t3{{color:{playercolors[3]};}}"
-                f".t4{{color:{playercolors[4]};}}" 
+                f".t1{{color:{player_colors[1]};}}"
+                f".t2{{color:{player_colors[2]};}}"
+                f".t3{{color:{player_colors[3]};}}"
+                f".t4{{color:{player_colors[4]};}}" 
                 f".topbox{{position:fixed; top: 0px; left: 50%; transform: translateX(-50%);}}" 
                 f".playerbox{{text-align:center;width:70px;display:inline-block;"
                                       f"float:left;border-radius:7px;margin:3px;"
@@ -175,10 +173,10 @@ class BigTextTabWidget(QWidget):
                 f"border-radius:7px;}}" 
                 f".turntitle{{text-align:center;position:sticky;top:65px;color:white;border-radius:7px;}}"
                 f".tn0{{background-color:white;color:black;}}"
-                f".tn1{{background-color:{playercolors[1]};}}"
-                f".tn2{{background-color:{playercolors[2]};}}"
-                f".tn3{{background-color:{playercolors[3]};}}"
-                f".tn4{{background-color:{playercolors[4]};}}" 
+                f".tn1{{background-color:{player_colors[1]};}}"
+                f".tn2{{background-color:{player_colors[2]};}}"
+                f".tn3{{background-color:{player_colors[3]};}}"
+                f".tn4{{background-color:{player_colors[4]};}}" 
                 f"</style> </head><body style='"
                 f"background-color:#004400;"
                 f"color:white;"
