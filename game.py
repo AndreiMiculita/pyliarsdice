@@ -15,6 +15,11 @@ from model import Model
 from player import Player
 from communication_interface import CommunicationInterface
 
+##############################################################
+######                    GLOBALS                       ######
+##############################################################
+
+
 N_PLAYERS = 4
 N_STARTING_DICE = 5
 DIFFICULTY = 1
@@ -25,13 +30,15 @@ states = {
     'first_turn': 2,
     'bidding_phase': 3,
     'doubting_phase': 4,
+    'resolve_doubt': 5
 }
 rev_states = {
     0: 'end',
     1: 'start',
     2: 'first_turn',
     3: 'bidding_phase',
-    4: 'doubting_phase'
+    4: 'doubting_phase',
+    5: 'resolve_doubt'
 }
 
 playercolors = ['none',
@@ -43,7 +50,7 @@ playercolors = ['none',
 
 
 ##############################################################
-######                HELPER FUNCTIONS                  ######
+######                HELPER FUNCTIONS (GENERAL)        ######
 ##############################################################
 
 
@@ -71,7 +78,8 @@ def determine_probability(difference, n_unknown_dice, roll_prob):
 
 
 class Game:
-    def __init__(self, ui_controller: CommunicationInterface, input_queue: Queue, n_players=4, n_starting_dice=5, difficulty=2,
+    def __init__(self, ui_controller: CommunicationInterface, input_queue: Queue, n_players=4, n_starting_dice=5,
+                 difficulty=2,
                  reasoning_file: StringIO = os.devnull):
         self.reasoning_file = reasoning_file
         self.reasoning_file.truncate(0)
@@ -100,6 +108,11 @@ class Game:
         self.model_bluff_chance = 33
 
         store_settings(n_players, n_starting_dice, difficulty)
+
+
+    ####################################################################################################
+    #############################             HELPER FUNCTIONS (CLASS)               ###################
+    ####################################################################################################
 
     def reset_models(self):
         for idx in range(self.n_players):
@@ -147,9 +160,9 @@ class Game:
             if self.current_player > self.n_players - 1:
                 self.current_player = 0
 
-    #################################################################
-    ########                DOUBTING PHASE                    #######
-    #################################################################
+    ####################################################################################################
+    #############################                DOUBTING PHASE                    #####################
+    ####################################################################################################
 
     def doubting(self):
         """
@@ -169,6 +182,11 @@ class Game:
         return doubt
 
     def determine_model_doubt(self, player_index):
+        '''
+        Determines whether the model believes a bid, on the basis of probability calculations and some randomness
+        :param player_index:
+        :return: doubt (true or false)
+        '''
         n_unknown_dice = self.n_total_dice - len(
             self.players[player_index].hand)  # determine number of unknown dice
         if self.current_bid.roll != 1:  # bid is on a non-joker dice
@@ -233,6 +251,7 @@ class Game:
         """
         doubt = False
 
+        # ------------------------------------Determine random (not) believe--------------------------------------- #
         if self.players[self.current_player].strategy == 'random':
             y = random.uniform(2.5, 4)
             time.sleep(y)  # agent 'thinking'
@@ -247,6 +266,7 @@ class Game:
                 self.reasoning_file.write(
                     f"<p class='t{self.current_player}'>I do not believe the bid (20% probability)</p>")
 
+        # ------------------------------------Determine model (not) believe--------------------------------------- #
         elif self.players[self.current_player].strategy == 'model':
 
             x = len(self.players[self.current_player].model.dm)  # counts number of chunks in memory
@@ -296,8 +316,13 @@ class Game:
 
         return doubt
 
+    #########################################################################################################
+    ###########################                 RESOLVING DOUBT                   ###########################
+    #########################################################################################################
+
     def resolve_doubt(self):
         """
+        Here each of the players is asked whether they believe the bid or not, which determines who loses a die
         """
         bid_roll = self.current_bid.roll
         bid_count = self.current_bid.count
@@ -329,6 +354,8 @@ class Game:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Resolving doubt: Your turn.")
 
                 believe = ""
+
+                # ------------------------------------Human resolve doubt--------------------------------------- #
                 if self.players[idx].strategy == 'human':
                     y = random.uniform(2.5, 4)
                     self.increase_models_time(y)  # increase model time with approx human 'thinking' time
@@ -357,6 +384,8 @@ class Game:
                     else:
                         self.reasoning_file.write(f"<p'>You do not believe the bid</p>")
 
+
+                # ------------------------------------Random resolve doubt--------------------------------------- #
                 elif self.players[idx].strategy == 'random':
                     y = random.uniform(2.5, 4)
                     time.sleep(y)  # agent 'thinking'
@@ -371,6 +400,8 @@ class Game:
                         self.reasoning_file.write(
                             f"<p class='t{idx}'>I do not believe the bid (50% probability in resolve)</p>")
 
+
+                # ------------------------------------Model resolve doubt--------------------------------------- #
                 elif self.players[idx].strategy == 'model':
                     x = len(self.players[idx].model.dm)  # counts number of chunks in memory
                     y = random.uniform(1, 1.5)
@@ -414,7 +445,9 @@ class Game:
         print('Players hands are opened: ', end='')
         print(handstring)
 
+        # -------------------------------Reveal all dice, determine who is correct---------------------------------- #
         # Reveal all dice in ui and wait for a bit
+
         for idx, player in enumerate(self.players):
             invoke_in_main_thread(self.ui_controller.display_dice, player_nr=idx, dice=player.hand,
                                   highlight=bid_roll)
@@ -438,6 +471,8 @@ class Game:
             self.current_player = (self.current_player + self.n_players - 1) % self.n_players  # previous
             # player can start again
 
+        # -----------------------------------------Players losing a die-------------------------------------------- #
+        # This part handles which players lose a die and what is printed / shown in the UI
         if len(lose_dice_players) <= 1:
             if lose_dice_players[0] == 0:
                 invoke_in_main_thread(self.ui_controller.show_info,
@@ -481,11 +516,12 @@ class Game:
 
         print()
 
-    ###############################################################
-    ######                    BIDDING PHASE                  ######
-    ###############################################################
+    #########################################################################################################
+    ###########################                    BIDDING PHASE                  ###########################
+    #########################################################################################################
 
-    def models_remember_bid(self):  # chunk storage of bids for ACT-R models
+    def models_remember_bid(self):
+        # Making and storing chunks of bids for ACT-R models
         for i in range(self.n_players):
             if i != self.current_player and self.players[i].strategy == 'model':
 
@@ -529,6 +565,7 @@ class Game:
         self.current_bid = Bid(count, roll)
 
     def is_higher_bid(self, count, roll):
+        # Determines whether the bid is sufficient to overbid the previous bid
 
         if self.current_bid.roll == 1:  # overbidding a bid on joker dice
             if roll == 1:  # case of bidding joker dice yourself
@@ -608,10 +645,11 @@ class Game:
 
         count, roll = 0, 0
 
+        # -----------------------------------------Random bidding-------------------------------------------- #
         if self.players[self.current_player].strategy == 'random':
 
             if self.current_bid.roll == 1:
-                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                if random.randint(1, 1000) <= 167:  # random chance to bid on 1's
                     roll = 1
                     count = self.current_bid.count + 1
                 else:
@@ -620,7 +658,7 @@ class Game:
 
             else:  # current bid is not on joker dice
 
-                if random.randint(1, 100) <= 25:  # random chance to bid on 1's
+                if random.randint(1, 1000) <= 167:  # random chance to bid on 1's
                     if self.current_bid.count % 2 == 1:
                         count = int((self.current_bid.count + 1) / 2)  # joker bid must be double the count
                     else:
@@ -641,6 +679,7 @@ class Game:
                             roll = random.randint(2, 6)
                             higher = True
 
+        # -----------------------------------------Model bidding-------------------------------------------- #
         elif self.players[self.current_player].strategy == 'model':
             if random.randint(1, 100) <= self.model_bluff_chance:  # chance to bluff
                 if random.randint(1, 100) >= 66:  # determine which player the model will bluff on, next player has a
@@ -781,14 +820,14 @@ class Game:
 
         invoke_in_main_thread(self.ui_controller.set_continue_controls_enabled, enabled=False)
 
-    ########################################################################
-    ######           MAIN LOOP THAT RUNS STATE MACHINE                ######
-    ########################################################################
+    #######################################################################################################
+    #########################           MAIN LOOP THAT RUNS STATE MACHINE                ##################
+    #######################################################################################################
 
     # Run the state machine
     def play(self):
         over = False
-        #Print game information
+        # Print game information
         print(f"Total players = {self.n_players} - Human Player ID is: {self.player_ID}")
         print(f'Strategies: {[self.players[i].strategy for i in range(self.n_players)]} \n')
         self.reasoning_file.write(f"<div class='topbox'>")
@@ -808,9 +847,10 @@ class Game:
                 self.n_total_dice += n_dice_pl
 
 
+
+            # -----------------------------------------Start-------------------------------------------- #
             # Games starts and everybody rolls.
             # Nobody should doubt on the first turn.
-
             if self.state == states['start']:
                 self.reset_models()
                 self.clear_ui_bets()
@@ -870,6 +910,7 @@ class Game:
                 self.state = states['bidding_phase']
                 continue
 
+            # ----------------------------------------Doubting Phase--------------------------------------------- #
             # Check whether the current player wants to doubt before asking the bid.
             if self.state == states['doubting_phase']:
                 if self.current_player == self.player_ID:
@@ -892,7 +933,6 @@ class Game:
                 else:
                     invoke_in_main_thread(self.ui_controller.show_info, string=f"Your turn.")
 
-
                 if self.current_player != self.player_ID:
                     invoke_in_main_thread(self.ui_controller.display_action_enemy,
                                           enemy_nr=self.current_player,
@@ -908,18 +948,23 @@ class Game:
                                               enemy_nr=self.current_player,
                                               action=1,
                                               target=self.previous_player)
-                    self.reasoning_file.write(
-                        f"<p><i>Resolving Doubt</i></p>")
 
-                    self.resolve_doubt()
+                    self.state = states['resolve_doubt']
 
-                    self.state = states['start']
-                    # resolve_doubt sends state into 'end' if a player's hand is empty.
                 else:
                     self.state = states['bidding_phase']
                     print(f'Player {self.current_player} believes the bid -> ', end='')
                 continue
 
+            # -----------------------------------------Resolve doubt-------------------------------------------- #
+            if self.state == states[
+                'resolve_doubt']:  # resolve_doubt sends state into 'end' if a player's hand is empty.
+                self.reasoning_file.write(f"<p><i>Resolving Doubt</i></p>")
+                self.resolve_doubt()
+                self.state = states['start']
+
+
+            # ------------------------------------------Bidding Phase------------------------------------------- #
             # Ask the current player for a bid and pass to next player.
             if self.state == states['bidding_phase']:
 
@@ -943,6 +988,7 @@ class Game:
                 self.state = states['doubting_phase']
                 continue
 
+            # -------------------------------------------End Phase------------------------------------------ #
             if self.state == states['end']:
                 over = True
                 if len(winner) <= 1:
